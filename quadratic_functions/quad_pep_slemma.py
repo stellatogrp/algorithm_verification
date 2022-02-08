@@ -2,14 +2,14 @@ import numpy as np
 import cvxpy as cp
 
 
-def form_and_solve_sdp():
+def form_and_solve_basic_sdp():
     n = 3
     mu = 2
     L = 20
     R = 1
     gamma = 2 / (mu + L)
     I = np.eye(n)
-    P = np.array([[mu, 0, 0], [0, L, 0], [0, 0, mu]])
+    P = np.array([[mu, 0, 0], [0, L, 0], [0, 0, (mu + L) / 2]])
     print(P)
     Qb = -(gamma ** 2) * P @ P + 2 * gamma * P - I
     print(Qb)
@@ -20,10 +20,40 @@ def form_and_solve_sdp():
     ua = np.zeros(n)
     ca = R ** 2
 
+    form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca)
+
+
+def form_offcenter_ball_sdp():
+    n = 3
+    mu = 2
+    L = 20
+    R = 1
+    gamma = 2 / (mu + L)
+    I = np.eye(n)
+    P = np.array([[mu, 0, 0], [0, L, 0], [0, 0, (mu + L) / 2]])
+    print(P)
+    Qb = -(gamma ** 2) * P @ P + 2 * gamma * P - I
+    ub = np.zeros(n)
+    cb = 0
+
+    # generate unit ball off center
+    epsilon = .1
+    random_point = np.random.normal(0, 1, 3)
+    x_center = random_point / np.linalg.norm(random_point)
+    print(x_center)
+
+    Qa = -I
+    ua = 2 * x_center
+    ca = epsilon - np.inner(x_center, x_center)
+
+    form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca)
+
+
+def form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca):
     eta = cp.Variable()
     lambd = cp.Variable()
 
-    M = cp.Variable((n+1, n+1), symmetric=True)
+    M = cp.Variable((n + 1, n + 1), symmetric=True)
     constraints = [M >> 0, lambd >= 0]
 
     constraints.append(M[0:n, 0:n] == Qb - lambd * Qa)
@@ -37,7 +67,8 @@ def form_and_solve_sdp():
 
 
 def main():
-    form_and_solve_sdp()
+    # form_and_solve_basic_sdp()
+    form_offcenter_ball_sdp()
 
 
 if __name__ == '__main__':
