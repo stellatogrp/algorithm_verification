@@ -16,9 +16,9 @@ def form_and_solve_basic_sdp():
     ub = np.zeros(n)
     cb = 0
 
-    Qa = -I
+    Qa = I
     ua = np.zeros(n)
-    ca = R ** 2
+    ca = -R ** 2
 
     form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca)
 
@@ -31,7 +31,7 @@ def form_offcenter_ball_sdp():
     gamma = 2 / (mu + L)
     I = np.eye(n)
     P = np.array([[mu, 0, 0], [0, L, 0], [0, 0, (mu + L) / 2]])
-    print(P)
+    # print(P)
     Qb = -(gamma ** 2) * P @ P + 2 * gamma * P - I
     ub = np.zeros(n)
     cb = 0
@@ -40,11 +40,11 @@ def form_offcenter_ball_sdp():
     epsilon = .1
     random_point = np.random.normal(0, 1, 3)
     x_center = random_point / np.linalg.norm(random_point)
-    print(x_center)
+    print('center:', x_center, 'norm:', np.linalg.norm(x_center))
 
-    Qa = -I
-    ua = 2 * x_center
-    ca = epsilon - np.inner(x_center, x_center)
+    Qa = I
+    ua = -2 * x_center
+    ca = -epsilon ** 2 + np.inner(x_center, x_center)
 
     form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca)
 
@@ -56,14 +56,14 @@ def form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca):
     M = cp.Variable((n + 1, n + 1), symmetric=True)
     constraints = [M >> 0, lambd >= 0]
 
-    constraints.append(M[0:n, 0:n] == Qb - lambd * Qa)
-    constraints.append(M[0:n, n] == .5 * (ub - lambd * ua))
-    constraints.append(M[n][n] == cb - eta - lambd * ca)
+    constraints.append(M[0:n, 0:n] == Qb + lambd * Qa)
+    constraints.append(M[0:n, n] == .5 * (ub + lambd * ua))
+    constraints.append(M[n][n] == cb - eta + lambd * ca)
 
     problem = cp.Problem(cp.Maximize(eta), constraints)
     result = problem.solve()
 
-    print(result)
+    print('sdp result:', result)
 
 
 def main():
