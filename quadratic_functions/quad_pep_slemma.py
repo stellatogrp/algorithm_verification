@@ -49,6 +49,27 @@ def form_offcenter_ball_sdp():
     form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca)
 
 
+def form_quad_obj_sdp():
+    n = 3
+    mu = 2
+    L = 20
+    R = 1
+    gamma = 2 / (mu + L)
+    I = np.eye(n)
+    P = np.array([[mu, 0, 0], [0, L, 0], [0, 0, (mu + L) / 2]])
+
+    Qb = .5 * (-(gamma ** 2) * P @ P @ P + 2 * gamma * P @ P - P)
+    print(Qb)
+    ub = np.zeros(n)
+    cb = 0
+
+    Qa = I
+    ua = np.zeros(n)
+    ca = -R ** 2
+
+    form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca)
+
+
 def form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca):
     eta = cp.Variable()
     lambd = cp.Variable()
@@ -64,11 +85,13 @@ def form_slemma_sdp(n, Qb, ub, cb, Qa, ua, ca):
     result = problem.solve()
 
     print('sdp result:', result)
+    print(constraints[0].dual_value)
 
 
 def main():
     # form_and_solve_basic_sdp()
-    form_offcenter_ball_sdp()
+    # form_offcenter_ball_sdp()
+    form_quad_obj_sdp()
 
 
 if __name__ == '__main__':
