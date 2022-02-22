@@ -3,10 +3,30 @@ import cvxpy as cp
 
 
 def solve_extended_slemma_sdp_ineq_only(n, obj_param_list, constraint_param_lists):
+    '''
+        Utility function to solve the dual sdp with no equality constraints.
+    '''
     return solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=constraint_param_lists)
 
 
 def solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None):
+    '''
+    Consider the general QCQP:
+        min x.T @ H0 @ x + 2c0.T @ x + d0
+        s.t. x.T @ Hi @ x + 2ci.T @ x + di <= 0, i \in I
+             x.T @ Hj @ x + 2cj.T @ x + dj == 0, j \in J
+
+    This function relaxes the general QCQP to an SDP using ideas from the S-Lemma. The S-Lemma says that when
+        |I| = 1, |J|=0, subject to a regularity assumption, the relaxation is tight, regardless of positive
+        semidefiniteness of the two quadratic terms. In other cases, this SDP still provides a lower bound.
+        Note that this can be thought of as the dual approach to the SDP in solve_full_extended_slemma_primal_sdp.
+
+    :param n: Dimension of the vectors to search over
+    :param obj_param_list: Tuple (H0, c0, d0)
+    :param ineq_param_lists: List of tuples [(Hi, ci, di)] for each inequality constraint
+    :param eq_param_lists: List of tuples [(Hj, cj, dj)] for each equality constraint
+    :return: The numerical result of the SDP as well as the M matrix
+    '''
     eta = cp.Variable()
     M = cp.Variable((n + 1, n + 1), symmetric=True)
     constraints = [M >> 0]
@@ -44,10 +64,28 @@ def solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=None
     problem = cp.Problem(cp.Maximize(eta), constraints)
     result = problem.solve()
 
-    print('sdp result:', result)
+    print('dual sdp result:', result)
+    return result, M.value
 
 
 def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None):
+    '''
+    Consider the SDP:
+        min Tr(H0 @ X) + 2c0.T @ x + d0
+        s.t. x.T @ Hi @ x + 2ci.T @ x + di <= 0, i \in I
+             x.T @ Hj @ x + 2cj.T @ x + dj == 0, j \in J
+             X >> x @ x.T
+
+    This function forms and solves a direct rank relaxation of a general QCQP as the above SDP.
+    It can be thought of as the primal problem to the dual problem from solve_full_extended_slemma_dual_sdp
+
+    :param n: Dimension of the vectors to search over
+    :param obj_param_list: Tuple (H0, c0, d0)
+    :param ineq_param_lists: List of tuples [(Hi, ci, di)] for each inequality constraint if applicable
+    :param eq_param_lists: List of tuples [(Hj, cj, dj)] for each equality constraint if applicable
+    :return: The numerical result of the SDP as well as the N matrix corresponding to the Schur complement constraint
+        of X >> x @ x.T
+    '''
     X = cp.Variable((n, n))
     x = cp.Variable(n)
     N = cp.Variable((n + 1, n + 1), symmetric=True)
@@ -69,6 +107,8 @@ def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=No
     problem = cp.Problem(cp.Minimize(obj), constraints)
     result = problem.solve()
     print('primal sdp result', result)
+
+    return result, N.value
 
 
 def main():
