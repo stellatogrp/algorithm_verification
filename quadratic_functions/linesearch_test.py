@@ -1,6 +1,8 @@
 import numpy as np
 import cvxpy as cp
 
+from extended_slemma_quadpep import solve_full_extended_slemma_dual_sdp
+
 
 def test_linesearch_sdp():
     n = 2
@@ -85,8 +87,44 @@ def test_linesearch_sdp():
     print(N.value)
 
 
+def test_linesearch_with_general_sdp_dual_function():
+    n = 2
+    mu = 2
+    L = 20
+    R = 1
+    gamma = 2 / (mu + L)
+    I = np.eye(n)
+    Z = np.zeros((n, n))
+    P = np.array([[mu, 0, 0], [0, L, 0], [0, 0, (mu + L) / 2]])
+    P = np.array([[mu, 0], [0, L]])
+
+    Hobj = -.5 * np.block([[Z, Z], [Z, P]])
+    cobj = np.zeros(2 * n)
+    dobj = 0
+
+    # Hineq = np.block([[I, Z], [Z, Z]])
+    Hineq = .5 * np.block([[P, Z], [Z, Z]])
+    cineq = np.zeros(2 * n)
+    dineq = -R ** 2
+
+    Heq1 = np.block([[Z, -.5 * P], [-.5 * P.T, P]])
+    ceq1 = np.zeros(2 * n)
+    deq1 = 0
+
+    Heq2 = np.block([[Z, .5 * P @ P], [.5 * P @ P, Z]])
+    ceq2 = np.zeros(2 * n)
+    deq2 = 0
+
+    obj_list = (Hobj, cobj, dobj)
+    ineq_list = [(Hineq, cineq, dineq)]
+    eq_list = [(Heq1, ceq1, deq1), (Heq2, ceq2, deq2)]
+    solve_full_extended_slemma_dual_sdp(2 * n, obj_list, ineq_param_lists=ineq_list, eq_param_lists=eq_list)
+
+
 def main():
     test_linesearch_sdp()
+    print('test with general function')
+    test_linesearch_with_general_sdp_dual_function()
 
 
 if __name__ == '__main__':
