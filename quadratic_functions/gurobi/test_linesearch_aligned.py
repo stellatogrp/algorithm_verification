@@ -39,11 +39,11 @@ def test_linesearch_aligned():
     cobj = np.zeros(2 * n)
     dobj = 0
 
-    # Hineq = .5 * np.block([[P, Z], [Z, Z]])
+    # Set up distance constraint on x0
     Hineq = np.block([[I, Z], [Z, Z]])
 
+    # Set up two equality constraints for line search iterates
     Heq1 = np.block([[Z, -.5 * P], [-.5 * P.T, P]])
-
     Heq2 = np.block([[Z, .5 * P @ P], [.5 * P @ P, Z]])
 
     m = gp.Model()
@@ -52,7 +52,7 @@ def test_linesearch_aligned():
 
     y = m.addMVar(2 * n, name='y')
     m.setObjective(y @ Hobj @ y, GRB.MAXIMIZE)
-    m.addConstr(y @ Hineq @ y <=  R ** 2)
+    m.addConstr(y @ Hineq @ y <= R ** 2)
     m.addConstr(y @ Heq1 @ y == 0)
     m.addConstr(y @ Heq2 @ y == 0)
 
