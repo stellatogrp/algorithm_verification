@@ -49,10 +49,13 @@ def test_soft_threshold_KKT():
             represented implicitly, i.e. if the feasibility problem with the KKT conditions has the solution
             corresponding to the soft_threshold function
     '''
-    lambdat = .1
-    y_val = np.array([-1, -.05, 0, .05, 1])
+    lambdat = .2
+    # y_val = np.array([-1, -.05, 0, .05, 1])
+    # n = len(y_val)
 
-    n = len(y_val)
+    n = 10
+    y_val = np.random.randn(n)
+
     I = spa.eye(n)
     halfI = .5 * I
     minusI = -1 * I
@@ -95,9 +98,10 @@ def test_soft_threshold_KKT():
     m.optimize()
     # import pdb
     # pdb.set_trace()
-    print(v.X, u.X, gamma1.X)
-    test = v.X
-    print(np.round(test, 2))
+
+    print('original y:', np.round(y_val, 4))
+    print('threshold used:', lambdat)
+    print('solution to QCQP:', np.round(v.X, 4))
 
     # get a variable value like gamma1.X
 
