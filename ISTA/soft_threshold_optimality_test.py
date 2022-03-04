@@ -77,20 +77,24 @@ def test_soft_threshold_KKT():
                   lb=-gp.GRB.INFINITY * np.ones(n))
 
     u = m.addMVar(n, name='u')  # default [0. inf) constraints are sufficient
-    gamma1 = m.addMVar(n,
-                       name='gamma1',
-                       ub=gp.GRB.INFINITY * np.ones(n),
-                       lb=-gp.GRB.INFINITY * np.ones(n))
-    gamma2 = m.addMVar(n,
-                       name='gamma2',
-                       ub=gp.GRB.INFINITY * np.ones(n),
-                       lb=-gp.GRB.INFINITY * np.ones(n))
+    # gamma1 = m.addMVar(n,
+    #                    name='gamma1',
+    #                    ub=gp.GRB.INFINITY * np.ones(n),
+    #                    lb=-gp.GRB.INFINITY * np.ones(n))
+    # gamma2 = m.addMVar(n,
+    #                    name='gamma2',
+    #                    ub=gp.GRB.INFINITY * np.ones(n),
+    #                    lb=-gp.GRB.INFINITY * np.ones(n))
+
+    # using the fact that gurobi defaults to [0. inf) constraints, we can just leave these as is
+    gamma1 = m.addMVar(n, name='gamma1')
+    gamma2 = m.addMVar(n, name='gamma2')
 
     m.setObjective(0)
     m.addConstr(v - y + gamma1 - gamma2 == 0)
     m.addConstr(lambdat_scaled_ones - gamma1 - gamma2 == 0)
-    m.addConstr(gamma1 >= 0)
-    m.addConstr(gamma2 >= 0)
+    # m.addConstr(gamma1 >= 0)
+    # m.addConstr(gamma2 >= 0)
     m.addConstr(v - u <= 0)
     m.addConstr(-v - u <= 0)
     m.addConstr(gamma1 @ v - gamma1 @ u == 0)
