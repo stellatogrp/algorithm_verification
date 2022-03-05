@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 
-from extended_slemma_quadpep import *
+from extended_slemma_sdp import *
 
 
 def l_inf_ball_constraints(n, R=1):
@@ -37,6 +37,7 @@ def form_l_inf_ball_sdp():
     obj_list = (H0, c0, d0)
     constraint_param_lists = l_inf_ball_constraints(n, R=1)
     # solve_extended_slemma_sdp_ineq_only(n, obj_list, constraint_param_lists)
+    solve_full_extended_slemma_primal_sdp(n, obj_list, ineq_param_lists=constraint_param_lists)
     solve_full_extended_slemma_dual_sdp(n, obj_list, ineq_param_lists=constraint_param_lists)
 
 
@@ -62,10 +63,18 @@ def test_single_constraint_sdp():
     solve_extended_slemma_sdp_ineq_only(n, obj_param_list, cons)
 
 
+def test_noconstraint_sdp():
+    n = 2
+    I = np.eye(n)
+    solve_full_extended_slemma_dual_sdp(n, (I, np.zeros(n), 0))
+    solve_full_extended_slemma_primal_sdp(n, (I, np.zeros(n), 1))
+
+
 def main():
     # form_and_solve_basic_sdp()
     # test_single_constraint_sdp()
     form_l_inf_ball_sdp()
+    test_noconstraint_sdp()
 
 
 if __name__ == '__main__':

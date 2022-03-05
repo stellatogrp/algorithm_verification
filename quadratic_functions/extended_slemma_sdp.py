@@ -12,9 +12,9 @@ def solve_extended_slemma_sdp_ineq_only(n, obj_param_list, constraint_param_list
 def solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None):
     '''
     Consider the general QCQP:
-        min x.T @ H0 @ x + 2c0.T @ x + d0
-        s.t. x.T @ Hi @ x + 2ci.T @ x + di <= 0, i \in I
-             x.T @ Hj @ x + 2cj.T @ x + dj == 0, j \in J
+        min x.T @ H0 @ x + c0.T @ x + d0
+        s.t. x.T @ Hi @ x + ci.T @ x + di <= 0, i \in I
+             x.T @ Hj @ x + cj.T @ x + dj == 0, j \in J
 
     This function relaxes the general QCQP to an SDP using ideas from the S-Lemma. The S-Lemma says that when
         |I| = 1, |J|=0, subject to a regularity assumption, the relaxation is tight, regardless of positive
@@ -55,6 +55,7 @@ def solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=None
             M12_block -= kappa[j] * cj
             M22_block -= kappa[j] * dj
 
+    M12_block *= .5
     M22_block -= eta
 
     constraints.append(M[0:n, 0:n] == M11_block)
@@ -71,9 +72,9 @@ def solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=None
 def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None):
     '''
     Consider the SDP:
-        min Tr(H0 @ X) + 2c0.T @ x + d0
-        s.t. x.T @ Hi @ x + 2ci.T @ x + di <= 0, i \in I
-             x.T @ Hj @ x + 2cj.T @ x + dj == 0, j \in J
+        min Tr(H0 @ X) + c0.T @ x + d0
+        s.t. x.T @ Hi @ x + ci.T @ x + di <= 0, i \in I
+             x.T @ Hj @ x + cj.T @ x + dj == 0, j \in J
              X >> x @ x.T
 
     This function forms and solves a direct rank relaxation of a general QCQP as the above SDP.
@@ -92,17 +93,17 @@ def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=No
     constraints = [N >> 0, N[0:n, 0:n] == X, N[0:n, n] == x, N[n][n] == 1]
 
     (H0, c0, d0) = obj_param_list
-    obj = cp.trace(H0 @ X) + 2 * c0 @ x + d0
+    obj = cp.trace(H0 @ X) + c0 @ x + d0
 
     if ineq_param_lists is not None:
         for i in range(len(ineq_param_lists)):
             Hi, ci, di = ineq_param_lists[i]
-            constraints.append(cp.trace(Hi @ X) + 2 * ci @ x + di <= 0)
+            constraints.append(cp.trace(Hi @ X) + ci @ x + di <= 0)
 
     if eq_param_lists is not None:
         for j in range(len(eq_param_lists)):
             Hj, cj, dj = eq_param_lists[j]
-            constraints.append(cp.trace(Hj @ X) + 2 * cj @ x + dj == 0)
+            constraints.append(cp.trace(Hj @ X) + cj @ x + dj == 0)
 
     problem = cp.Problem(cp.Minimize(obj), constraints)
     result = problem.solve(solver=cp.MOSEK)

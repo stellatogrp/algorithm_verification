@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 
-from extended_slemma_quadpep import solve_full_extended_slemma_dual_sdp, solve_full_extended_slemma_primal_sdp
+from extended_slemma_sdp import solve_full_extended_slemma_dual_sdp, solve_full_extended_slemma_primal_sdp
 
 
 def test_linesearch_sdp():
