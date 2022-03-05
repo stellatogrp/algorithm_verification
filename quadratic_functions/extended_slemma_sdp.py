@@ -105,7 +105,7 @@ def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=No
             constraints.append(cp.trace(Hj @ X) + 2 * cj @ x + dj == 0)
 
     problem = cp.Problem(cp.Minimize(obj), constraints)
-    result = problem.solve()
+    result = problem.solve(solver=cp.MOSEK)
     print('primal sdp result', result)
 
     return result, N.value
