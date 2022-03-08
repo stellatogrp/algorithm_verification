@@ -27,7 +27,7 @@ def ISTA_PEP_SDP_onestep():
 
     n = 2
     m = 3
-    lambd = 1
+    lambd = 0
     t = .05
     R = 1
 
@@ -87,7 +87,7 @@ def ISTA_PEP_SDP_onestep():
     ineq5_mat[0:n, 0:n] = np.eye(n)
     ineq_triples.append((spa.csc_matrix(ineq5_mat), np.zeros(n_SDP), -R ** 2))
 
-    # Eq 1: x1 + (A^TA - I)x0 + gamma_1 - gamma_2 - tA^Tb = 0
+    # Eq 1: x1 + (t A^TA - I)x0 + gamma_1 - gamma_2 - tA^Tb = 0
     eq1_block = np.block([t*A.T @ A - I, I, Z, I, -I])
     eq1_lists = block_vector_to_components(eq1_block, -t * A.T @ b)
     eq_triples += eq1_lists
@@ -112,7 +112,7 @@ def ISTA_PEP_SDP_onestep():
     eq_triples.append((eq4_mat, np.zeros(n_SDP), 0))
 
     result, M = solve_full_extended_slemma_primal_sdp(n_SDP, obj_triple, ineq_param_lists=ineq_triples, eq_param_lists=eq_triples)
-    print(M)
+    print(np.round(M, 4))
 
 
 def main():
