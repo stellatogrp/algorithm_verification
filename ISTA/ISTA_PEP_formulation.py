@@ -27,9 +27,9 @@ def solve_LASSO_with_cvxpy(n, A, b, lambd):
 def ISTA_PEP_onestep():
     np.random.seed(0)
 
-    n = 5
-    m = 10
-    lambd = 1
+    n = 2
+    m = 3
+    lambd = 0
     t = .05
     R = 1
 
@@ -40,6 +40,8 @@ def ISTA_PEP_onestep():
     ones = np.ones(n)
     lambd_ones = lambd * ones
     lambdt_ones = lambd * t * ones
+    print(A)
+    print(b)
 
     ATA = A.T @ A
     halfATA = .5 * ATA
@@ -85,6 +87,7 @@ def ISTA_PEP_onestep():
 
     print('x0:', np.round(x0.X, 4))
     print('x1:', np.round(x1.X, 4))
+    print('u:', np.round(u.X, 4))
     print(eval_lasso(A, b, x1.X, lambd))
 
 
