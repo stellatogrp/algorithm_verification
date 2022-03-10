@@ -9,7 +9,6 @@ class QuadExtractor():
     def __init__(self, problem):
         reduction = Qcqp2SymbolicQcqp()
         self.symb_problem, self.symb_inverse = reduction.apply(problem)
-        import ipdb; ipdb.set_trace()
         self.inverse_data = InverseData(self.symb_problem)
         self.extractor = CoeffExtractor(self.inverse_data)
 

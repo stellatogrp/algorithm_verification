@@ -12,6 +12,7 @@ def mulexpression_canon(expr, args):
     rhs = expr.args[1]
 
     # If it is not a product of variables, do not do anything.
+    # TODO (bart): deal with parametric problem
     if lhs.is_constant() or rhs.is_constant():
         return expr, []
 

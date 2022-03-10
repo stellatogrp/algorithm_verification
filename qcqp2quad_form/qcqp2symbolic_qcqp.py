@@ -1,15 +1,14 @@
 from cvxpy.constraints import Equality, Inequality, NonNeg, NonPos, Zero
 from cvxpy.reductions.canonicalization import Canonicalization
 from cvxpy.reductions.cvx_attr2constr import convex_attributes
-
-#  from cvxpy.reductions.qp2quad_form.atom_canonicalizers import (
-#      CANON_METHODS as qp_canon_methods,)
-from qcqp2quad_form.atom_canonicalizers import (CANON_METHODS as qcqp_canon_methods,)
+from qcqp2quad_form.atom_canonicalizers import \
+        (CANON_METHODS as qcqp_canon_methods,)
 
 
 def accepts(problem):
     """
-    Problems with quadratic objectives and constraints (equality and inequality),
+    Problems with quadratic objectives and
+    # constraints (equality and inequality),
     are accepted by this reduction
     """
     return (problem.objective.expr.is_qpwa()
