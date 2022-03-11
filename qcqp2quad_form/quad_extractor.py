@@ -35,6 +35,9 @@ class QuadExtractor():
 
     def extract_constraints(self):
         constraint_coeffs = []
+        constraint_types = []
         for c in self.symb_problem.constraints:
             constraint_coeffs += [self.extract_expression(c.expr)]
-        return constraint_coeffs
+            # add in the type here 'Inequality, Equality, NonNeg, NonPos, Zero'
+            constraint_types += [type(c)]
+        return constraint_coeffs, constraint_types
