@@ -18,12 +18,13 @@ def form_problem_and_extract():
 
     n = 2
     m = 3
-    lambd = 1
+    lambd = 5
     t = .05
     R = 1
 
     A = np.random.randn(m, n)
     b = np.random.randn(m)
+    lambd_ones = lambd * np.ones(n)
     lambdt_ones = lambd * t * np.ones(n)
     # I = spa.eye(n)
     I = np.eye(n)
@@ -35,8 +36,11 @@ def form_problem_and_extract():
     gamma1 = cp.Variable(n)
     gamma2 = cp.Variable(n)
 
-    obj = .5 * cp.quad_form(x1, A.T @ A) - b.T @ A @ x1 + lambdt_ones.T @ u + .5 * b.T @ b
+    obj = .5 * cp.quad_form(x1, A.T @ A) - b.T @ A @ x1 + lambd_ones.T @ u + .5 * b.T @ b
     constraints = []
+
+    # Ineq 5: x0^T x0 - R^2 \leq 0
+    constraints.append(cp.quad_form(x0, I) <= R ** 2)
 
     # Ineq 1: gamma_1 \geq 0
     constraints.append(gamma1 >= 0)
@@ -50,9 +54,6 @@ def form_problem_and_extract():
     # Ineq 4: -x^1 - u \leq 0
     constraints.append(-x1 <= u)
 
-    # Ineq 5: x0^T x0 - R^2 \leq 0
-    constraints.append(cp.quad_form(x0, I) <= R ** 2)
-
     # Eq 1: x1 + (t A^TA - I)x0 + gamma_1 - gamma_2 - tA^Tb = 0
     constraints.append(x1 - (I - t * A.T @ A) @ x0 + gamma1 - gamma2 == t * A.T @ b)
 
@@ -64,6 +65,10 @@ def form_problem_and_extract():
 
     # Eq 4: gamma_2.T x1 + gamma_2.T u = 0
     constraints.append(gamma2.T @ (x1 + u) == 0)
+
+    # Fake constraints
+    constraints.append(cp.quad_form(x1, I) <= R ** 2)
+    constraints.append(cp.quad_form(u, I) <= R ** 2)
 
     problem = cp.Problem(cp.Maximize(obj), constraints)
     quad_extractor = QuadExtractor(problem)
@@ -162,8 +167,8 @@ def test_ISTA_Gurobi():
 
 
 def main():
-    # test_ISTA_SDR()
-    test_ISTA_Gurobi()
+    test_ISTA_SDR()
+    # test_ISTA_Gurobi()
 
 
 if __name__ == '__main__':
