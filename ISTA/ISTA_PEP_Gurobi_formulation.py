@@ -29,7 +29,7 @@ def ISTA_PEP_onestep():
 
     n = 2
     m = 3
-    lambd = 0
+    lambd = 5
     t = .05
     R = 1
 
@@ -75,6 +75,9 @@ def ISTA_PEP_onestep():
     obj = x1 @ halfATA @ x1 - bTA @ x1 + lambd_ones @ u + .5 * b.T @ b
     m.setObjective(obj, GRB.MAXIMIZE)
     m.addConstr(x0 @ I @ x0 <= R ** 2)
+    # fake constraints
+    m.addConstr(x1 @ I @ x1 <= R ** 2)
+    m.addConstr(u @ I @ u <= R ** 2)
     m.addConstr(x1 - (I - t*ATA) @ x0 + gamma1 - gamma2 == t * A.T @ b)
     m.addConstr(gamma1 + gamma2 == lambdt_ones)
     # don't need gamma1, gamma2 >= 0 because defaults

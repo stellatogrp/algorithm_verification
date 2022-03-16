@@ -1,6 +1,13 @@
 import numpy as np
+import cvxpy as cp
+import gurobipy as gp
 import scipy.sparse as spa
 from quadratic_functions.extended_slemma_sdp import *
+from cvxpy.utilities.coeff_extractor import CoeffExtractor
+from cvxpy.reductions import InverseData
+from cvxpy.reductions.qp2quad_form.qp2symbolic_qp import accepts, Qp2SymbolicQp
+from cvxpy.reductions.qp2quad_form.qp_matrix_stuffing import QpMatrixStuffing, ParamQuadProg
+from gurobipy import GRB
 
 
 def block_vector_to_components(A, b):
@@ -27,12 +34,13 @@ def ISTA_PEP_SDP_onestep():
 
     n = 2
     m = 3
-    lambd = 0
+    lambd = 5
     t = .05
     R = 1
 
     A = np.random.randn(m, n)
     b = np.random.randn(m)
+    lambd_ones = lambd * np.ones(n)
     lambdt_ones = lambd * t * np.ones(n)
     # I = spa.eye(n)
     I = np.eye(n)
@@ -51,10 +59,10 @@ def ISTA_PEP_SDP_onestep():
 
     cobj = np.zeros(n_SDP)
     cobj[n:2 * n] = -A.T @ b
-    cobj[2 * n:3 * n] = lambdt_ones
+    cobj[2 * n:3 * n] = lambd_ones
     # cobj[2 * n:3 * n] = np.zeros(n)
     # cobj = spa.csc_matrix(cobj)
-    print(cobj)
+    # print(cobj)
 
     dobj = .5 * b.T @ b.T
 
@@ -112,11 +120,99 @@ def ISTA_PEP_SDP_onestep():
     eq_triples.append((eq4_mat, np.zeros(n_SDP), 0))
 
     result, M = solve_full_extended_slemma_primal_sdp(n_SDP, obj_triple, ineq_param_lists=ineq_triples, eq_param_lists=eq_triples)
-    print(np.round(M, 4))
+    # print(np.round(M, 4))
+
+    m = gp.Model()
+    m.setParam('NonConvex', 2)
+
+    x = m.addMVar(n_SDP,
+                  name='x',
+                  ub=gp.GRB.INFINITY * np.ones(n_SDP),
+                  lb=-gp.GRB.INFINITY * np.ones(n_SDP))
+
+    obj = x @ Hobj @ x + cobj @ x + dobj
+    m.setObjective(obj, GRB.MAXIMIZE)
+    for (Hi, ci, di) in ineq_triples:
+        m.addConstr(x @ Hi @ x + ci @ x + di <= 0)
+
+    for (Hj, cj, dj) in eq_triples:
+        m.addConstr(x @ Hj @ x + cj @ x + dj == 0)
+
+    m.optimize()
+    print(x.X)
+
+
+def ISTA_PEP_SDP_onestep_alt_formulation():
+    np.random.seed(0)
+
+    n = 2
+    m = 3
+    lambd = 1
+    t = .05
+    R = 1
+
+    A = np.random.randn(m, n)
+    b = np.random.randn(m)
+    lambdt_ones = lambd * t * np.ones(n)
+    # I = spa.eye(n)
+    I = np.eye(n)
+    Z = np.zeros((n, n))
+
+    x0 = cp.Variable(n)
+    x1 = cp.Variable(n)
+    u = cp.Variable(n)
+    gamma1 = cp.Variable(n)
+    gamma2 = cp.Variable(n)
+
+    obj = .5 * cp.quad_form(x1, A.T @ A) - b.T @ A @ x1 + lambdt_ones.T @ u + .5 * b.T @ b
+    constraints = []
+
+    # Ineq 5: x0^T x0 - R^2 \leq 0
+    constraints.append(cp.quad_form(x0, I) <= R ** 2)
+
+    # Ineq 1: gamma_1 \geq 0
+    constraints.append(gamma1 >= 0)
+
+    # Ineq 2: -gamma_2 \leq 0
+    constraints.append(gamma2 >= 0)
+
+    # Ineq 3: x^1 - u \leq 0
+    constraints.append(x1 <= u)
+
+    # Ineq 4: -x^1 - u \leq 0
+    constraints.append(-x1 <= u)
+
+    # Eq 1: x1 + (t A^TA - I)x0 + gamma_1 - gamma_2 - tA^Tb = 0
+    constraints.append(x1 - (I - t*A.T @ A) @ x0 + gamma1 - gamma2 == t*A.T @ b)
+
+    # Eq 2: gamma_1 + gamma_2 - lambda*t*ones = 0
+    constraints.append(gamma1 + gamma2 == lambdt_ones)
+
+    # Eq 3: gamma_1.T x1 - gamma_1.T u = 0
+    constraints.append(gamma1.T @ x1 - gamma1.T @ u == 0)
+
+    # Eq 4: gamma_2.T x1 + gamma_2.T u = 0
+    constraints.append(gamma2.T @ x1 + gamma2.T @ u == 0)
+
+    print(A.T @ A)
+    problem = cp.Problem(cp.Maximize(obj), constraints)
+    # problem.solve()
+    # print(problem.variables())
+    inverse_data = InverseData(problem)
+    extractor = CoeffExtractor(inverse_data)
+    expr = problem.objective.expr.copy()
+    print(expr)
+    print(extractor.x_length)
+    # print(inverse_data.get_var_offsets(problem.variables()))
+
+    print('--------qp2symbolicqp--------')
+    symbolic = Qp2SymbolicQp(problem)
+    data, solving_chain, inverse_data = problem.get_problem_data(cp.MOSEK)
 
 
 def main():
     ISTA_PEP_SDP_onestep()
+    # ISTA_PEP_SDP_onestep_alt_formulation()
 
 
 if __name__ == '__main__':
