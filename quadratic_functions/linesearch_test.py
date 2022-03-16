@@ -1,7 +1,7 @@
 import numpy as np
 import cvxpy as cp
 
-from extended_slemma_sdp import solve_full_extended_slemma_dual_sdp, solve_full_extended_slemma_primal_sdp
+from extended_slemma_sdp import *
 
 
 def test_linesearch_sdp():
@@ -118,14 +118,16 @@ def test_linesearch_with_general_sdp_functions():
     obj_list = (Hobj, cobj, dobj)
     ineq_list = [(Hineq, cineq, dineq)]
     eq_list = [(Heq1, ceq1, deq1), (Heq2, ceq2, deq2)]
-    print('dual')
-    solve_full_extended_slemma_dual_sdp(2 * n, obj_list, ineq_param_lists=ineq_list, eq_param_lists=eq_list)
+    # print('dual')
+    # solve_full_extended_slemma_dual_sdp(2 * n, obj_list, ineq_param_lists=ineq_list, eq_param_lists=eq_list)
     print('primal')
     solve_full_extended_slemma_primal_sdp(2 * n, obj_list, ineq_param_lists=ineq_list, eq_param_lists=eq_list)
+    print('homogeneous form dual')
+    solve_homoegeneous_form_dual_sdp(2 * n, obj_list, ineq_param_lists=ineq_list, eq_param_lists=eq_list)
 
 
 def main():
-    test_linesearch_sdp()
+    # test_linesearch_sdp()
     print('test with general function')
     test_linesearch_with_general_sdp_functions()
 

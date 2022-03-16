@@ -4,7 +4,7 @@ import gurobipy as gp
 import scipy.sparse as spa
 from qcqp2quad_form.quad_extractor import QuadExtractor
 from cvxpy.constraints import Equality, Inequality, NonNeg, NonPos, Zero
-from quadratic_functions.extended_slemma_sdp import solve_full_extended_slemma_primal_sdp, solve_full_extended_slemma_dual_sdp
+from quadratic_functions.extended_slemma_sdp import *
 from gurobipy import GRB
 
 
@@ -54,6 +54,8 @@ def form_problem_and_extract():
     # Ineq 4: -x^1 - u \leq 0
     constraints.append(-x1 <= u)
 
+    constraints.append(u >= 0)
+
     # Eq 1: x1 + (t A^TA - I)x0 + gamma_1 - gamma_2 - tA^Tb = 0
     constraints.append(x1 - (I - t * A.T @ A) @ x0 + gamma1 - gamma2 == t * A.T @ b)
 
@@ -67,10 +69,10 @@ def form_problem_and_extract():
     constraints.append(gamma2.T @ (x1 + u) == 0)
 
     # Fake constraints
-    constraints.append(cp.quad_form(x1, I) <= R ** 2)
-    constraints.append(cp.quad_form(u, I) <= R ** 2)
+    # constraints.append(cp.quad_form(x1, I) <= R ** 2)
+    # constraints.append(cp.quad_form(u, I) <= R ** 2)
 
-    problem = cp.Problem(cp.Maximize(obj), constraints)
+    problem = cp.Problem(cp.Minimize(-obj), constraints)
     quad_extractor = QuadExtractor(problem)
     return quad_extractor
 
@@ -80,8 +82,8 @@ def test_ISTA_SDR():
     data_objective = quad_extractor.extract_objective()
     data_constraints, data_constr_types = quad_extractor.extract_constraints()
     # print(data_objective)
-    for i in range(len(data_constraints)):
-        print('Constraint', i+1, data_constraints[i], data_constr_types[i])
+    # for i in range(len(data_constraints)):
+    #     print('Constraint', i+1, data_constraints[i], data_constr_types[i])
     #
     # print(quad_extractor.inverse_data)
     # print(t * A.T @ b)
@@ -96,17 +98,17 @@ def test_ISTA_SDR():
     Hobj = data_objective['P']
     cobj = data_objective['q']
     dobj = data_objective['r']
-    obj_triple = (-Hobj, -cobj, -dobj)
+    obj_triple = (Hobj, cobj, dobj)
 
     ineq_triples = []
     eq_triples = []
 
-    print(Hobj, cobj, dobj)
+    # print(Hobj, cobj, dobj)
     for i in range(len(data_constraints)):
         constr = data_constraints[i]
         Hcons = constr['P']
-        if Hcons is None:
-            Hcons = spa.csc_matrix(np.zeros((n, n)))
+        # if Hcons is None:
+        #     Hcons = spa.csc_matrix(np.zeros((n, n)))
         ccons = constr['q']
         dcons = constr['r']
         constr_type = data_constr_types[i]
@@ -117,6 +119,8 @@ def test_ISTA_SDR():
 
     res, N = solve_full_extended_slemma_primal_sdp(n, obj_triple, ineq_param_lists=ineq_triples, eq_param_lists=eq_triples)
     # print(np.round(N, 4))
+    # res, M = solve_homoegeneous_form_primal_sdp(n, obj_triple, ineq_param_lists=ineq_triples, eq_param_lists=eq_triples)
+    print(res)
 
 
 def test_ISTA_Gurobi():

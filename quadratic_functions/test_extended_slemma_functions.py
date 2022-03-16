@@ -66,8 +66,11 @@ def test_single_constraint_sdp():
 def test_noconstraint_sdp():
     n = 2
     I = np.eye(n)
+    solve_full_extended_slemma_primal_sdp(n, (I, np.zeros(n), 0))
     solve_full_extended_slemma_dual_sdp(n, (I, np.zeros(n), 0))
+
     solve_full_extended_slemma_primal_sdp(n, (I, np.zeros(n), 1))
+    solve_full_extended_slemma_dual_sdp(n, (I, np.zeros(n), 1))
 
 
 def main():
