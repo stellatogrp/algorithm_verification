@@ -132,7 +132,7 @@ def homogeneous_form(H, c, d):
     return spa.bmat([[H, c/2], [c.T/2, d]])
 
 
-def solve_homoegeneous_form_primal_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None):
+def solve_homoegeneous_form_primal_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None, verbose=True):
     X = cp.Variable((n + 1, n + 1), symmetric=True)
 
     (H0, c0, d0) = obj_param_list
@@ -168,7 +168,7 @@ def solve_homoegeneous_form_primal_sdp(n, obj_param_list, ineq_param_lists=None,
             # constraints.append(cp.sum(cp.multiply(W, X)) == 0)
 
     problem = cp.Problem(cp.Minimize(obj), constraints)
-    result = problem.solve(solver=cp.MOSEK, verbose=True)
+    result = problem.solve(solver=cp.MOSEK, verbose=verbose)
 
     return result, X
 
