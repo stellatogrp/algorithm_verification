@@ -47,7 +47,7 @@ def ISTA_PEP_onestep():
     halfATA = .5 * ATA
     bTA = b.T @ A
 
-    solve_LASSO_with_cvxpy(n, A, b, 1)
+    solve_LASSO_with_cvxpy(n, A, b, lambd)
 
     print('-------- solving with gurobi --------')
     m = gp.Model()
@@ -60,12 +60,12 @@ def ISTA_PEP_onestep():
 
     x0 = m.addMVar(n,
                    name='x0',
-                   ub=(R ** 2) * np.ones(n),
-                   lb=-(R ** 2) * np.ones(n))
+                   ub=gp.GRB.INFINITY * np.ones(n),
+                   lb=-gp.GRB.INFINITY * np.ones(n))
     x1 = m.addMVar(n,
                    name='x1',
-                   ub=(R ** 2) * np.ones(n),
-                   lb=-(R ** 2) * np.ones(n))
+                   ub=gp.GRB.INFINITY * np.ones(n),
+                   lb=-gp.GRB.INFINITY * np.ones(n))
 
     # u, gamma1, gamm2 are all \ge 0, so the default [0, inf) constraints are fine
     u = m.addMVar(n, name='u')
@@ -75,9 +75,11 @@ def ISTA_PEP_onestep():
     obj = x1 @ halfATA @ x1 - bTA @ x1 + lambd_ones @ u + .5 * b.T @ b
     m.setObjective(obj, GRB.MAXIMIZE)
     m.addConstr(x0 @ I @ x0 <= R ** 2)
+
     # fake constraints
-    m.addConstr(x1 @ I @ x1 <= R ** 2)
-    m.addConstr(u @ I @ u <= R ** 2)
+    m.addConstr(x1 @ I @ x1 <= 100 * R ** 2)
+    m.addConstr(u @ I @ u <= 100 * R ** 2)
+
     m.addConstr(x1 - (I - t*ATA) @ x0 + gamma1 - gamma2 == t * A.T @ b)
     m.addConstr(gamma1 + gamma2 == lambdt_ones)
     # don't need gamma1, gamma2 >= 0 because defaults
@@ -94,8 +96,69 @@ def ISTA_PEP_onestep():
     print(eval_lasso(A, b, x1.X, lambd))
 
 
+def ISTA_PEP_N_steps(N):
+    np.random.seed(0)
+
+    n = 6
+    m = 10
+    lambd = 5
+    t = .05
+    R = 1
+    max_bound_multiplier = 100
+
+    A = np.random.randn(m, n)
+    b = np.random.randn(m)
+    I = spa.eye(n)
+    minusI = -I
+    ones = np.ones(n)
+    lambd_ones = lambd * ones
+    lambdt_ones = lambd * t * ones
+
+    ATA = A.T @ A
+    halfATA = .5 * ATA
+    bTA = b.T @ A
+
+    solve_LASSO_with_cvxpy(n, A, b, lambd)
+
+    print('-------- solving with gurobi for %d steps--------' % N)
+    m = gp.Model()
+    m.setParam('NonConvex', 2)
+
+    x = m.addMVar((N+1, n),
+                  name='x',
+                  ub=gp.GRB.INFINITY * np.ones((N+1, n)),
+                  lb=-gp.GRB.INFINITY * np.ones((N+1, n)))
+
+    # pad the following with an extra col of 0's for readability
+    u = m.addMVar((N+1, n), name='u')
+    gamma1 = m.addMVar((N+1, n), name='gamma1')
+    gamma2 = m.addMVar((N+1, n), name='gamma2')
+
+    obj = x[N] @ halfATA @ x[N] - bTA @ x[N] + lambd_ones @ u[N] + .5 * b.T @ b
+    m.setObjective(obj, GRB.MAXIMIZE)
+
+    # Initial bound
+    m.addConstr(x[0] @ I @ x[0] <= R ** 2)
+    for i in range(1, N+1):
+        # fake constraints
+        m.addConstr(x[i] @ I @ x[i] <= max_bound_multiplier * R ** 2)
+        m.addConstr(u[i] @ I @ u[i] <= max_bound_multiplier * R ** 2)
+
+        m.addConstr(x[i] - (I - t * ATA) @ x[i-1] + gamma1[i] - gamma2[i] == t * A.T @ b)
+        m.addConstr(gamma1[i] + gamma2[i] == lambdt_ones)
+        # don't need gamma1, gamma2 >= 0 because defaults
+        m.addConstr(x[i] <= u[i])
+        m.addConstr(-x[i] <= u[i])
+        m.addConstr(gamma1[i] @ x[i] - gamma1[i] @ u[i] == 0)
+        m.addConstr(gamma2[i] @ x[i] + gamma2[i] @ u[i] == 0)
+
+    m.optimize()
+
+
 def main():
-    ISTA_PEP_onestep()
+    # ISTA_PEP_onestep()
+    N = 2
+    ISTA_PEP_N_steps(N)
 
 
 if __name__ == '__main__':
