@@ -41,11 +41,32 @@ def test_job_scheduling_gurobi():
     m = gp.Model()
     m.setParam('NonConvex', 2)
     x = m.addMVar(n, name='x',
-                  ub=1 * np.ones(n))  # Can do vtype=GRB.BINARY
+                  ub=np.ones(n))  # Can do vtype=GRB.BINARY
 
     m.setObjective(-c @ x)
     m.addConstr(A @ x <= b)
     m.addConstr(x @ (1 - x) == 0)  # each x_i is nonnegative, so this implies slackness
+
+    m.optimize()
+    print(x.X)
+
+
+def test_job_scheduling_gurobi_elementwise():
+    A, b, c = form_scheduling_problem()
+    n = c.shape[0]
+
+    m = gp.Model()
+    m.setParam('NonConvex', 2)
+
+    x = m.addMVar(n,
+                  name='x',
+                  ub=gp.GRB.INFINITY * np.ones(n),
+                  lb=-gp.GRB.INFINITY * np.ones(n))
+
+    m.setObjective(-c @ x)
+    m.addConstr(A @ x <= b)
+    for i in range(n):
+        m.addConstr(x[i] * (1 - x[i]) == 0)
 
     m.optimize()
     print(x.X)
@@ -127,7 +148,7 @@ def test_job_scheduling_with_diff_extractor():
     y = cp.Variable(n)
     t = cp.Variable((n, 2))
     obj = -c.T @ z
-    constraints = [A @ z <= b, y == (1 - z), z >= 0, z <= 1]
+    constraints = [A @ z <= b, y == (1 - z)]
     for i in range(n):
         constraints.append(t[i] == cp.reshape(cp.vstack([z[i], y[i]]), (2,)))
         constraints.append(t[i] @ binary_var_mat @ t[i] == 0)
@@ -167,14 +188,15 @@ def other_test(quad_extractor):
             eq_triples.append((Hcons, ccons, dcons))
 
     res, M = solve_homoegeneous_form_primal_sdp(n, obj_triple,
-                                                ineq_param_lists=ineq_triples, eq_param_lists=eq_triples, verbose=False)
+                                                ineq_param_lists=ineq_triples, eq_param_lists=eq_triples, verbose=True)
     print('SDP result:', res)
 
 
 def main():
     test_job_scheduling_gurobi()
-    test_job_scheduling_SDR()
-    # test_job_scheduling_with_diff_extractor()
+    # test_job_scheduling_gurobi_elementwise()
+    # test_job_scheduling_SDR()
+    test_job_scheduling_with_diff_extractor()
 
 
 if __name__ == '__main__':

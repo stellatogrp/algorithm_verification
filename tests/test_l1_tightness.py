@@ -34,6 +34,7 @@ def test_l1_GD_gurobi():
     u = m.addMVar(n, name='u')  # u represents l1 norm, so u >= 0 implicitly
     m.setObjective(x @ Hobj @ x + cobj @ x + dobj)
     m.addConstr(ones @ u <= R)
+    m.addConstr(x @ I @ x <= 2 * R ** 2)
     m.addConstr(x <= u)
     m.addConstr(-x <= u)
     m.optimize()
@@ -226,7 +227,7 @@ def main():
     test_l1_GD_gurobi()
     # test_SDR_from_extractor()
     # test_SDR_with_extra_quadratics()
-    test_extra_quadratics_gurobi()
+    # test_extra_quadratics_gurobi()
 
 
 if __name__ == '__main__':
