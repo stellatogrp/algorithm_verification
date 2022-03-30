@@ -51,8 +51,8 @@ def form_offcenter_ball_sdp():
 
 def form_quad_obj_sdp():
     n = 3
-    mu = 2
-    L = 20
+    mu = 1
+    L = 10
     R = 1
     gamma = 2 / (mu + L)
     I = np.eye(n)
