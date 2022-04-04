@@ -144,7 +144,7 @@ def test_ISTA_Gurobi():
                   lb=-gp.GRB.INFINITY * np.ones(n))
 
     obj = x @ Hobj @ x + cobj @ x + dobj
-    m.setObjective(obj, GRB.MAXIMIZE)
+    m.setObjective(obj)
 
     for i in range(len(data_constraints)):
         constr = data_constraints[i]
@@ -171,8 +171,8 @@ def test_ISTA_Gurobi():
 
 
 def main():
-    test_ISTA_SDR()
-    # test_ISTA_Gurobi()
+    # test_ISTA_SDR()
+    test_ISTA_Gurobi()
 
 
 if __name__ == '__main__':

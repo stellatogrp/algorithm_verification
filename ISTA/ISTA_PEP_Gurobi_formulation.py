@@ -156,9 +156,9 @@ def ISTA_PEP_N_steps(N):
 
 
 def main():
-    # ISTA_PEP_onestep()
-    N = 2
-    ISTA_PEP_N_steps(N)
+    ISTA_PEP_onestep()
+    # N = 2
+    # ISTA_PEP_N_steps(N)
 
 
 if __name__ == '__main__':

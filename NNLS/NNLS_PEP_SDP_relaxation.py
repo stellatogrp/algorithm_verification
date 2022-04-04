@@ -25,6 +25,42 @@ def form_problem_and_extract():
 
     x0 = cp.Variable(n)
     x1 = cp.Variable(n)
+    y1 = cp.Variable(n)
+
+    obj = .5 * cp.quad_form(x1, A.T @ A) - b.T @ A @ x1 + .5 * b.T @ b
+    constraints = []
+
+    constraints.append(cp.quad_form(x0, I) <= R ** 2)
+    constraints.append(y1 == (I - t * A.T @ A) @ x0 + t * A.T @ b)
+
+    constraints.append(x1 >= 0)
+    constraints.append(x1 >= y1)
+    # for i in range(n):
+    #     constraints.append(x1[i] * x1[i] == x1[i] * y1[i])
+    constraints.append(cp.multiply(x1, x1) == cp.multiply(x1, y1))
+
+    problem = cp.Problem(cp.Minimize(-obj), constraints)
+    quad_extractor = QuadExtractor(problem)
+    return quad_extractor
+
+
+def form_problem_and_extract_unbounded():
+    np.random.seed(0)
+
+    n = 2
+    m = 3
+    t = .05
+    R = 1
+
+    A = np.random.randn(m, n)
+    b = np.random.randn(m)
+    # I = spa.eye(n)
+    I = np.eye(n)
+
+    print(A, b)
+
+    x0 = cp.Variable(n)
+    x1 = cp.Variable(n)
     gamma = cp.Variable(n)
 
     obj = .5 * cp.quad_form(x1, A.T @ A) - b.T @ A @ x1 + .5 * b.T @ b
@@ -33,6 +69,9 @@ def form_problem_and_extract():
     constraints.append(cp.quad_form(x0, I) <= R ** 2)
     constraints.append(-gamma <= 0)
     constraints.append(-x1 <= 0)
+
+    # fake constraints
+    # constraints.append(cp.quad_form(x1, I) <= R ** 2)
 
     constraints.append(x1 - (I - t * A.T @ A) @ x0 - gamma == t * A.T @ b)
     constraints.append(gamma.T @ x1 == 0)
@@ -125,6 +164,7 @@ def test_NNLS_Gurobi():
 
 def main():
     # test_NNLS_Gurobi()
+    # form_problem_and_extract()
     test_NNLS_SDR()
 
 
