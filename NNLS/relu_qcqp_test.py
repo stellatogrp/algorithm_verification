@@ -145,60 +145,6 @@ def test_relu_Gurobi():
     print('x:', np.round(x.X, 4))
 
 
-def test_specific_relu_SDP_n1():
-    P = cp.Variable((3, 3), symmetric=True)
-    np.random.seed(0)
-    c = np.random.randn(1)
-    l = -2
-    u = -1
-
-    obj = c * P[0, 2]
-    constraints = []
-    constraints.append(P[0, 2] >= 0)
-    constraints.append(P[0, 2] >= P[1, 2])
-    constraints.append(P[0, 0] == P[0, 1])
-    constraints.append(P[1, 1] <= (l + u) * P[1, 2] - l * u)
-    constraints.append(P[2, 2] == 1)
-    constraints.append(P >> 0)
-
-    problem = cp.Problem(cp.Maximize(obj), constraints)
-    result = problem.solve(solver=cp.MOSEK, verbose=True)
-    print('c:', c)
-    print(result)
-    print(P.value)
-    
-    
-def test_specific_relu_SDP_n2():
-    print('--------testing n=2--------')
-    n = 2
-    P = cp.Variable((5, 5), symmetric=True)
-    np.random.seed(1)
-    c = np.random.randn(2)
-    l = -2
-    u = -1
-    
-    obj = c.T @ P[0:2, -1]
-    constraints = []
-    constraints.append(P[0:2, -1] >= 0)
-    constraints.append(P[0:2, -1] >= P[2:4, -1])
-
-    constraints.append(P[0, 0] == P[0, 2])
-    constraints.append(P[1, 1] == P[1, 3])
-
-    constraints.append(P[2, 2] <= (l + u) * P[2, 4] - l * u)
-    constraints.append(P[3, 3] <= (l + u) * P[3, 4] - l * u)
-
-    constraints.append(P[-1, -1] == 1)
-    constraints.append(P >> 0)
-
-    problem = cp.Problem(cp.Maximize(obj), constraints)
-    result = problem.solve(solver=cp.MOSEK, verbose=True)
-    print('c:', c)
-    print(result)
-    print(np.round(P.value, 4))
-    print(np.round(np.diag(P.value), 4))
-
-
 def test_specific_relu_SDP_ndim():
     n = 2
     print('--------testing n=%d with general--------' % n)
@@ -232,8 +178,6 @@ def main():
     # test_relu_Gurobi()
     # test_NNLS_Gurobi()
     # test_NNLS_SDR()
-    test_specific_relu_SDP_n1()
-    test_specific_relu_SDP_n2()
     test_specific_relu_SDP_ndim()
 
 
