@@ -222,7 +222,7 @@ def test_PEP_RELU():
 
     print('--------testing n=%d with general--------' % n)
     P = cp.Variable((3 * n + 1, 3 * n + 1), symmetric=True)
-    l = 0
+    l = -1
     u = 1
 
     # P = v v.T , where v = [z y x 1] stack
@@ -239,7 +239,7 @@ def test_PEP_RELU():
     constraints.append(P[0: n, -1] >= P[n: 2 * n, -1])
     constraints.append(cp.diag(P[0: n, 0: n]) == cp.diag(P[0: n, n: 2 * n]))
 
-    # gradient step
+    # gradient step, bounds on both y and yy^T
     constraints.append(P[n: 2 * n, -1] == C @ P[2 * n: 3 * n, -1] + tATb)
     constraints.append(P[n: 2 * n, n: 2 * n]
                        == C @ P[2 * n: 3 * n, 2 * n: 3 * n] @ C.T
@@ -247,17 +247,12 @@ def test_PEP_RELU():
                        + tATb.reshape(n, 1) @ cp.reshape(P[2 * n: 3 * n, -1], (1, n)) @ C.T
                        + np.outer(tATb, tATb))
 
-    # print(C @ cp.reshape(P[2 * n: 3 * n, -1], (n, 1)) @ tATb.reshape(1, n))
-    # print((C @ cp.reshape(P[2 * n: 3 * n, -1], (n, 1)) @ tATb.reshape(1, n)).shape)
-    # print((tATb.reshape(n, 1) @ cp.reshape(P[2 * n: 3 * n, -1], (1, n)) @ C.T).shape)
-    # print(np.outer(tATb, tATb).shape)
-
     problem = cp.Problem(cp.Maximize(obj), constraints)
     result = problem.solve(solver=cp.MOSEK, verbose=True)
     print(result)
     print(np.round(P.value, 4))
 
-    print(C @ np.array([1, 1]) + tATb)
+    # test =
 
 
 def main():
