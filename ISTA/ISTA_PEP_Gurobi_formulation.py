@@ -96,6 +96,10 @@ def ISTA_PEP_onestep():
     print(eval_lasso(A, b, x1.X, lambd))
 
 
+def ISTA_PEP_onestep_SOS_test():
+    pass
+
+
 def ISTA_PEP_N_steps(N):
     np.random.seed(0)
 
