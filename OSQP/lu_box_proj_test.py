@@ -101,18 +101,52 @@ def test_relu_SDR_blocks():
 
 def test_box_proj_SDR():
     print('--------testing SDR--------')
-    n = 6
+    n = 2
     np.random.seed(0)
-    x = np.random.randn(n)
-    print(x)
-    l = -.5
-    u = 1
+    # x = np.random.randn(n)
+    x = np.array([-2, 2]).reshape(n, 1)
+    xxT = np.outer(x, x)
+    print(x, xxT)
+
+    A = np.random.randn(n, n)
+    A = (A + A.T) / 2
+    print("A = \n", A)
+
+    l = -1 * np.ones(n)
+    l = l.reshape(n, 1)
+    u = 1 * np.ones(n)
+    u = u.reshape(n, 1)
+
+    z = cp.Variable((n, 1))  # Define as 2d array to simplify bmat
+    zzT = cp.Variable((n, n), symmetric=True)
+    zyT = cp.Variable((n, n))
+    zxT = cp.Variable((n, n))
+
+    y = cp.Variable((n, 1))
+    yyT = cp.Variable((n, n), symmetric=True)
+    yxT = cp.Variable((n, n))
+
+    obj = cp.Maximize(cp.trace(A @ zzT))
+    P = cp.Variable((3 * n + 1, 3 * n + 1), symmetric=True)
+    constraints = [y >= l, y >= x, cp.diag(yyT - yxT - l @ y.T + l @ x.T) == 0,
+                   z <= u, z <= y, cp.diag(u @ y.T - u @ z.T - zyT + zzT) == 0,
+                   P >> 0]
+
+    constraints += [P == cp.bmat([[zzT, zyT, zxT, z],
+                                  [zyT.T, yyT, yxT, y],
+                                  [zxT.T, yxT.T, xxT, x],
+                                  [z.T, y.T, x.T, np.array([[1]])]])]
+
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve()
+    print("objective = ", res)
+    print("P = \n", np.round(P.value, 4))
 
 
 def main():
-    test_box_proj_gurobi()
-    test_relu_SDR_blocks()
-    # test_box_proj_SDR()
+    # test_box_proj_gurobi()
+    # test_relu_SDR_blocks()
+    test_box_proj_SDR()
 
 
 if __name__ == '__main__':
