@@ -1,12 +1,12 @@
 import numpy as np
 import cvxpy as cp
-import scipy.sparse as spa
+#  import scipy.sparse#   as spa
 import gurobipy as gp
-from qcqp2quad_form.quad_extractor import QuadExtractor
-from cvxpy.constraints import Equality, Inequality, NonNeg, NonPos, Zero
-from quadratic_functions.extended_slemma_sdp import *
-
-from gurobipy import GRB
+#  from qcqp2quad_form.quad_extractor import QuadExtractor
+#  from cvxpy.constraints import Equality, Inequality, NonNeg, NonPos, Zero
+#  from quadratic_functions.extended_slemma_sdp import *
+#
+#  from gurobipy import GRB
 
 
 def test_box_proj_gurobi():
@@ -61,6 +61,7 @@ def test_box_proj_gurobi():
     m.addConstr(t3 @ t4 == 0)
 
     m.optimize()
+    print("")
     print('original x:', np.round(x, 4))
     print('y:', np.round(y.X, 4))
     print('z:', np.round(z.X, 4))
@@ -74,12 +75,12 @@ def test_relu_SDR_blocks():
     # xxT = np.outer(x, x)
     A = np.random.randn(n, n)
     A = (A + A.T) / 2
-    print(A)
+    print("A = \n", A)
 
-    x = cp.Variable(n)
+    x = cp.Variable((n, 1))  # Define as 2d array to simplify bmat
     xxT = cp.Variable((n, n), symmetric=True)
 
-    z = cp.Variable(n)
+    z = cp.Variable((n, 1))  # Define as 2d array to simplify bmat
     zzT = cp.Variable((n, n), symmetric=True)
     zxT = cp.Variable((n, n))
 
@@ -88,19 +89,14 @@ def test_relu_SDR_blocks():
     constraints = [z >= x, z >= 0, cp.diag(zzT) == cp.diag(zxT), P >> 0,
                    cp.sum_squares(x) <= R ** 2, cp.trace(xxT) <= R ** 2]
 
-    # blocks = cp.bmat([[zzT, zxT, z], [zxT.T, xxT, x], [z.T, x.T, 1]])
-    blocks = cp.bmat([[zzT, zxT, cp.reshape(z, (n, 1))],
-                      [zxT.T, xxT, cp.reshape(x, (n, 1))],
-                      # [cp.reshape(z, (1, n)), cp.reshape(x, (1, n)), 1]
-                      ])
-
-    blocks_bottom_row = cp.reshape(cp.hstack([z, x, 1]), (1, 2 * n + 1))
-    constraints.append(P == cp.vstack([blocks, blocks_bottom_row]))
+    constraints += [P == cp.bmat([[zzT, zxT, z],
+                                  [zxT.T, xxT, x],
+                                  [z.T, x.T, np.array([[1]])]])]
 
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
-    print(res)
-    print(np.round(P.value, 4))
+    print("objective = ", res)
+    print("P = \n", np.round(P.value, 4))
 
 
 def test_box_proj_SDR():
