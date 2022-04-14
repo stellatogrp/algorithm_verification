@@ -71,7 +71,7 @@ def form_problem_and_extract_unbounded():
     constraints.append(-x1 <= 0)
 
     # fake constraints
-    # constraints.append(cp.quad_form(x1, I) <= R ** 2)
+    constraints.append(cp.quad_form(x1, I) <= R ** 2)
 
     constraints.append(x1 - (I - t * A.T @ A) @ x0 - gamma == t * A.T @ b)
     constraints.append(gamma.T @ x1 == 0)
@@ -82,7 +82,7 @@ def form_problem_and_extract_unbounded():
 
 
 def test_NNLS_SDR():
-    quad_extractor = form_problem_and_extract()
+    quad_extractor = form_problem_and_extract_unbounded()
     data_objective = quad_extractor.extract_objective()
     data_constraints, data_constr_types = quad_extractor.extract_constraints()
 

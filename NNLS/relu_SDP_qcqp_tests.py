@@ -231,8 +231,9 @@ def test_PEP_RELU():
     constraints = [P >> 0, P[-1, -1] == 1]
 
     # initial bounds
-    constraints.append(cp.diag(P[2 * n: 3 * n, 2 * n: 3 * n]) <= (l + u) * P[2 * n: 3 * n, -1] - l * u)
-    # constraints.append(cp.trace(P[2 * n: 3 * n, 2 * n: 3 * n]) <= R ** 2)
+    # constraints.append(cp.diag(P[2 * n: 3 * n, 2 * n: 3 * n]) <= (l + u) * P[2 * n: 3 * n, -1] - l * u)
+    constraints.append(cp.trace(P[2 * n: 3 * n, 2 * n: 3 * n]) <= R ** 2)
+    constraints.append(cp.sum_squares(P[2 * n: 3 * n, -1]) <= R ** 2)
 
     # relu constraints
     constraints.append(P[0:n, -1] >= 0)
