@@ -1,3 +1,4 @@
+import mosek
 import numpy as np
 import cvxpy as cp
 import gurobipy as gp
@@ -16,19 +17,21 @@ def test_with_cvxpy(n, P, q, A, l, u):
 
 
 def test_osqp_admm_onestep_pep():
-    m = 2
-    n = 3
-    R = 2
+    m = 4
+    n = 5
+    R = 1
     In = np.eye(n)
     Im = np.eye(m)
 
     np.random.seed(0)
+    # minimization objective setup
     Phalf = np.random.randn(n, n)
     P = Phalf @ Phalf.T
     # print(P, np.linalg.eigvals(P))
     q = np.random.randn(n)
     q = q.reshape(n, 1)
 
+    # constraints for minimization obj
     A = np.random.randn(m, n)
     l = -1 * np.ones(m)
     l = l.reshape(m, 1)
@@ -41,11 +44,13 @@ def test_osqp_admm_onestep_pep():
 
     test_with_cvxpy(n, P, q, A, l, u)
 
+    # these blocks don't depend on iteration count
     C = P + sigma * In + rho * A.T @ A
     G = np.block([sigma * In, -A.T, rho * A.T])
     H = np.block([rho * A, Im, -rho * Im])
     J = np.block([A, rho_inv * Im])
 
+    # initial iterates
     x0 = cp.Variable((n, 1))
     y0 = cp.Variable((m, 1))
     z0 = cp.Variable((m, 1))
@@ -63,9 +68,12 @@ def test_osqp_admm_onestep_pep():
                      ])
 
     constraints = [cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
+                   # cp.reshape(cp.diag(x0x0T), (n, 1)) <= 1,
                    y0 == 0, y0y0T == 0,
+                   # cp.sum_squares(y0) <= .1 * R ** 2, cp.trace(y0y0T) <= .1 * R ** 2,
                    z0 == 0, z0z0T == 0]
 
+    # constraints for x^{k+1}
     x1 = cp.Variable((n, 1))
     # y1 = cp.Variable((m, 1))
     # y1y1T = cp.Variable((m, m))
@@ -75,6 +83,7 @@ def test_osqp_admm_onestep_pep():
     constraints.append(C @ x1 == G @ u0 - q)
     constraints.append(C @ x1x1T @ C.T == G @ u0u0T @ G.T - G @ u0 @ q.T - q @ u0.T @ G.T + q @ q.T)
 
+    # constraints for y^{k+1}
     v0 = cp.vstack([x1, y0, z0])
     v0v0T = cp.bmat([[x1x1T, x1y0T, x1z0T],
                      [x1y0T.T, y0y0T, y0z0T],
@@ -84,6 +93,7 @@ def test_osqp_admm_onestep_pep():
     y1 = H @ v0
     y1y1T = H @ v0v0T @ H.T
 
+    # constraints for z^{k+1} i.e. box projection
     wtilde0 = cp.vstack([x1, y1])
     x1y1T = cp.bmat([[x1x1T, x1y0T, x1z0T]]) @ H.T
     wtilde0wtilde0T = cp.bmat([[x1x1T, x1y1T],
@@ -122,27 +132,61 @@ def test_osqp_admm_onestep_pep():
     x1x0T = cp.Variable((n, n))
     constraints.append(C @ x1x0T == sigma * x0x0T - q @ x0.T + rho * A.T @ x0z0T.T - A.T @ x0y0T.T)
 
+    # a few extra variables needed to create the objective
     z1z0T = cp.Variable((m, m))
     y1y0T = cp.Variable((m, m))
-    Z = cp.bmat([[z1z1T, z1z0T],
-                 [z1z0T.T, z0z0T]
+    Z = cp.bmat([[z1z1T, z1z0T, z1],
+                 [z1z0T.T, z0z0T, z0],
+                 [z1.T, z0.T, np.array([[1]])]
                  ])
-    Y = cp.bmat([[y1y1T, y1y0T],
-                 [y1y0T.T, y0y0T]
+    Y = cp.bmat([[y1y1T, y1y0T, y1],
+                 [y1y0T.T, y0y0T, y0],
+                 [y1.T, y0.T, np.array([[1]])]
                  ])
     constraints += [Y >> 0, Z >> 0]
 
-    # A = np.random.randn(n, n)
     obj = cp.Maximize(cp.trace(x1x1T - 2 * x1x0T + x0x0T)
                      + cp.trace(y1y1T - 2 * y1y0T + y0y0T)
                      + cp.trace(z1z1T - 2 * z1z0T + z0z0T))
     prob = cp.Problem(obj, constraints)
     res = prob.solve(solver=cp.MOSEK, verbose=True)
-    print(res)
+    print('sdp result =', res)
+    print('obj norm using vectors values =', np.linalg.norm(x1.value-x0.value) ** 2
+          + np.linalg.norm(y1.value-y0.value) ** 2
+          + np.linalg.norm(z1.value-z0.value) ** 2)
+
+
+def test_osqp_admm_onestep_pep_mult_moving_parts():
+    print('--------solving pep with more moving parts--------')
+    m = 4
+    n = 5
+    R = 1
+    In = np.eye(n)
+    Im = np.eye(m)
+
+    np.random.seed(0)
+    Phalf = np.random.randn(n, n)
+    P = Phalf @ Phalf.T
+    # print(P, np.linalg.eigvals(P))
+    # q = np.random.randn(n)
+    # q = q.reshape(n, 1)
+
+    A = np.random.randn(m, n)
+    l = -1 * np.ones(m)
+    l = l.reshape(m, 1)
+    u = 5 * np.ones(m)
+    u = u.reshape(m, 1)
+
+    sigma = 1e-4
+    rho = 2
+    rho_inv = 1 / rho
+
+    C = np.block([P + sigma * In + rho * A.T @ A, -rho * A.T, A.T, -sigma * In, In])
 
 
 def main():
     test_osqp_admm_onestep_pep()
+    test_osqp_admm_onestep_pep_mult_moving_parts()
 
 
 if __name__ == '__main__':
