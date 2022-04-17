@@ -1,0 +1,149 @@
+import numpy as np
+import cvxpy as cp
+import gurobipy as gp
+
+
+def test_with_cvxpy(n, P, q, A, l, u):
+    print('--------solving the QP with cvxpy--------')
+    x = cp.Variable((n, 1))
+    obj = cp.Minimize(.5 * cp.quad_form(x, P) + q.T @ x)
+    constraints = [l <= A @ x, A @ x <= u]
+
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve()
+    print(res)
+    print('x =\n', np.round(x.value, 4))
+
+
+def test_osqp_admm_onestep_pep():
+    m = 2
+    n = 3
+    R = 2
+    In = np.eye(n)
+    Im = np.eye(m)
+
+    np.random.seed(0)
+    Phalf = np.random.randn(n, n)
+    P = Phalf @ Phalf.T
+    # print(P, np.linalg.eigvals(P))
+    q = np.random.randn(n)
+    q = q.reshape(n, 1)
+
+    A = np.random.randn(m, n)
+    l = -1 * np.ones(m)
+    l = l.reshape(m, 1)
+    u = 5 * np.ones(m)
+    u = u.reshape(m, 1)
+
+    sigma = 1e-4
+    rho = 2
+    rho_inv = 1 / rho
+
+    test_with_cvxpy(n, P, q, A, l, u)
+
+    C = P + sigma * In + rho * A.T @ A
+    G = np.block([sigma * In, -A.T, rho * A.T])
+    H = np.block([rho * A, Im, -rho * Im])
+    J = np.block([A, rho_inv * Im])
+
+    x0 = cp.Variable((n, 1))
+    y0 = cp.Variable((m, 1))
+    z0 = cp.Variable((m, 1))
+
+    u0 = cp.vstack([x0, y0, z0])
+    x0x0T = cp.Variable((n, n))
+    x0y0T = cp.Variable((n, m))
+    x0z0T = cp.Variable((n, m))
+    y0y0T = cp.Variable((m, m))
+    y0z0T = cp.Variable((m, m))
+    z0z0T = cp.Variable((m, m))
+    u0u0T = cp.bmat([[x0x0T, x0y0T, x0z0T],
+                     [x0y0T.T, y0y0T, y0z0T],
+                     [x0z0T.T, y0z0T.T, z0z0T]
+                     ])
+
+    constraints = [cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
+                   y0 == 0, y0y0T == 0,
+                   z0 == 0, z0z0T == 0]
+
+    x1 = cp.Variable((n, 1))
+    # y1 = cp.Variable((m, 1))
+    # y1y1T = cp.Variable((m, m))
+    x1x1T = cp.Variable((n, n))
+    x1y0T = cp.Variable((n, m))
+    x1z0T = cp.Variable((n, m))
+    constraints.append(C @ x1 == G @ u0 - q)
+    constraints.append(C @ x1x1T @ C.T == G @ u0u0T @ G.T - G @ u0 @ q.T - q @ u0.T @ G.T + q @ q.T)
+
+    v0 = cp.vstack([x1, y0, z0])
+    v0v0T = cp.bmat([[x1x1T, x1y0T, x1z0T],
+                     [x1y0T.T, y0y0T, y0z0T],
+                     [x1z0T.T, y0z0T.T, z0z0T]
+                     ])
+
+    y1 = H @ v0
+    y1y1T = H @ v0v0T @ H.T
+
+    wtilde0 = cp.vstack([x1, y1])
+    x1y1T = cp.bmat([[x1x1T, x1y0T, x1z0T]]) @ H.T
+    wtilde0wtilde0T = cp.bmat([[x1x1T, x1y1T],
+                               [x1y1T.T, y1y1T]
+                               ])
+    w0 = J @ wtilde0
+    w0w0T = J @ wtilde0wtilde0T @ J.T
+
+    z1 = cp.Variable((m, 1))
+    alpha1 = cp.Variable((m, 1))
+    z1z1T = cp.Variable((m, m))
+    z1alpha1T = cp.Variable((m, m))
+    z1w0T = cp.Variable((m, m))
+    alpha1alphaT = cp.Variable((m, m))
+    alpha1w0T = cp.Variable((m, m))
+    P1 = cp.bmat([[z1z1T, z1alpha1T, z1w0T, z1],
+                  [z1alpha1T.T, alpha1alphaT, alpha1w0T, alpha1],
+                  [z1w0T.T, alpha1w0T.T, w0w0T, w0],
+                  [z1.T, alpha1.T, w0.T, np.array([[1]])]
+                  ])
+
+    constraints += [alpha1 >= w0, alpha1 >= l,
+                    cp.diag(alpha1alphaT - alpha1w0T - l @ alpha1.T + l @ w0.T) == 0,
+                    z1 <= alpha1, z1 <= u,
+                    cp.diag(u @ alpha1.T - u @ z1.T - z1alpha1T + z1z1T) == 0,
+                    # P1 >> 0, u0u0T >> 0, v0v0T >> 0, wtilde0wtilde0T >> 0
+                    P1 >> 0,
+                    ]
+    constraints += [cp.bmat([[u0u0T, u0],
+                             [u0.T, np.array([[1]])]]) >> 0]
+    constraints += [cp.bmat([[v0v0T, v0],
+                             [v0.T, np.array([[1]])]]) >> 0]
+    constraints += [cp.bmat([[wtilde0wtilde0T, wtilde0],
+                             [wtilde0.T, np.array([[1]])]]) >> 0]
+
+    x1x0T = cp.Variable((n, n))
+    constraints.append(C @ x1x0T == sigma * x0x0T - q @ x0.T + rho * A.T @ x0z0T.T - A.T @ x0y0T.T)
+
+    z1z0T = cp.Variable((m, m))
+    y1y0T = cp.Variable((m, m))
+    Z = cp.bmat([[z1z1T, z1z0T],
+                 [z1z0T.T, z0z0T]
+                 ])
+    Y = cp.bmat([[y1y1T, y1y0T],
+                 [y1y0T.T, y0y0T]
+                 ])
+    constraints += [Y >> 0, Z >> 0]
+
+    # A = np.random.randn(n, n)
+    obj = cp.Maximize(cp.trace(x1x1T - 2 * x1x0T + x0x0T)
+                     + cp.trace(y1y1T - 2 * y1y0T + y0y0T)
+                     + cp.trace(z1z1T - 2 * z1z0T + z0z0T))
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve(solver=cp.MOSEK, verbose=True)
+    print(res)
+
+
+def main():
+    test_osqp_admm_onestep_pep()
+
+
+if __name__ == '__main__':
+    main()
