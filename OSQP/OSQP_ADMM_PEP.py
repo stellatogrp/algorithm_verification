@@ -1,6 +1,7 @@
 import mosek
 import numpy as np
 import cvxpy as cp
+import scipy.sparse as spa
 import gurobipy as gp
 
 
@@ -159,21 +160,24 @@ def test_osqp_admm_onestep_pep():
 
 def test_osqp_admm_onestep_pep_mult_moving_parts():
     print('--------solving pep with more moving parts--------')
-    m = 10
-    n = 20
-    R = 10
-    In = np.eye(n)
-    Zmn = np.zeros((m, n))
-    Im = np.eye(m)
+    m = 5
+    n = 10
+    R = 2
+    In = spa.eye(n)
+    # Zmn = np.zeros((m, n))
+    Zmn = spa.csc_matrix((m, n))
+    Im = spa.eye(m)
 
     np.random.seed(0)
     Phalf = np.random.randn(n, n)
     P = Phalf @ Phalf.T
+    P = spa.csc_matrix(P)
     q_val = np.random.randn(n)
     q_val = q_val.reshape(n, 1)
     # print(q_val)
 
     A = np.random.randn(m, n)
+    A = spa.csc_matrix(A)
     l = -1 * np.ones(m)
     l = l.reshape(m, 1)
     u = 5 * np.ones(m)
@@ -183,9 +187,12 @@ def test_osqp_admm_onestep_pep_mult_moving_parts():
     rho = 2
     rho_inv = 1 / rho
 
-    C = np.block([P + sigma * In + rho * A.T @ A, -rho * A.T, A.T, -sigma * In, In])
-    H = np.block([rho * A, -rho * Im, Im, Zmn, Zmn])
-    J = np.block([A, rho_inv * Im])
+    C = spa.bmat([[P + sigma * In + rho * A.T @ A, -rho * A.T, A.T, -sigma * In, In]])
+    C = spa.csc_matrix(C)
+    H = spa.bmat([[rho * A, -rho * Im, Im, Zmn, Zmn]])
+    H = spa.csc_matrix(H)
+    J = spa.bmat([[A, rho_inv * Im]])
+    J = spa.csc_matrix(J)
 
     # bounds on q
     q = cp.Variable((n, 1))
@@ -306,7 +313,7 @@ def test_osqp_admm_onestep_pep_mult_moving_parts():
 
 
 def main():
-    test_osqp_admm_onestep_pep()
+    # test_osqp_admm_onestep_pep()
     test_osqp_admm_onestep_pep_mult_moving_parts()
 
 
