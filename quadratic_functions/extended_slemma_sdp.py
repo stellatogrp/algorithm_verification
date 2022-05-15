@@ -70,7 +70,7 @@ def solve_full_extended_slemma_dual_sdp(n, obj_param_list, ineq_param_lists=None
     return result, M.value
 
 
-def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None):
+def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=None, eq_param_lists=None, verbose=True):
     '''
     Consider the SDP:
         min Tr(H0 @ X) + c0.T @ x + d0
@@ -117,8 +117,9 @@ def solve_full_extended_slemma_primal_sdp(n, obj_param_list, ineq_param_lists=No
                 constraints.append(cj @ x + dj == 0)
 
     problem = cp.Problem(cp.Minimize(obj), constraints)
-    result = problem.solve(solver=cp.MOSEK, verbose=True)
-    print('primal sdp result', result)
+    result = problem.solve(solver=cp.MOSEK, verbose=verbose)
+    if verbose:
+        print('primal sdp result', result)
 
     return result, N.value
 
