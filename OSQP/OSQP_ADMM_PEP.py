@@ -18,9 +18,9 @@ def test_with_cvxpy(n, P, q, A, l, u):
 
 
 def test_osqp_admm_onestep_pep():
-    m = 10
-    n = 20
-    R = 10
+    m = 5
+    n = 3
+    R = 2
     In = np.eye(n)
     Im = np.eye(m)
 
@@ -147,9 +147,9 @@ def test_osqp_admm_onestep_pep():
                  ])
     constraints += [Y >> 0, Z >> 0]
 
-    obj = cp.Maximize(cp.trace(x1x1T - 2 * x1x0T + x0x0T)
-                     + cp.trace(y1y1T - 2 * y1y0T + y0y0T)
-                     + cp.trace(z1z1T - 2 * z1z0T + z0z0T))
+    obj = cp.Maximize(cp.trace(x1x1T - 2 * x1x0T + x0x0T))
+                     # + cp.trace(y1y1T - 2 * y1y0T + y0y0T)
+                     # + cp.trace(z1z1T - 2 * z1z0T + z0z0T))
     prob = cp.Problem(obj, constraints)
     res = prob.solve(solver=cp.MOSEK, verbose=True)
     print('sdp result =', res)
@@ -161,7 +161,7 @@ def test_osqp_admm_onestep_pep():
 def test_osqp_admm_onestep_pep_mult_moving_parts():
     print('--------solving pep with more moving parts--------')
     m = 5
-    n = 10
+    n = 3
     R = 2
     In = spa.eye(n)
     # Zmn = np.zeros((m, n))
@@ -244,8 +244,8 @@ def test_osqp_admm_onestep_pep_mult_moving_parts():
                    y0 == 0, y0y0T == 0,
                    # cp.sum_squares(y0) <= .1 * R ** 2, cp.trace(y0y0T) <= .1 * R ** 2,
                    z0 == 0, z0z0T == 0,
-                   q == q_val, qqT == np.outer(q_val, q_val),
-                   # cp.sum_squares(q) <= .1 * R ** 2, cp.trace(qqT) <= .1 * R ** 2
+                   # q == q_val, qqT == np.outer(q_val, q_val),
+                   cp.sum_squares(q) <= .2 * R ** 2, cp.trace(qqT) <= .2 * R ** 2
                    ]
 
     # constraints to create x1

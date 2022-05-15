@@ -1,5 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams.update({
+    "text.usetex": True,
+    "font.family": "sans-serif",   # This is needed only in the slides
+    "font.sans-serif": ["Helvetica Neue"],   # This is needed only in the slides
+    "font.size": 12,   # In the paper you can put 11 or 12
+    })
 from PEPit import PEP
 from PEPit.functions import SmoothStronglyConvexFunction
 from quadratic_functions.extended_slemma_sdp import *
@@ -20,32 +26,37 @@ def main():
     P = np.array([[mu, 0], [0, L]])
     epsilon = .1
 
-    np.random.seed(1)
+    seed = 1
+    np.random.seed(seed)
     initial_point = generate_initial_point(n)
 
-    R_vals = np.array([1, 2, 3, 4, 5])
+    # R_vals = np.array([1, 2, 3, 4, 5])
+    R_vals = np.array([1, 5, 10, 20, 25, 35, 40, 50, 60, 75, 80, 100])
     pepit_vals = test_PEPit_vals(mu, L, gamma, R_vals + epsilon)
     off_center_vals = test_off_center_vals(n, P, gamma, epsilon, initial_point, R_vals)
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 4))
 
-    plt.plot(R_vals, pepit_vals, 'go', label='PEPit')
-    plt.plot(R_vals, off_center_vals, 'ro', label='off center')
+    plt.plot(R_vals, pepit_vals, 'g', label='origin centered initial region via PEPit')
+    plt.plot(R_vals, off_center_vals, 'r', label='non-origin centered initial region')
 
-    plt.title(f'x0 = {np.round(initial_point, 3)}')
-    plt.xlabel('R')
-    plt.ylabel('f(x^N) - f(x^\star)')
+    plt.title(f'$d= ${np.round(initial_point, 3)}')
+    plt.xlabel('$r$')
+    plt.ylabel('maximum $|| x^1 - x^0 ||_2^2$')
+    plt.yscale('log')
 
     plt.legend()
 
     plt.show()
+    fname = 'images/GD_pepitcomp' + str(seed) + '.pdf'
+    plt.savefig(fname)
 
 
 def test_PEPit_vals(mu, L, gamma, R_vals, N=1):
     pepit_tau_vals = []
     for R in R_vals:
         problem = PEP()
-        func = problem.declare_function(SmoothStronglyConvexFunction, param={'L': L, 'mu': mu})
+        func = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
 
         # Start by defining its unique optimal point xs = x_* and corresponding function value fs = f_*
         xs = func.stationary_point()
@@ -59,11 +70,15 @@ def test_PEPit_vals(mu, L, gamma, R_vals, N=1):
 
         # Run n steps of the GD method
         x = x0
+        x_vals = [x0]
         for _ in range(N):
             x = x - gamma * func.gradient(x)
+            x_vals.append(x)
 
         # Set the performance metric to the function values accuracy
-        problem.set_performance_metric(func.value(x) - fs)
+        print(len(x_vals))
+        # problem.set_performance_metric(func.value(x) - fs)
+        problem.set_performance_metric((x_vals[N] - x_vals[N-1]) ** 2)
 
         # Solve the PEP
         pepit_verbose = 0
@@ -77,7 +92,8 @@ def test_PEPit_vals(mu, L, gamma, R_vals, N=1):
 def test_off_center_vals(n, P, gamma, epsilon, initial_point, R_vals):
     off_center_point_vals = []
 
-    Hobj = .5 * (-(gamma ** 2) * P @ P @ P + 2 * gamma * P @ P - P)
+    # Hobj = .5 * (-(gamma ** 2) * P @ P @ P + 2 * gamma * P @ P - P)
+    Hobj = -(gamma ** 2) * P.T @ P
     cobj = np.zeros(n)
     dobj = 0
 
