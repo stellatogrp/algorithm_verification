@@ -10,6 +10,8 @@ class SDPSolver(Solver):
 
     def solve(self):
         # Create SDP relaxation and solve
+        raise NotImplementedError
 
     def canonicalize(self):
         # Iterate through steps and canonicalize them
+        raise NotImplementedError
