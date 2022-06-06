@@ -1,9 +1,10 @@
 from certification_problem.variables.variable import Variable
 from certification_problem.variables.iterate import Iterate
 from certification_problem.variables.parameter import Parameter
+from certification_problem.algorithm_steps.step import Step
 
 
-class BlockStep(object):
+class BlockStep(Step):
 
     """Docstring for LinearStep. """
 
@@ -30,14 +31,19 @@ class BlockStep(object):
         list_str = '['
         for x in self.list_x:
             list_str += f'{x.name}, '
+        list_str = list_str[:-2]
         list_str += ']'
         return f'{self.u.name} = BLOCKSTEP({list_str})'
 
+    def get_output_var(self):
+        return self.u
 
-x1 = Iterate(5, 'x1')
-x2 = Iterate(3, 'x2')
-x3 = Iterate(4, 'x3')
-b = Parameter(1, 'b')
-y = Iterate(13, 'y')
-step = BlockStep(y, [x1, x2, x3, b])
-print(step)
+
+# x1 = Iterate(5, 'x1')
+# x2 = Iterate(3, 'x2')
+# x3 = Iterate(4, 'x3')
+# b = Parameter(1, 'b')
+# y = Iterate(13, 'y')
+# step = BlockStep(y, [x1, x2, x3, b])
+# print(step)
+# print(type(step) == BlockStep)

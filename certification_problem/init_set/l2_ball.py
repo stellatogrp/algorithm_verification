@@ -1,9 +1,9 @@
-from init_set import InitSet
+from certification_problem.init_set.init_set import InitSet
 
 
 class L2BallSet(InitSet):
 
-    def __init__(self, x, c, r):
+    def __init__(self, x, c, r=1):
         super().__init__(x)
         self.c = c
         self.r = r

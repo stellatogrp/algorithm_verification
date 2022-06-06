@@ -5,7 +5,7 @@ class NonNegProjStep(object):
 
     """Docstring for NonNegStep. """
 
-    def __init__(self, x: Iterate, y: Iterate):
+    def __init__(self, y: Iterate, x: Iterate):
         """Step representing y = (x)_+
         """
         self.x = x
@@ -18,6 +18,9 @@ class NonNegProjStep(object):
 
     def __str__(self):
         return f'{self.y.name} = NONNEG_PROJ({self.x.name})'
+
+    def get_output_var(self):
+        return self.y
 
     #  def apply(self, x):
     #      return intermediate

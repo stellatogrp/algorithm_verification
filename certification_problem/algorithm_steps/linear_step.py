@@ -1,11 +1,12 @@
 from certification_problem.variables.iterate import Iterate
+from certification_problem.algorithm_steps.step import Step
 
 
-class LinearStep(object):
+class LinearStep(Step):
 
     """Docstring for LinearStep. """
 
-    def __init__(self, A, x: Iterate, y: Iterate):
+    def __init__(self, y: Iterate, A, x: Iterate):
         """Step representing y = Ax
 
         Args:
@@ -24,7 +25,11 @@ class LinearStep(object):
             raise AssertionError('iterate dimension does not match LHS of matrix')
 
     def __str__(self):
-        return f'{self.y.name} = LINSTEP({self.x.name}) with matrix A = {self.A}'
+        # return f'{self.y.name} = LINSTEP({self.x.name}) with matrix A = {self.A}'
+        return f'{self.y.name} = LINSTEP({self.x.name})'
+
+    def get_output_var(self):
+        return self.y
 
     #  def apply(self, x):
     #      return intermediate

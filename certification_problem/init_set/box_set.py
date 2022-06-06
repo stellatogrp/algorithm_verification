@@ -1,4 +1,4 @@
-from init_set import InitSet
+from certification_problem.init_set.init_set import InitSet
 
 
 class BoxSet(InitSet):

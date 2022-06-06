@@ -5,6 +5,6 @@ class Iterate(Variable):
 
     """Docstring for Iterate. """
 
-    def __init__(self, n, name):
-        super().__init__(n, name)
+    def __init__(self, n, name='-'):
+        super().__init__(n, name=name)
         self.depend_on_iter = True
