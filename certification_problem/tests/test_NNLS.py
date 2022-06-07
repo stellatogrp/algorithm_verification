@@ -9,6 +9,7 @@ from certification_problem.algorithm_steps.linear_step import LinearStep
 from certification_problem.algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from certification_problem.init_set.box_set import BoxSet
 from certification_problem.init_set.l2_ball import L2BallSet
+from certification_problem.objectives.convergence_residual import ConvergenceResidual
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     ATA = A.T @ A
+    print(A)
 
     t = .05
 
@@ -45,8 +47,11 @@ def main():
     xset = L2BallSet(x, np.zeros(n), r=r)
     bset = BoxSet(b, b_l, b_u)
 
-    CP = CertificationProblem(N, [xset], [bset], None, steps)
-    CP.print_cp()
+    obj = ConvergenceResidual(x)
+
+    CP = CertificationProblem(N, [xset], [bset], obj, steps)
+    # CP.print_cp()
+    CP.solve()
 
 
 if __name__ == '__main__':

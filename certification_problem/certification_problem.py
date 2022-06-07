@@ -1,4 +1,5 @@
 import certification_problem.settings as s
+from certification_problem.solvers.sdp_solver.sdp_solver import SDPSolver
 
 
 class CertificationProblem(object):
@@ -12,14 +13,16 @@ class CertificationProblem(object):
         self.init_sets = init_sets
         # parameter set
         self.parameter_sets = parameter_sets
-        # objective
-        self.objective = objective
         # algorithm
         self.algorithm = algorithm
+        # objective
+        self.objective = objective
 
-    def solve(solver=s.DEFAULT):
+    def solve(self, solver_type=s.DEFAULT):
         # Define and solve the problem
-        pass
+        if solver_type == s.SDP:
+            solver = SDPSolver(self)
+            solver.canonicalize()
 
     def print_cp(self):
         print(f'{self.N} steps of algorithm')
@@ -36,5 +39,14 @@ class CertificationProblem(object):
         for step in self.algorithm:
             print(step)
 
-        # print('----Objective----')
-        # print(self.objective)
+        print('----Objective----')
+        print(self.objective)
+
+    def get_parameter_sets(self):
+        return self.parameter_sets
+
+    def get_init_sets(self):
+        return self.init_sets
+
+    def get_algorithm_steps(self):
+        return self.algorithm

@@ -5,3 +5,9 @@ class Variable(object):
     def __init__(self, n, name='-'):
         self.dim = n
         self.name = name
+
+    def get_name(self):
+        return self.name
+
+    def get_dim(self):
+        return self.dim

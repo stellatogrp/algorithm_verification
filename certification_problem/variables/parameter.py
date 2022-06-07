@@ -8,3 +8,6 @@ class Parameter(Variable):
     def __init__(self, n, name='-'):
         super().__init__(n, name=name)
         self.depend_on_iter = False
+
+    def __repr__(self):
+        return f'PARAMETER({self.name})'

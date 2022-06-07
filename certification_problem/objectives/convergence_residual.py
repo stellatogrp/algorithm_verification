@@ -8,4 +8,4 @@ class ConvergenceResidual(object):
         self.x = x
 
     def __str__(self):
-        return f'objective: CONVERGENCE_RESIDUAL({self.x.name})'
+        return f'OBJ: CONVERGENCE_RESIDUAL({self.x.name})'

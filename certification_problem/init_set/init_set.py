@@ -9,5 +9,8 @@ class InitSet(object):
         """TODO: to be defined."""
         self.x = x
 
+    def get_iterate(self):
+        return self.x
+
     def sdr_canonicalizer(self):
         raise NotImplementedError
