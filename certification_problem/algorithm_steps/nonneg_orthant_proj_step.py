@@ -22,5 +22,8 @@ class NonNegProjStep(object):
     def get_output_var(self):
         return self.y
 
+    def get_input_var(self):
+        return self.x
+
     #  def apply(self, x):
     #      return intermediate

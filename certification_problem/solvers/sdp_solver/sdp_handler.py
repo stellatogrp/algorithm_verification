@@ -1,4 +1,12 @@
 import cvxpy as cp
+from certification_problem.algorithm_steps.linear_step import LinearStep
+from certification_problem.algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from certification_problem.algorithm_steps.block_step import BlockStep
+from certification_problem.solvers.sdp_solver.step_canonicalizers.linear_step import linear_step_canon
+from certification_problem.solvers.sdp_solver.step_canonicalizers.nonneg_orthant_proj_step import nonneg_orthant_proj_canon
+from certification_problem.solvers.sdp_solver.step_canonicalizers.block_step import block_step_canon
+from certification_problem.solvers.sdp_solver.set_canonicalizers.l2_ball import l2_ball_canon
+from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
 
 
 class SDPHandler(object):
@@ -45,22 +53,61 @@ class SDPHandler(object):
             self.iteration_handlers.append(SingleIterationHandler(k, steps, self.iterate_list, self.param_list))
 
     def canonicalize_initial_sets(self):
-        pass
+        for init_set in self.CP.get_init_sets():
+            # TODO add other sets
+            constraints = l2_ball_canon(init_set, self.iteration_handlers[0])
+            self.sdp_constraints += constraints
 
     def canonicalize_parameter_sets(self):
-        pass
+        # TODO add other sets
+        for param_set in self.CP.get_parameter_sets():
+            r = param_set.r
+            param = param_set.get_iterate()
+            b = self.sdp_param_vars[param]
+            bbT = self.sdp_param_outerproduct_vars[param]
+            self.sdp_constraints += [
+                cp.sum_squares(b) <= r ** 2, cp.trace(bbT) <= r ** 2,
+            ]
 
     def canonicalize_steps(self):
-        pass
+        steps = self.CP.get_algorithm_steps()
+        for k in range(1, self.N + 1):
+            curr = self.iteration_handlers[k]
+            prev = self.iteration_handlers[k - 1]
+            for step in steps:
+                # TODO add other steps
+                if type(step) == LinearStep:
+                    constraints = linear_step_canon(step, curr, prev, self.iterate_to_id_map)
+                    self.sdp_constraints += constraints
+                if type(step) == NonNegProjStep:
+                    constraints = nonneg_orthant_proj_canon(step, curr, prev, self.iterate_to_id_map)
+                    self.sdp_constraints += constraints
+                if type(step) == BlockStep:
+                    constraints = block_step_canon(step, curr, prev, self.iterate_to_id_map,
+                                                   self.sdp_param_vars, self.sdp_param_outerproduct_vars)
+                    self.sdp_constraints += constraints
 
-    def canonicalize_obejective(self):
-        pass
+    def canonicalize_objective(self):
+        obj = self.CP.objective
+        # print(obj)
+        sdp_obj, constraints = conv_resid_canon(obj, self.iteration_handlers[self.N], self.iteration_handlers[self.N - 1])
+        self.sdp_obj += sdp_obj
+        self.sdp_constraints += constraints
 
     def canonicalize(self):
         self.create_iterate_id_maps()
         self.compute_sdp_param_vars()
         self.create_iteration_handlers()
+        self.canonicalize_initial_sets()
+        self.canonicalize_parameter_sets()
         self.canonicalize_steps()
+        self.canonicalize_objective()
+        # print(len(self.sdp_constraints))
+
+    def solve(self):
+        prob = cp.Problem(cp.Maximize(self.sdp_obj), self.sdp_constraints)
+        res = prob.solve()
+        print(res)
 
 
 class SingleIterationHandler(object):

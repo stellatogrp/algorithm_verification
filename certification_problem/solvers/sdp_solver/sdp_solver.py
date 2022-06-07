@@ -14,9 +14,10 @@ class SDPSolver(Solver):
 
     def solve(self):
         # Create SDP relaxation and solve
-        raise NotImplementedError
+        self.handler.solve()
 
     def canonicalize(self):
         # Iterate through steps and canonicalize them
         handler = SDPHandler(self.CP)
+        self.handler = handler
         handler.canonicalize()

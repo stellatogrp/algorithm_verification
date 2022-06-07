@@ -31,5 +31,11 @@ class LinearStep(Step):
     def get_output_var(self):
         return self.y
 
+    def get_rhs_var(self):
+        return self.x
+
+    def get_matrix(self):
+        return self.A
+
     #  def apply(self, x):
     #      return intermediate

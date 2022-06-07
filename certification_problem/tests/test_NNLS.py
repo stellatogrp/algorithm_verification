@@ -45,7 +45,8 @@ def main():
     # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
 
     xset = L2BallSet(x, np.zeros(n), r=r)
-    bset = BoxSet(b, b_l, b_u)
+    # bset = BoxSet(b, b_l, b_u)
+    bset = L2BallSet(b, np.zeros(m), r=r)
 
     obj = ConvergenceResidual(x)
 

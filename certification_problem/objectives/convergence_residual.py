@@ -9,3 +9,6 @@ class ConvergenceResidual(object):
 
     def __str__(self):
         return f'OBJ: CONVERGENCE_RESIDUAL({self.x.name})'
+
+    def get_iterate(self):
+        return self.x

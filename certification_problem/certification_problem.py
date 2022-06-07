@@ -23,6 +23,7 @@ class CertificationProblem(object):
         if solver_type == s.SDP:
             solver = SDPSolver(self)
             solver.canonicalize()
+            solver.solve()
 
     def print_cp(self):
         print(f'{self.N} steps of algorithm')
