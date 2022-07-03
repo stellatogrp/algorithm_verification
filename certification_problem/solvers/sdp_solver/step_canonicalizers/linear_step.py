@@ -5,7 +5,7 @@ import numpy as np
 from certification_problem.algorithm_steps.block_step import BlockStep
 
 
-def linear_step_canon(steps, i, curr, prev, iter_id_map, iter_type_map, param_vars, param_outerproduct_vars):
+def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
     prev_step = steps[i-1]
     u = step.get_rhs_var()

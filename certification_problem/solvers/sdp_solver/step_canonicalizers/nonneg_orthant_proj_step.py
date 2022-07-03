@@ -4,7 +4,7 @@ import numpy as np
 from certification_problem.algorithm_steps.linear_step import LinearStep
 
 
-def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, iter_type_map):
+def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
     prev_step = steps[i-1]
 
@@ -35,7 +35,7 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, iter_type_map):
         u_var = curr.iterate_vars[u]
         uuT_var = curr.iterate_outerproduct_vars[u]
         block_vars = block_step.list_x
-        print(block_vars)
+        # print(block_vars)
         yuT_var = curr.iterate_cross_vars[y][u]
         yuT_blocks = []
         for var in block_vars:
