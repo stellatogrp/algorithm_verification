@@ -5,6 +5,7 @@ class Variable(object):
     def __init__(self, n, name='-'):
         self.dim = n
         self.name = name
+        self.is_param = False
 
     def get_name(self):
         return self.name

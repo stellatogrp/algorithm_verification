@@ -20,6 +20,7 @@ class SDPHandler(object):
         self.sdp_param_outerproduct_vars = {}
         self.iterate_to_id_map = {}
         self.id_to_iterate_map = {}
+        self.iterate_to_type_map = {}
         self.iteration_handlers = []
         self.sdp_constraints = []
         self.sdp_obj = 0
@@ -42,7 +43,7 @@ class SDPHandler(object):
             param_var = p.get_iterate()
             n = param_var.get_dim()
             self.sdp_param_vars[param_var] = cp.Variable((n, 1))
-            self.sdp_param_outerproduct_vars[param_var] = cp.Variable((n, n))
+            self.sdp_param_outerproduct_vars[param_var] = cp.Variable((n, n), symmetric=True)
             self.param_list.append(param_var)
         # print(self.sdp_param_outerproduct_vars)
         # print(self.param_list)
@@ -60,6 +61,7 @@ class SDPHandler(object):
 
     def canonicalize_parameter_sets(self):
         # TODO add other sets
+        # TODO add cross terms with multiple params
         for param_set in self.CP.get_parameter_sets():
             r = param_set.r
             param = param_set.get_iterate()
@@ -74,16 +76,22 @@ class SDPHandler(object):
         for k in range(1, self.N + 1):
             curr = self.iteration_handlers[k]
             prev = self.iteration_handlers[k - 1]
-            for step in steps:
+            for i, step in enumerate(steps):
                 # TODO add other steps
+                prev_step = steps[i-1]
+                output_var = step.get_output_var()
+                self.iterate_to_type_map[output_var] = type(step)
                 if type(step) == LinearStep:
-                    constraints = linear_step_canon(step, curr, prev, self.iterate_to_id_map)
+                    constraints = linear_step_canon(steps, i, curr, prev, self.iterate_to_id_map,
+                                                    self.iterate_to_type_map,
+                                                    self.sdp_param_vars, self.sdp_param_outerproduct_vars)
                     self.sdp_constraints += constraints
                 if type(step) == NonNegProjStep:
-                    constraints = nonneg_orthant_proj_canon(step, curr, prev, self.iterate_to_id_map)
+                    constraints = nonneg_orthant_proj_canon(steps, i, curr, prev, self.iterate_to_id_map,
+                                                            self.iterate_to_type_map)
                     self.sdp_constraints += constraints
                 if type(step) == BlockStep:
-                    constraints = block_step_canon(step, curr, prev, self.iterate_to_id_map,
+                    constraints = block_step_canon(steps, i, curr, prev, self.iterate_to_id_map,
                                                    self.sdp_param_vars, self.sdp_param_outerproduct_vars)
                     self.sdp_constraints += constraints
 
@@ -130,7 +138,7 @@ class SingleIterationHandler(object):
         for iterate in self.iterates:
             n = iterate.get_dim()
             self.iterate_vars[iterate] = cp.Variable((n, 1))
-            self.iterate_outerproduct_vars[iterate] = cp.Variable((n, n))
+            self.iterate_outerproduct_vars[iterate] = cp.Variable((n, n), symmetric=True)
 
     def create_iterate_param_vars(self):
         for iterate in self.iterates:
@@ -145,6 +153,9 @@ class SingleIterationHandler(object):
         for iter1 in self.iterates:
             n = iter1.get_dim()
             cross_dict = {}
+            # Note that the same iterates are also included because
+            # self.iterate_cross_vars[x][x] -> (x^k)(x^{k+1})^T (the previous iteration)
+            # To get (x^k)(x^K)^T, use self.iterate_outerproduct_vars
             for iter2 in self.iterates:
                 m = iter2.get_dim()
                 cross_dict[iter2] = cp.Variable((n, m))

@@ -14,8 +14,9 @@ from certification_problem.objectives.convergence_residual import ConvergenceRes
 
 def main():
     N = 1
-    m = 5
-    n = 3
+    m = 4
+    n = 2
+    k = 3
     r = 1
 
     In = spa.eye(n)
@@ -33,20 +34,29 @@ def main():
     b_l = 1
     b_u = 3
 
-    u = Iterate(n + m, name='u')
+    u = Iterate(n + n + k, name='u')
+    w = Iterate(n + m + k, name='w')
     y = Iterate(n, name='y')
     x = Iterate(n, name='x')
-    b = Parameter(m, name='b')
+    b = Parameter(k, name='b')
 
-    step1 = BlockStep(u, [x, b])
+    # step1 = BlockStep(u, [x, b])
+    # step2 = LinearStep(y, C, u)
+    # step3 = NonNegProjStep(x, y)
+    # steps = [step1, step2, step3]
+    # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
+    step1 = BlockStep(u, [x, y, b])
+
+    C = np.ones((n, n + n + k))
     step2 = LinearStep(y, C, u)
     step3 = NonNegProjStep(x, y)
-    steps = [step1, step2, step3]
-    # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
+
+    # steps = [step1, step2, step3, step4]
+    steps = [step3, step2, step1]
 
     xset = L2BallSet(x, np.zeros(n), r=r)
     # bset = BoxSet(b, b_l, b_u)
-    bset = L2BallSet(b, np.zeros(m), r=r)
+    bset = L2BallSet(b, np.zeros(k), r=r)
 
     obj = ConvergenceResidual(x)
 

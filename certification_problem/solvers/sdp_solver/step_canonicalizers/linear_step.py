@@ -2,8 +2,12 @@
 import cvxpy as cp
 import numpy as np
 
+from certification_problem.algorithm_steps.block_step import BlockStep
 
-def linear_step_canon(step, curr, prev, iter_id_map):
+
+def linear_step_canon(steps, i, curr, prev, iter_id_map, iter_type_map, param_vars, param_outerproduct_vars):
+    step = steps[i]
+    prev_step = steps[i-1]
     u = step.get_rhs_var()
     y = step.get_output_var()
     A = step.get_matrix()
@@ -13,6 +17,21 @@ def linear_step_canon(step, curr, prev, iter_id_map):
     uuT_var = curr.iterate_outerproduct_vars[u]
     yuT_var = curr.iterate_cross_vars[y][u]
     constraints = [y_var == A @ u_var, yyT_var == A @ uuT_var @ A.T, yuT_var == A @ uuT_var]
+
+    yuT_blocks = []
+    if type(prev_step) == BlockStep:  # this should always be true
+        block_vars = prev_step.list_x
+        for var in block_vars:
+            if var.is_param:
+                yuT_blocks.append(curr.iterate_param_vars[y][var])
+            else:
+                yuT_blocks.append(curr.iterate_cross_vars[y][var])
+        constraints += [
+            yuT_var == cp.bmat([
+                yuT_blocks
+            ])
+        ]
+
     constraints += [
         cp.bmat([
             [yyT_var, yuT_var, y_var],

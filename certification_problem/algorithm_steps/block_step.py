@@ -18,6 +18,7 @@ class BlockStep(Step):
         """
         self.u = u
         self.list_x = list_x
+        self.block_size = len(list_x)
         self._test_dims()
 
     def _test_dims(self):
@@ -37,6 +38,9 @@ class BlockStep(Step):
 
     def get_output_var(self):
         return self.u
+
+    def get_block_size(self):
+        return self.block_size
 
 
 # x1 = Iterate(5, 'x1')
