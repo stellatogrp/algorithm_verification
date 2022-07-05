@@ -1,7 +1,7 @@
 import cvxpy as cp
 import numpy as np
 
-from certification_problem.algorithm_steps.linear_step import LinearStep
+from certification_problem.basic_algorithm_steps.linear_step import LinearStep
 
 
 def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):

@@ -1,6 +1,6 @@
 import cvxpy as cp
 
-from certification_problem.solvers.sdp_solver.set_canonicalizers.l2_ball import l2_ball_canon
+from certification_problem.solvers.sdp_solver.set_canonicalizers.centered_l2_ball_set import centered_l2_ball_canon
 from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
 from certification_problem.solvers.sdp_solver import SET_CANON_METHODS, STEP_CANON_METHODS
 

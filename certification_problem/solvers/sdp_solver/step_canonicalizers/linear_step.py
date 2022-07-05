@@ -2,7 +2,7 @@
 import cvxpy as cp
 import numpy as np
 
-from certification_problem.algorithm_steps.block_step import BlockStep
+from certification_problem.basic_algorithm_steps.block_step import BlockStep
 
 
 def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
