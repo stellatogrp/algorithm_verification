@@ -1,7 +1,7 @@
 from certification_problem.variables.variable import Variable
 from certification_problem.variables.iterate import Iterate
 from certification_problem.variables.parameter import Parameter
-from certification_problem.algorithm_steps.step import Step
+from certification_problem.basic_algorithm_steps.step import Step
 
 
 class BlockStep(Step):

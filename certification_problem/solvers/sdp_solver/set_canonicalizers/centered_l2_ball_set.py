@@ -2,8 +2,7 @@ import cvxpy as cp
 import numpy as np
 
 
-def l2_ball_canon(init_set, handler):
-    # TODO: actually incorporate the center
+def centered_l2_ball_canon(init_set, handler):
     x = init_set.get_iterate()
     r = init_set.r
     x_var = handler.iterate_vars[x]

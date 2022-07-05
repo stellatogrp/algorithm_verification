@@ -1,13 +1,13 @@
 from certification_problem.variables.iterate import Iterate
-from certification_problem.algorithm_steps.step import Step
+from certification_problem.basic_algorithm_steps.step import Step
 
 
 class LinearStep(Step):
 
     """Docstring for LinearStep. """
 
-    def __init__(self, D, y: Iterate, A, x: Iterate, b):
-        """Step representing Dy = Ax + b
+    def __init__(self, y: Iterate, x: Iterate, D=None, A=None, b=None):
+        """Step representing y = Ax
 
         Args:
             A (TODO): TODO
@@ -28,7 +28,7 @@ class LinearStep(Step):
 
     def __str__(self):
         # return f'{self.y.name} = LINSTEP({self.x.name}) with matrix A = {self.A}'
-        return f'{self.y.name} = GENLINSTEP({self.x.name})'
+        return f'{self.y.name} = LINSTEP({self.x.name})'
 
     def get_output_var(self):
         return self.y
