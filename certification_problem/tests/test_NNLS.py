@@ -29,6 +29,8 @@ def main():
     t = .05
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
+    D = spa.eye(n, n)
+    b_const = spa.csc_matrix(np.zeros((n, 1)))
 
     b_l = 1
     b_u = 3
@@ -39,7 +41,7 @@ def main():
     b = Parameter(m, name='b')
 
     step1 = BlockStep(u, [x, b])
-    step2 = LinearStep(y, C, u)
+    step2 = LinearStep(y, u, A=C, D=D, b=b_const)
     step3 = NonNegProjStep(x, y)
     steps = [step1, step2, step3]
     # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)

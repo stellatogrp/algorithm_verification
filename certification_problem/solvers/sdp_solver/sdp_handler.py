@@ -51,7 +51,6 @@ class SDPHandler(object):
 
     def canonicalize_initial_sets(self):
         for init_set in self.CP.get_init_sets():
-            # TODO add other sets
             canon_method = SET_CANON_METHODS[type(init_set)]
             # constraints = l2_ball_canon(init_set, self.iteration_handlers[0])
             constraints = canon_method(init_set, self.iteration_handlers[0])
@@ -61,13 +60,19 @@ class SDPHandler(object):
         # TODO add other sets
         # TODO add cross terms with multiple params
         for param_set in self.CP.get_parameter_sets():
-            r = param_set.r
-            param = param_set.get_iterate()
-            b = self.sdp_param_vars[param]
-            bbT = self.sdp_param_outerproduct_vars[param]
-            self.sdp_constraints += [
-                cp.sum_squares(b) <= r ** 2, cp.trace(bbT) <= r ** 2,
-            ]
+            # r = param_set.r
+            # param = param_set.get_iterate()
+            # b = self.sdp_param_vars[param]
+            # bbT = self.sdp_param_outerproduct_vars[param]
+            # self.sdp_constraints += [
+            #     cp.sum_squares(b) <= r ** 2, cp.trace(bbT) <= r ** 2,
+            # ]
+
+            # NOTE this is a massive placeholder
+            param_handler = ParameterHandler(self.sdp_param_vars, self.sdp_param_outerproduct_vars)
+            canon_method = SET_CANON_METHODS[type(param_set)]
+            constraints = canon_method(param_set, param_handler)
+            self.sdp_constraints += constraints
 
     def canonicalize_steps(self):
         steps = self.CP.get_algorithm_steps()
@@ -75,7 +80,6 @@ class SDPHandler(object):
             curr = self.iteration_handlers[k]
             prev = self.iteration_handlers[k - 1]
             for i, step in enumerate(steps):
-                # TODO add other steps
                 prev_step = steps[i-1]
                 output_var = step.get_output_var()
                 self.iterate_to_type_map[output_var] = type(step)
@@ -87,7 +91,8 @@ class SDPHandler(object):
     def canonicalize_objective(self):
         obj = self.CP.objective
         # print(obj)
-        sdp_obj, constraints = conv_resid_canon(obj, self.iteration_handlers[self.N], self.iteration_handlers[self.N - 1])
+        sdp_obj, constraints = conv_resid_canon(obj,
+                                                self.iteration_handlers[self.N], self.iteration_handlers[self.N - 1])
         self.sdp_obj += sdp_obj
         self.sdp_constraints += constraints
 

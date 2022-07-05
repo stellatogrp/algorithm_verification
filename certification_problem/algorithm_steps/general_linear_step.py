@@ -6,8 +6,8 @@ class LinearStep(Step):
 
     """Docstring for LinearStep. """
 
-    def __init__(self, y: Iterate, x: Iterate, D=None, A=None, b=None):
-        """Step representing y = Ax
+    def __init__(self, D, y: Iterate, A, x: Iterate, b):
+        """Step representing Dy = Ax + b
 
         Args:
             A (TODO): TODO
@@ -28,7 +28,7 @@ class LinearStep(Step):
 
     def __str__(self):
         # return f'{self.y.name} = LINSTEP({self.x.name}) with matrix A = {self.A}'
-        return f'{self.y.name} = LINSTEP({self.x.name})'
+        return f'{self.y.name} = GENLINSTEP({self.x.name})'
 
     def get_output_var(self):
         return self.y

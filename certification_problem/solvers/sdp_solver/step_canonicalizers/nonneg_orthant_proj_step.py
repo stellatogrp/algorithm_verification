@@ -29,7 +29,9 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
 
     if type(prev_step) == LinearStep:
         # print(type(x))
-        A = prev_step.get_matrix()
+        A = prev_step.get_rhs_matrix()
+        D = prev_step.get_lhs_matrix()
+        b = prev_step.get_rhs_const_vec()
         block_step = steps[i-2]
         u = block_step.get_output_var()
         u_var = curr.iterate_vars[u]
@@ -52,7 +54,7 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
                 [yuT_var.T, uuT_var, u_var],
                 [y_var.T, u_var.T, np.array([[1]])]
             ]) >> 0,
-            yxT_var == yuT_var @ A.T
+            yxT_var @ D.T == yuT_var @ A.T + y_var @ b.T,
         ]
 
     return constraints
