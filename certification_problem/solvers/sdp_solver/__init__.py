@@ -15,11 +15,15 @@ from certification_problem.solvers.sdp_solver.set_canonicalizers.vec_span_set im
 from certification_problem.basic_algorithm_steps.block_step import BlockStep
 from certification_problem.basic_algorithm_steps.linear_step import LinearStep
 from certification_problem.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from certification_problem.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from certification_problem.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 
 from certification_problem.solvers.sdp_solver.step_canonicalizers.block_step import block_step_canon
 from certification_problem.solvers.sdp_solver.step_canonicalizers.linear_step import linear_step_canon
 from certification_problem.solvers.sdp_solver.step_canonicalizers.nonneg_orthant_proj_step import (
     nonneg_orthant_proj_canon, )
+from certification_problem.solvers.sdp_solver.step_canonicalizers.max_with_vec_step import max_vec_canon
+from certification_problem.solvers.sdp_solver.step_canonicalizers.min_with_vec_step import min_vec_canon
 
 SET_CANON_METHODS = {
     CenteredL2BallSet: centered_l2_ball_canon,
@@ -34,4 +38,6 @@ STEP_CANON_METHODS = {
     BlockStep: block_step_canon,
     LinearStep: linear_step_canon,
     NonNegProjStep: nonneg_orthant_proj_canon,
+    MaxWithVecStep: max_vec_canon,
+    MinWithVecStep: min_vec_canon,
 }

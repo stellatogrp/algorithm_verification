@@ -1,6 +1,5 @@
 import cvxpy as cp
 
-from certification_problem.solvers.sdp_solver.set_canonicalizers.centered_l2_ball_set import centered_l2_ball_canon
 from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
 from certification_problem.solvers.sdp_solver import SET_CANON_METHODS, STEP_CANON_METHODS
 
@@ -23,14 +22,11 @@ class SDPHandler(object):
 
     def create_iterate_id_maps(self):
         steps = self.CP.get_algorithm_steps()
-        counter = 0
-        for step in steps:
+        for i, step in enumerate(steps):
             iterate = step.get_output_var()
-            self.iterate_to_id_map[iterate] = counter
-            self.id_to_iterate_map[counter] = iterate
+            self.iterate_to_id_map[iterate] = i
+            self.id_to_iterate_map[i] = iterate
             self.iterate_list.append(iterate)
-            counter += 1
-        # print(self.iterate_list)
 
     def compute_sdp_param_vars(self):
         param_sets = self.CP.get_parameter_sets()

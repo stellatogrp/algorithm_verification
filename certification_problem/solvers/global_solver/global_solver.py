@@ -7,13 +7,14 @@ class GlobalSolver(Solver):
     """Docstring for GlobalSolver. """
 
     def __init__(self, CP):
-        """TODO: to be defined. """
         CP.print_cp()
         self.CP = CP
         self.handler = None
 
     def solve(self):
         # Create and solve with Gurobi
+        if self.handler is None:
+            raise AssertionError('Certification Problem has not been canonicalized yet.')
         self.handler.solve()
 
     def canonicalize(self):

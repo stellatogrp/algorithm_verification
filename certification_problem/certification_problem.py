@@ -1,5 +1,6 @@
 import certification_problem.settings as s
 from certification_problem.solvers.sdp_solver.sdp_solver import SDPSolver
+from certification_problem.solvers.global_solver.global_solver import GlobalSolver
 
 
 class CertificationProblem(object):
@@ -22,6 +23,10 @@ class CertificationProblem(object):
         # Define and solve the problem
         if solver_type == s.SDP:
             solver = SDPSolver(self)
+            solver.canonicalize()
+            solver.solve()
+        if solver_type == s.GLOBAL:
+            solver = GlobalSolver(self)
             solver.canonicalize()
             solver.solve()
 

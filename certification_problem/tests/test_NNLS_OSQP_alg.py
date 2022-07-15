@@ -14,53 +14,45 @@ from certification_problem.objectives.convergence_residual import ConvergenceRes
 
 def main():
     N = 1
-    m = 4
-    n = 2
-    k = 3
+    m = 5
+    n = 3
     r = 1
 
     In = spa.eye(n)
 
     np.random.seed(0)
-    A = np.random.randn(m, n)
-    A = spa.csc_matrix(A)
-    ATA = A.T @ A
+    P = np.random.randn(m, n)
+    P = spa.csc_matrix(A)
     # print(A)
 
-    t = .05
+    rho = .05
+    sigma = 1
 
-    C = spa.bmat([[In - t * ATA, t * A.T]])
+    In = spa.eye(n, n)
+    Im = spa.eye(m, m)
+    zeros_n = np.zeros((n, 1))
+    zeros_m = np.zeros((m, 1))
 
-    b_l = 1
-    b_u = 3
-
-    u = Iterate(n + n + k, name='u')
-    w = Iterate(n + m + k, name='w')
-    y = Iterate(n, name='y')
     x = Iterate(n, name='x')
-    b = Parameter(k, name='b')
-
-    # step1 = BlockStep(u, [x, b])
-    # step2 = LinearStep(y, C, u)
-    # step3 = NonNegProjStep(x, y)
-    # steps = [step1, step2, step3]
-    # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
-    step1 = BlockStep(u, [x, y, b])
-
-    C = np.ones((n, n + n + k))
-    step2 = LinearStep(y, C, u)
-    step3 = NonNegProjStep(x, y)
-
-    # steps = [step1, step2, step3, step4]
-    steps = [step3, step2, step1]
+    y = Iterate(m, name='y')
+    z = Iterate(m, name='z')
+    q = Parameter(m, name='b')
 
     xset = CenteredL2BallSet(x, np.zeros(n), r=r)
+    yset = CenteredL2BallSet(y, np.zeros(m), r=.01)
+    zset = CenteredL2BallSet(z, np.zeros(m), r=.01)
     # bset = BoxSet(b, b_l, b_u)
-    bset = CenteredL2BallSet(b, np.zeros(k), r=r)
+    qset = CenteredL2BallSet(q, np.zeros(m), r=r)
 
+    xblock = Iterate(n + 3 * m, name='xblock')
+    step1 = BlockStep(xblock, [x, y, z, q])
+    xblock_mat = spa.bmat([[]])
+    step2 = LinearStep(x, xblock, A)
+
+    steps = [step1, step2]
     obj = ConvergenceResidual(x)
 
-    CP = CertificationProblem(N, [xset], [bset], obj, steps)
+    CP = CertificationProblem(N, [xset, yset, zset], [qset], obj, steps)
     # CP.print_cp()
     CP.solve()
 

@@ -21,6 +21,7 @@ class HighLevelLinearStep(Step):
 
     def _test_dims(self):
         # should be D: (n, k), y: (k, 1), A: (n, m), u: (m, 1), b: (n, 1)
+        # TODO retool this to use Nones for D and b
         u_dim = 0
         for x in self.u:
             u_dim += x.get_dim()
@@ -33,7 +34,8 @@ class HighLevelLinearStep(Step):
         if A_dim[1] != u_dim:
             raise AssertionError('RHS A and u dimensions do not match')
         if A_dim[0] != b_dim[0]:
-            raise AssertionError('RHS A and b dimentions do not match')
+            print(A_dim[0], b_dim)
+            raise AssertionError('RHS A and b dimensions do not match')
         if D_dim[0] != A_dim[0]:
             raise AssertionError('LHS and RHS vector dimensions do not match')
 
