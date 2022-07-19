@@ -2,7 +2,7 @@ import numpy as np
 import scipy.sparse as spa
 
 
-def vec_span_canon(init_set, model, var_to_gp_var_map):
+def vec_span_set_canon(init_set, model, var_to_gp_var_map):
     x = init_set.get_iterate()
     v = init_set.v
     a = init_set.a
