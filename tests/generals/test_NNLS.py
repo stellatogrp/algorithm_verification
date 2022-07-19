@@ -25,11 +25,17 @@ def test_Nstep_NNLS_Gurobi(N=1, m=5, n=3, R=1):
     # print('-------- solving with gurobi alternate--------')
     model = gp.Model()
     model.setParam('NonConvex', 2)
+    # model.setParam('MIPFocus', 3)
 
+    x_lb = np.zeros((N + 1, n))
+    x_lb[0] = -gp.GRB.INFINITY * np.ones(n)
+    print(x_lb)
+    # exit(0)
     x = model.addMVar((N + 1, n),
                    name='x',
                    ub=gp.GRB.INFINITY * np.ones((N + 1, n)),
                    lb=-gp.GRB.INFINITY * np.ones((N + 1, n)))
+                   # lb=x_lb)
 
     y = model.addMVar((N + 1, n),
                   name='y',
@@ -43,19 +49,26 @@ def test_Nstep_NNLS_Gurobi(N=1, m=5, n=3, R=1):
 
     b = model.addMVar(m,
                   name='b',
-                  ub=3 * np.ones(m),
-                  lb=1 * np.ones(m))
+                  # ub=3 * np.ones(m),
+                  # lb=1 * np.ones(m))
+                  ub=gp.GRB.INFINITY * np.ones(m),
+                  lb=-gp.GRB.INFINITY * np.ones(m))
 
     model.addConstr(x[0] @ In @ x[0] <= R ** 2)
+    model.addConstr(b @ Im @ b <= R ** 2)
+    # model.addConstr(1 <= b)
+    # model.addConstr(b <= 3)
     # model.addConstr(x[0] == 0)
     # model.addConstr(b @ Im @ b <= (.1 * R ** 2))
     for k in range(N):
+        # print(x[k].shape)
         model.addConstr(y[k+1] == (In - t * ATA) @ x[k] + t * A.T @ b)
         model.addConstr(x[k+1] >= 0)
         model.addConstr(x[k+1] >= y[k+1])
 
         model.addConstr(z[k+1] == x[k+1] - y[k+1])
         model.addConstr(x[k+1] @ z[k+1] == 0)
+        # model.addConstr(x[k+1] @ x[k+1] - x[k+1] @ y[k+1] == 0)
         # for i in range(n):
         #     model.addConstr(x[k+1, i] * x[k+1, i] == x[k+1, i] * y[k+1, i])
 
@@ -65,7 +78,7 @@ def test_Nstep_NNLS_Gurobi(N=1, m=5, n=3, R=1):
     model.optimize()
     print('y = ', y.X)
     print('x = ', x.X)
-    print('gap =', model.MIPGap)
+    # print('gap =', model.MIPGap)
 
 
 def sample_solve_via_cvxpy():
@@ -112,6 +125,8 @@ def test_Nstep_NNLS_SDR(N=1, m=5, n=3, R=1):
     t = .05
     x_vars = []
     xxT_vars = []
+    xcross_vars = []
+    obj_vars = []
 
     x0 = cp.Variable((n, 1))
     x0x0T = cp.Variable((n, n))
@@ -183,27 +198,38 @@ def test_Nstep_NNLS_SDR(N=1, m=5, n=3, R=1):
                 [xkplus1.T, xk.T, np.array([[1]])]
             ]) >> 0,
         ]
+        obj_vars.append(cp.trace(xkplus1_xkplus1T - 2 * xkplus1_xkT + xk_xkT))
 
         x_vars.append(xkplus1)
         xxT_vars.append(xkplus1_xkplus1T)
+        xcross_vars.append(xkplus1_xkT)
 
         xk = xkplus1
         xk_xkT = xkplus1_xkplus1T
 
-    xN = xk
-    xN_xNT = xk_xkT
-    xNminus1 = x_vars[-2]
-    xNminus1_xNminus1T = xxT_vars[-2]
+    # xN = x_vars[-1]
+    # xN_xNT = xxT_vars[-1]
+    # xNminus1 = x_vars[-2]
+    # xNminus1_xNminus1T = xxT_vars[-2]
+    #
+    # # xN_xNminus1T = cp.Variable((n, n))
+    # xN_xNminus1T = xcross_vars[-1]
+    #
+    # constraints += [cp.bmat([
+    #     [xN_xNT, xN_xNminus1T, xN],
+    #     [xN_xNminus1T.T, xNminus1_xNminus1T, xNminus1],
+    #     [xN.T, xNminus1.T, np.array([[1]])]
+    # ]) >> 0]
 
-    xN_xNminus1T = cp.Variable((n, n))
+    if N >= 2:
+        for k in range(1, N):
+            print(obj_vars[k])
+            print(obj_vars[k-1])
+            constraints.append(obj_vars[k] <= obj_vars[k-1])
 
-    constraints += [cp.bmat([
-        [xN_xNT, xN_xNminus1T, xN],
-        [xN_xNminus1T.T, xNminus1_xNminus1T, xNminus1],
-        [xN.T, xNminus1.T, np.array([[1]])]
-    ]) >> 0]
 
-    obj = cp.Maximize(cp.trace(xN_xNT) - 2 * cp.trace(xN_xNminus1T) + cp.trace(xNminus1_xNminus1T))
+    # obj = cp.Maximize(cp.trace(xN_xNT) - 2 * cp.trace(xN_xNminus1T) + cp.trace(xNminus1_xNminus1T))
+    obj = cp.Maximize(obj_vars[-1])
     prob = cp.Problem(obj, constraints)
     res = prob.solve(solver=cp.MOSEK, verbose=True)
     print('res =', res)
@@ -211,13 +237,357 @@ def test_Nstep_NNLS_SDR(N=1, m=5, n=3, R=1):
     print(np.round(x0.value, 4))
 
 
+def test_1step_NNLS_no_y(m=5, n=3, R=1):
+    In = spa.eye(n)
+    Zmn = spa.csc_matrix((m, n))
+    Im = spa.eye(m)
+
+    np.random.seed(0)
+    A = np.random.randn(m, n)
+    A = spa.csc_matrix(A)
+    ATA = A.T @ A
+
+    t = .05
+
+    x0 = cp.Variable((n, 1))
+    x0x0T = cp.Variable((n, n))
+    x1 = cp.Variable((n, 1))
+    x1x1T = cp.Variable((n, n))
+    x1x0T = cp.Variable((n, n))
+    x1bT = cp.Variable((n, m))
+
+    b = cp.Variable((m, 1))
+    bbT = cp.Variable((m, m))
+
+    l = 1
+    u = 3
+
+    # inital constraints
+    constraints = [
+        cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
+        # cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+        cp.sum_squares(b) <= R ** 2, cp.trace(bbT) <= R ** 2,
+    ]
+
+    constraints += [
+        x1 >= 0, x1x1T >= 0,
+        x1 >= (In - t * ATA) @ x0 + t * A.T @ b,
+        cp.diag(x1x1T) == cp.diag(x1x0T @ (In - t * ATA).T + t * x1bT @ A)
+    ]
+
+    constraints += [
+        cp.bmat([
+            [x1x1T, x1x0T, x1],
+            [x1x0T.T, x0x0T, x0],
+            [x1.T, x0.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x1x1T, x1bT, x1],
+            [x1bT.T, bbT, b],
+            [x1.T, b.T, np.array([[1]])]
+        ]) >> 0
+    ]
+
+    obj = cp.Maximize(cp.trace(x1x1T - 2 * x1x0T + x0x0T))
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve(solver=cp.MOSEK, verbose=True)
+    print('res =', res)
+    print('comp time =', prob.solver_stats.solve_time)
+    print(np.round(x0.value, 4))
+
+
+def test_2step_NNLS_no_y(m=5, n=3, R=1):
+    In = spa.eye(n)
+    Zmn = spa.csc_matrix((m, n))
+    Im = spa.eye(m)
+
+    np.random.seed(0)
+    A = np.random.randn(m, n)
+    A = spa.csc_matrix(A)
+    ATA = A.T @ A
+
+    t = .05
+
+    x0 = cp.Variable((n, 1))
+    x0x0T = cp.Variable((n, n))
+    x1 = cp.Variable((n, 1))
+    x1x1T = cp.Variable((n, n))
+    x1x0T = cp.Variable((n, n))
+    x1bT = cp.Variable((n, m))
+
+    x2 = cp.Variable((n, 1))
+    x2x2T = cp.Variable((n, n))
+    x2x1T = cp.Variable((n, n))
+    x2bT = cp.Variable((n, m))
+
+    b = cp.Variable((m, 1))
+    bbT = cp.Variable((m, m))
+
+    l = 1
+    u = 3
+
+    # inital constraints
+    constraints = [
+        cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
+        cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+    ]
+
+    constraints += [
+        x1 >= 0, x1x1T >= 0,
+        x1 >= (In - t * ATA) @ x0 + t * A.T @ b,
+        cp.diag(x1x1T) == cp.diag(x1x0T @ (In - t * ATA).T + t * x1bT @ A),
+        x2 >= 0, x2x2T >= 0,
+        x2 >= (In - t * ATA) @ x1 + t * A.T @ b,
+        cp.diag(x2x2T) == cp.diag(x2x1T @ (In - t * ATA).T + t * x2bT @ A)
+    ]
+
+    constraints += [
+        cp.bmat([
+            [x1x1T, x1x0T, x1],
+            [x1x0T.T, x0x0T, x0],
+            [x1.T, x0.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x1x1T, x1bT, x1],
+            [x1bT.T, bbT, b],
+            [x1.T, b.T, np.array([[1]])]
+        ]) >> 0,
+
+        cp.bmat([
+            [x2x2T, x2x1T, x2],
+            [x2x1T.T, x1x1T, x1],
+            [x2.T, x1.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x2x2T, x2bT, x2],
+            [x2bT.T, bbT, b],
+            [x2.T, b.T, np.array([[1]])]
+        ]) >> 0,
+    ]
+
+    obj = cp.Maximize(cp.trace(x2x2T - 2 * x2x1T + x1x1T))
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve(solver=cp.MOSEK, verbose=True)
+    print('res =', res)
+    print('comp time =', prob.solver_stats.solve_time)
+    print(np.round(x0.value, 4))
+
+
+def test_3step_NNLS_no_y(m=5, n=3, R=1):
+    In = spa.eye(n)
+    Zmn = spa.csc_matrix((m, n))
+    Im = spa.eye(m)
+
+    np.random.seed(0)
+    A = np.random.randn(m, n)
+    A = spa.csc_matrix(A)
+    ATA = A.T @ A
+
+    t = .05
+
+    x0 = cp.Variable((n, 1))
+    x0x0T = cp.Variable((n, n))
+    x1 = cp.Variable((n, 1))
+    x1x1T = cp.Variable((n, n))
+    x1x0T = cp.Variable((n, n))
+    x1bT = cp.Variable((n, m))
+
+    x2 = cp.Variable((n, 1))
+    x2x2T = cp.Variable((n, n))
+    x2x1T = cp.Variable((n, n))
+    x2bT = cp.Variable((n, m))
+
+    x3 = cp.Variable((n, 1))
+    x3x3T = cp.Variable((n, n))
+    x3x2T = cp.Variable((n, n))
+    x3bT = cp.Variable((n, m))
+
+    b = cp.Variable((m, 1))
+    bbT = cp.Variable((m, m))
+
+    l = 1
+    u = 3
+
+    # inital constraints
+    constraints = [
+        cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
+        cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+    ]
+
+    constraints += [
+        x1 >= 0, x1x1T >= 0,
+        x1 >= (In - t * ATA) @ x0 + t * A.T @ b,
+        cp.diag(x1x1T) == cp.diag(x1x0T @ (In - t * ATA).T + t * x1bT @ A),
+        x2 >= 0, x2x2T >= 0,
+        x2 >= (In - t * ATA) @ x1 + t * A.T @ b,
+        cp.diag(x2x2T) == cp.diag(x2x1T @ (In - t * ATA).T + t * x2bT @ A),
+        x3 >= 0, x3x3T >= 0,
+        x3 >= (In - t * ATA) @ x2 + t * A.T @ b,
+        cp.diag(x3x3T) == cp.diag(x3x2T @ (In - t * ATA).T + t * x3bT @ A),
+    ]
+
+    constraints += [
+        cp.bmat([
+            [x1x1T, x1x0T, x1],
+            [x1x0T.T, x0x0T, x0],
+            [x1.T, x0.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x1x1T, x1bT, x1],
+            [x1bT.T, bbT, b],
+            [x1.T, b.T, np.array([[1]])]
+        ]) >> 0,
+
+        cp.bmat([
+            [x2x2T, x2x1T, x2],
+            [x2x1T.T, x1x1T, x1],
+            [x2.T, x1.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x2x2T, x2bT, x2],
+            [x2bT.T, bbT, b],
+            [x2.T, b.T, np.array([[1]])]
+        ]) >> 0,
+
+        cp.bmat([
+            [x3x3T, x3x2T, x3],
+            [x3x2T.T, x2x2T, x2],
+            [x3.T, x2.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x3x3T, x3bT, x3],
+            [x3bT.T, bbT, b],
+            [x3.T, b.T, np.array([[1]])]
+        ]) >> 0,
+    ]
+
+    obj = cp.Maximize(cp.trace(x3x3T - 2 * x3x2T + x3x3T))
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve(solver=cp.MOSEK, verbose=True)
+    print('res =', res)
+    print('comp time =', prob.solver_stats.solve_time)
+    print(np.round(x0.value, 4))
+
+
+def test_1step_NNLS_linking_y(m=5, n=3, R=1):
+    print('double l2 bounds')
+    In = spa.eye(n)
+    Zmn = spa.csc_matrix((m, n))
+    Im = spa.eye(m)
+
+    np.random.seed(0)
+    A = np.random.randn(m, n)
+    A = spa.csc_matrix(A)
+    ATA = A.T @ A
+
+    print(A)
+    t = .05
+
+    x0 = cp.Variable((n, 1))
+    x0x0T = cp.Variable((n, n))
+    x0bT = cp.Variable((n, m))
+
+    x1 = cp.Variable((n, 1))
+    x1x1T = cp.Variable((n, n))
+    x1x0T = cp.Variable((n, n))
+    x1bT = cp.Variable((n, m))
+
+    # y1 = cp.Variable((n, 1))
+    # y1y1T = cp.Variable((n, n))
+    # x1y1T = cp.Variable((n, n))
+    y1x0T = cp.Variable((n, n))
+    y1bT = cp.Variable((n, m))
+
+    b = cp.Variable((m, 1))
+    bbT = cp.Variable((m, m))
+
+    l = 1
+    u = 3
+
+    constraints = [
+        cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
+        cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+        # cp.sum_squares(b) <= R ** 2, cp.trace(bbT) <= R ** 2,
+    ]
+
+    C = spa.bmat([[In - t * ATA, t * A.T]])
+
+    u1 = cp.vstack([x0, b])
+    u1u1T = cp.bmat([
+        [x0x0T, x0bT],
+        [x0bT.T, bbT]
+    ])
+    x1u1T = cp.bmat([
+        [x1x0T, x1bT]
+    ])
+    # x1u1T = cp.Variable((n, n + m))  # this is wrong, just for comparison sake
+
+    y1 = C @ u1
+    y1y1T = C @ u1u1T @ C.T
+    y1u1T = C @ u1u1T
+    x1y1T = x1u1T @ C.T
+    constraints += [y1u1T == cp.bmat([
+            [y1x0T, y1bT]
+        ])
+    ]
+    # x1y1T = cp.Variable((n, n))  # this is wrong, just for comparison sake
+
+    constraints += [
+        x1 >= 0, x1x1T >= 0,
+        x1 >= y1,
+        cp.diag(x1x1T - x1y1T) == 0,
+        # cp.diag(x1x1T) == cp.diag(x1x0T @ (In - t * ATA).T + t * x1bT @ A),
+    ]
+
+    # constraints += [
+    #     cp.bmat([
+    #         [x1x1T, x1y1T, x1u1T, x1],
+    #         [x1y1T.T, y1y1T, y1u1T, y1],
+    #         [x1u1T.T, y1u1T.T, u1u1T, u1],
+    #         [x1.T, y1.T, u1.T, np.array([[1]])]
+    #     ]) >> 0
+    # ]
+
+    y1x1T = x1y1T.T
+
+    constraints += [
+        cp.bmat([
+            [x1x1T, x1u1T, x1],
+            [x1u1T.T, u1u1T, u1],
+            [x1.T, u1.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [y1y1T, y1u1T, y1],
+            [y1u1T.T, u1u1T, u1],
+            [y1.T, u1.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [x1x1T, x1y1T, x1],
+            [y1x1T, y1y1T, y1],
+            [x1.T, y1.T, np.array([[1]])]
+        ]) >> 0,
+    ]
+
+    obj = cp.Maximize(cp.trace(x1x1T - 2 * x1x0T + x0x0T))
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve(solver=cp.MOSEK, verbose=True)
+    print('res =', res)
+    print('comp time =', prob.solver_stats.solve_time)
+    # print('x0 =', np.round(x0.value, 4))
+    # print('b =', np.round(b.value, 4))
+
+
 def main():
-    N = 5
+    N = 1
     m = 5
     n = 3
     R = 1
     test_Nstep_NNLS_Gurobi(N=N, m=m, n=n, R=R)
-    test_Nstep_NNLS_SDR(N=N, m=m, n=n, R=R)
+    # test_Nstep_NNLS_SDR(N=N, m=m, n=n, R=R)
+    # test_1step_NNLS_no_y(m=m, n=n, R=R)
+    # test_1step_NNLS_linking_y(m=m, n=n, R=R)
+    # test_2step_NNLS_no_y(m=m, n=n, R=R)
+    # test_3step_NNLS_no_y(m=m, n=n, R=R)
 
     # for N in range(10):
     #     print(N+1)

@@ -63,13 +63,15 @@ def test_NNLS_SDP():
 
     bset = CenteredL2BallSet(b, r=r)
     # bset = BoxSet(b, b_l, b_u)
-    c = 2 * np.ones((m, 1))
-    r = 1
+    # c = 2 * np.ones((m, 1))
+    # r = 1
     # bset = LInfBallSet(b, c, r)
 
     obj = ConvergenceResidual(x)
+    qp_problem_data = {'A': .5 * ATA}
+    CP = CertificationProblem(N, [xset], [bset], obj, steps, qp_problem_data=qp_problem_data)
 
-    CP = CertificationProblem(N, [xset], [bset], obj, steps)
+    # CP.problem_data = qp_problem_data
     # CP.print_cp()
     CP.solve(solver_type='SDP')
 
@@ -117,11 +119,12 @@ def test_NNLS_GLOBAL():
     # # bset = BoxSet(b, b_l, b_u)
     # c = 2 * np.ones((m, 1))
     # r = 1
-    # # bset = LInfBallSet(b, c, r)
+    # bset = LInfBallSet(b, c, r)
 
     obj = ConvergenceResidual(x)
 
     CP = CertificationProblem(N, [xset], [bset], obj, steps)
+
     # CP.print_cp()
     CP.solve(solver_type='GLOBAL')
 

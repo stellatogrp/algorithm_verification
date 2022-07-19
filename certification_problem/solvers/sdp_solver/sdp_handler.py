@@ -1,3 +1,4 @@
+import numpy as np
 import cvxpy as cp
 
 from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
@@ -84,6 +85,29 @@ class SDPHandler(object):
                                            self.sdp_param_vars, self.sdp_param_outerproduct_vars)
                 self.sdp_constraints += constraints
 
+    def add_convexity_constraints(self, A):
+        # TODO add this as a settable flag
+        x = self.iterate_list[-1]  # TODO placeholder until function allows iterate specification
+        b = self.param_list[-1]
+
+        for k in range(1, self.N + 1):
+            handler_k = self.iteration_handlers[k]
+            handler_kminus1 = self.iteration_handlers[k-1]
+            xk = handler_k.iterate_vars[x]
+            xkxkT = handler_k.iterate_outerproduct_vars[x]
+            xkminus1 = handler_kminus1.iterate_vars[x]
+            xkminus1_xkminus1T = handler_kminus1.iterate_outerproduct_vars[x]
+            xk_xkminus1T = handler_k.iterate_cross_vars[x][x]
+            self.sdp_constraints += [
+                cp.trace(A @ xkxkT) + cp.trace(A @ xkminus1_xkminus1T) >= 2 * cp.trace(A @ xk_xkminus1T),
+                # cp.bmat([
+                #     [xkxkT, xk_xkminus1T, xk],
+                #     [xk_xkminus1T.T, xkminus1_xkminus1T, xkminus1],
+                #     [xk.T, xkminus1.T, np.array([[1]])]
+                # ]) >> 0,
+                # cp.trace(A @ xkxkT) + cp.trace(A @ bbT_var) >= 2 * cp.trace(A @ xkbT)
+            ]
+
     def canonicalize_objective(self):
         obj = self.CP.objective
         # print(obj)
@@ -99,6 +123,7 @@ class SDPHandler(object):
         self.canonicalize_initial_sets()
         self.canonicalize_parameter_sets()
         self.canonicalize_steps()
+        # self.add_convexity_constraints()  # TODO add this as a settable flag
         self.canonicalize_objective()
         # print(len(self.sdp_constraints))
 

@@ -7,7 +7,7 @@ class CertificationProblem(object):
 
     """Docstring for CertificationProblem. """
 
-    def __init__(self, N, init_sets, parameter_sets, objective, algorithm):
+    def __init__(self, N, init_sets, parameter_sets, objective, algorithm, qp_problem_data=None):
         # number of steps
         self.N = N
         # initial iterates set
@@ -18,12 +18,19 @@ class CertificationProblem(object):
         self.algorithm = algorithm
         # objective
         self.objective = objective
+        # problem data from the original qp
+        if qp_problem_data is not None:
+            self.qp_problem_data = qp_problem_data
+        else:
+            self.qp_problem_data = {}
 
     def solve(self, solver_type=s.DEFAULT):
         # Define and solve the problem
         if solver_type == s.SDP:
             solver = SDPSolver(self)
             solver.canonicalize()
+            # TODO break this out and add a way to specify the variable
+            solver.handler.add_convexity_constraints(self.qp_problem_data['A'])
             solver.solve()
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)

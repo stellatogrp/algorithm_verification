@@ -14,7 +14,7 @@ def nonneg_orthant_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_va
     # model.addConstr(x[k + 1] @ z[k + 1] == 0)
 
     y_var = y_varmatrix[k]
-    print(iter_to_id_map[y], iter_to_id_map[x])
+    # print(iter_to_id_map[y], iter_to_id_map[x])
     if iter_to_id_map[y] <= iter_to_id_map[x]:
         x_var = x_varmatrix[k-1]
     else:
@@ -22,7 +22,7 @@ def nonneg_orthant_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_va
 
     model.addConstr(y_var >= 0)
     model.addConstr(y_var >= x_var)
-    print(y_var.shape)
+    # print(y_var.shape)
 
     z = model.addMVar(y_var.shape,
                       ub=gp.GRB.INFINITY * np.ones(y_var.shape),
