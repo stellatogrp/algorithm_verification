@@ -9,6 +9,7 @@ def box_set_canon(init_set, model, var_to_gp_var_map):
     x_var = var_to_gp_var_map[x]
 
     if x.is_param:
+        # print(l, u)
         model.addConstr(l <= x_var)
         model.addConstr(x_var <= u)
     else:

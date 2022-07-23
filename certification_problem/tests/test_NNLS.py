@@ -96,7 +96,7 @@ def test_NNLS_GLOBAL():
     C = spa.bmat([[In - t * ATA, t * A.T]])
     D = spa.eye(n, n)
     # b_const = spa.csc_matrix(np.zeros((n, 1)))
-    b_const = np.zeros(n)
+    b_const = spa.csc_matrix(np.zeros(n))
 
     b_l = 1
     b_u = 3
@@ -130,8 +130,8 @@ def test_NNLS_GLOBAL():
 
 
 def main():
-    # test_NNLS_SDP()
-    test_NNLS_GLOBAL()
+    test_NNLS_SDP()
+    # test_NNLS_GLOBAL()
 
 
 if __name__ == '__main__':

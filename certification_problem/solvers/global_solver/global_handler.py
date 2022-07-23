@@ -22,7 +22,10 @@ class GlobalHandler(object):
     def create_gp_model(self):
         self.model = gp.Model()
         self.model.setParam('NonConvex', 2)
-        # model.setParam('MIPFocus', 3)
+        # self.model.setParam('MIPFocus', 3)
+        # self.model.setParam('OptimalityTol', 1e-4)
+        # self.model.setParam('FeasibilityTol', 1e-3)
+        self.model.setParam('MIPGap', .01)
 
     def create_iterate_id_maps(self):
         steps = self.CP.get_algorithm_steps()
@@ -94,3 +97,4 @@ class GlobalHandler(object):
 
     def solve(self):
         self.model.optimize()
+        return self.model.objVal, self.model.Runtime

@@ -15,7 +15,8 @@ class GlobalSolver(Solver):
         # Create and solve with Gurobi
         if self.handler is None:
             raise AssertionError('Certification Problem has not been canonicalized yet.')
-        self.handler.solve()
+        res = self.handler.solve()
+        return res
 
     def canonicalize(self):
         # Iterate through steps and canonicalize them

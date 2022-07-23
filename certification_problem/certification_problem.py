@@ -30,12 +30,13 @@ class CertificationProblem(object):
             solver = SDPSolver(self)
             solver.canonicalize()
             # TODO break this out and add a way to specify the variable
-            solver.handler.add_convexity_constraints(self.qp_problem_data['A'])
-            solver.solve()
+            # solver.handler.add_convexity_constraints(self.qp_problem_data['A'])
+            res = solver.solve()
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
             solver.canonicalize()
-            solver.solve()
+            res = solver.solve()
+        return res
 
     def print_cp(self):
         print(f'{self.N} steps of algorithm')
