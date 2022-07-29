@@ -3,6 +3,7 @@ import numpy as np
 import cvxpy as cp
 import scipy.sparse as spa
 import pandas as pd
+from tqdm import tqdm, trange
 from certification_problem.certification_problem import CertificationProblem
 from certification_problem.variables.iterate import Iterate
 from certification_problem.variables.parameter import Parameter
@@ -55,6 +56,24 @@ def test_PEPit_val(L, mu, t, r, N=1):
 
     # Return the worst-case guarantee of the evaluated method ( and the reference theoretical value)
     return pepit_tau
+
+
+def run_single_prox_grad_descent(tATA, tAtb, num_iter=5, x_init=None):
+    def nonneg_proj(x):
+        return np.maximum(x, 0)
+    n = tATA.shape[0]
+    In = np.eye(n)
+    C = In - tATA
+    if x_init is None:
+        x_init = np.zeros(n)
+    iterates = [x_init]
+    xk = x_init
+    for i in range(num_iter):
+        xk = nonneg_proj(C @ xk + tAtb)
+        iterates.append(xk)
+
+    # conv_resid = np.linalg.norm(iterates[-1] - iterates[-2])
+    return iterates
 
 
 def get_centered_l2_xset(*args):
@@ -144,23 +163,48 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, r=1, center=None):
     print(res)
 
 
-def test_pep_part(A, t, out_fname=None, N_max=1):
+def test_pep_part(A, t, ws_center, out_fname_avg=None, out_fname_pep=None, N_max=1):
     (m, n) = A.shape
     ATA = A.T @ A
+    tATA = t * ATA
     eigvals = np.linalg.eigvals(ATA)
     L = np.max(eigvals)
     mu = np.min(eigvals)
     print(L, mu)
-    num_samples = 5000
+    num_samples = 100
     max_r = 0
-    for _ in range(num_samples):
+    iterate_rows = []
+    ws_iterate_rows = []
+    for _ in trange(num_samples):
         test_x = sample_x(n)
-        res, x = solve_single_NNLS_via_cvxpy(A, sample_b(m))
+        test_b = sample_b(m)
+        res, x = solve_single_NNLS_via_cvxpy(A, test_b)
         r = np.linalg.norm(x - test_x)
         if r > max_r:
             max_r = r
+
+        tATb = t * A.T @ test_b
+        iterates = run_single_prox_grad_descent(tATA, tATb, num_iter=N_max, x_init=test_x)
+        ws_iterates = run_single_prox_grad_descent(tATA, tATb, num_iter=N_max, x_init=ws_center)
+        for k in range(1, N_max+1):
+            res = np.linalg.norm(iterates[k] - iterates[k-1] ** 2)
+            ws_res = np.linalg.norm(ws_iterates[k] - ws_iterates[k-1] ** 2)
+            iter_row = pd.Series(
+                {
+                    'max_N': k,
+                    'res': res,
+                    'ws_res': ws_res,
+                }
+            )
+            iterate_rows.append(iter_row)
+        # tATb = t * A.T @ test_b
     # print(max_r)
-    df_rows = []
+    df_avg = pd.DataFrame(iterate_rows)
+    print(df_avg)
+    df_avg.to_csv(out_fname_avg, index=False)
+    # exit(0)
+
+    df_pep_rows = []
     for N in range(1, N_max+1):
         pep_bound = test_PEPit_val(L, mu, t, max_r, N=N)
         print(N, pep_bound)
@@ -172,10 +216,10 @@ def test_pep_part(A, t, out_fname=None, N_max=1):
                 'pep_bound': pep_bound,
             }
         )
-        df_rows.append(new_row)
-    df = pd.DataFrame(df_rows)
-    print(df)
-    df.to_csv(out_fname, index=False)
+        df_pep_rows.append(new_row)
+    df_pep = pd.DataFrame(df_pep_rows)
+    print(df_pep)
+    df_pep.to_csv(out_fname_pep, index=False)
 
 
 def test_global_param_effect():
@@ -192,16 +236,35 @@ def test_global_param_effect():
     sample_r = np.random.uniform(0, r)
     u = np.random.randn(m)
     u = u / np.linalg.norm(u)
-    sample_b = u * sample_r
+    sample_b_val = u * sample_r
     # print(sample_b, np.linalg.norm(sample_b))
-    _, center = solve_single_NNLS_via_cvxpy(A, sample_b)
+    _, center = solve_single_NNLS_via_cvxpy(A, sample_b_val)
     print('center:', center)
     # NNLS_cert_prob(n, m, spa.csc_matrix(A), N=N, t=t, r=r, center=center)
 
     # PEP part
     print('--------PEP BOUND--------')
     out_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NNLS/data/'
-    test_pep_part(A, t, out_fname=out_dir + 'test_NNLS_multstep_PEP.csv', N_max=6)
+    tATA = t * A.T @ A
+    print('testing')
+    num_samples = 10000
+    cs_vals = []
+    ws_vals = []
+    prox_grad_iter = 6
+    print('prox grad iter', prox_grad_iter)
+
+    for _ in trange(num_samples):
+        test_b = sample_b(m)
+        tATb = t * A.T @ sample_b(m)
+        test_x = sample_x(n)
+        cs_test = run_single_prox_grad_descent(tATA, tATb, num_iter=prox_grad_iter, x_init=test_x)
+        ws_test = run_single_prox_grad_descent(tATA, tATb, num_iter=prox_grad_iter, x_init=center)
+        # print('test', np.linalg.norm(test[-1] - test[-2]) ** 2)
+        cs_vals.append(np.linalg.norm(cs_test[-1] - cs_test[-2]) ** 2)
+        ws_vals.append(np.linalg.norm(ws_test[-1] - ws_test[-2]) ** 2)
+    print('cold starting', np.mean(cs_vals))
+    print('warm starting', np.mean(ws_vals))
+    # test_pep_part(A, t, center, out_fname_avg=out_dir + 'test_NNLS_multstep_avg.csv', out_fname_pep=out_dir + 'test_NNLS_multstep_PEP.csv', N_max=6)
 
 
 def main():

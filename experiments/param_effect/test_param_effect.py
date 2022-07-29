@@ -126,7 +126,7 @@ def generate_A_matrices(n_vals, m_vals, L, mu):
 
 
 def generate_sample_b(m):
-    return 10 * np.random.rand(m) + 10
+    return 1 + 2 * np.random.rand(m)
 
 
 def single_sample_experiment(A, t, num_iter, warm_start_x):
@@ -169,6 +169,7 @@ def single_n_experiment(n_vals, m_vals, A_matrices, experiment_number, num_iter=
         warm_start_conv_resids = [r[2] for r in results]
 
         tau = test_PEPit_val(L, mu, t, max_test_r, N=5)
+        print(f'{num_samples} samples done')
         return conv_resids, warm_start_conv_resids, max_test_r, tau
     except Exception as e:
         print(f'failure for n={n}')
@@ -181,10 +182,10 @@ def test_many_n_samples():
 
     mu = 1
     L = 10
-    n_vals = np.array([5, 10, 25, 50, 75, 100, 150, 200, 300])
-    n_vals = np.array([5, 10, 25])
+    # n_vals = np.array([5, 10, 25, 50, 75, 100, 250, 500, 750, 1000])
+    n_vals = np.array([5, 10, 50, 100, 250, 500, 1000])
     m_vals = 2 * n_vals
-    num_samples = 10
+    num_samples = 100
     num_iter = 5
 
     njobs = get_n_processes(max_n=20)
@@ -234,8 +235,8 @@ def test_many_n_samples():
     out_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/param_effect/data/'
     # out_dir = '/home/vranjan/experiments/param_effect/data/'
 
-    sample_out_fname = out_dir + 'test_out.csv'
-    pep_out_fname = out_dir + 'test_pep.csv'
+    sample_out_fname = out_dir + 'test_outb13sample100.csv'
+    pep_out_fname = out_dir + 'test_pepb13sample100.csv'
 
     df_samples.to_csv(sample_out_fname, index=False)
     df_pep.to_csv(pep_out_fname, index=False)

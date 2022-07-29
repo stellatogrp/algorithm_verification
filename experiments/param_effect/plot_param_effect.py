@@ -42,9 +42,9 @@ def plot_averages(df_samples, df_pep):
     # ax.scatter(samples_n_vals, samples_resid_vals, label='samples', s=4)
     # ax.scatter(samples_n_vals, samples_warm_start_resid_vals, label='warm start samples', s=4)
     # ax.scatter(pep_n_vals, pep_resid_vals, label='sample PEP upper bound', s=10)
-    ax.plot(n_vals, df_avg.to_numpy(), label='sample avg')
-    ax.plot(n_vals, df_ws_avg.to_numpy(), label='warm started sample avg')
-    ax.plot(n_vals, pep_resid_vals, label='sample PEP upper bound')
+    ax.plot(n_vals, df_avg.to_numpy(), label='Sample avg', color='blue', linestyle='--')
+    ax.plot(n_vals, df_ws_avg.to_numpy(), label='Warm started sample avg', color='orange', linestyle='--')
+    ax.plot(n_vals, pep_resid_vals, label='Theoretical bound', color='green')
 
     plt.title('Average convergence residuals, $k=5, \mu=1, L=10$')
     plt.xlabel('$n$')
@@ -54,13 +54,13 @@ def plot_averages(df_samples, df_pep):
 
     plt.legend()
     # plt.show()
-    plt.savefig('experiments/param_effect/images/1000samples_averages.pdf')
+    plt.savefig('experiments/param_effect/images/100samples_averages.pdf')
 
 
 def main():
     data_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/param_effect/data/'
-    sample_fname = data_dir + 'test_1000samples.csv'
-    pep_fname = data_dir + 'test_1000samplespep.csv'
+    sample_fname = data_dir + 'test_outb13sample100.csv'
+    pep_fname = data_dir + 'test_pepb13sample100.csv'
     df_samples = pd.read_csv(sample_fname)
     df_pep = pd.read_csv(pep_fname)
     # print(df_samples)
