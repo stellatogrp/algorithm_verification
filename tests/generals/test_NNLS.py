@@ -55,9 +55,9 @@ def test_Nstep_NNLS_Gurobi(N=1, m=5, n=3, R=1):
                   lb=-gp.GRB.INFINITY * np.ones(m))
 
     model.addConstr(x[0] @ In @ x[0] <= R ** 2)
-    model.addConstr(b @ Im @ b <= R ** 2)
-    # model.addConstr(1 <= b)
-    # model.addConstr(b <= 3)
+    # model.addConstr(b @ Im @ b <= R ** 2)
+    model.addConstr(1 <= b)
+    model.addConstr(b <= 3)
     # model.addConstr(x[0] == 0)
     # model.addConstr(b @ Im @ b <= (.1 * R ** 2))
     for k in range(N):
@@ -329,7 +329,8 @@ def test_2step_NNLS_no_y(m=5, n=3, R=1):
     # inital constraints
     constraints = [
         cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
-        cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+        # cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+        cp.sum_squares(b) <= R ** 2, cp.trace(bbT) <= R ** 2,
     ]
 
     constraints += [
@@ -363,6 +364,11 @@ def test_2step_NNLS_no_y(m=5, n=3, R=1):
             [x2bT.T, bbT, b],
             [x2.T, b.T, np.array([[1]])]
         ]) >> 0,
+    ]
+
+    constraints += [
+        cp.trace(ATA @ x2x2T) + cp.trace(ATA @ x1x1T) >= 2 * cp.trace(ATA @ x2x1T),
+        # cp.trace(A @ xkxkT) + cp.trace(A @ xkminus1_xkminus1T) >= 2 * cp.trace(A @ xk_xkminus1T)
     ]
 
     obj = cp.Maximize(cp.trace(x2x2T - 2 * x2x1T + x1x1T))
@@ -506,8 +512,8 @@ def test_1step_NNLS_linking_y(m=5, n=3, R=1):
 
     constraints = [
         cp.sum_squares(x0) <= R ** 2, cp.trace(x0x0T) <= R ** 2,
-        cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
-        # cp.sum_squares(b) <= R ** 2, cp.trace(bbT) <= R ** 2,
+        # cp.reshape(cp.diag(bbT), (m, 1)) <= (l + u) * b - l * u,
+        cp.sum_squares(b) <= R ** 2, cp.trace(bbT) <= R ** 2,
     ]
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
