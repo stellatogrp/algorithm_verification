@@ -11,18 +11,18 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
     handlers_to_use = []
 
     u = step.get_output_var()
-    u_var = curr.iterate_vars[u]
+    u_var = curr.iterate_vars[u].get_cp_var()
     uuT_var = curr.iterate_outerproduct_vars[u]
 
     u_blocks = []
     for var in block_vars:
         if var.is_param:
-            u_blocks.append(param_vars[var])
+            u_blocks.append(param_vars[var].get_cp_var())
         else:
             if curr_or_prev(u, var, iter_id_map) == 0:
-                u_blocks.append(prev.iterate_vars[var])
+                u_blocks.append(prev.iterate_vars[var].get_cp_var())
             else:
-                u_blocks.append(curr.iterate_vars[var])
+                u_blocks.append(curr.iterate_vars[var].get_cp_var())
 
     for var in block_vars:
         if var.is_param:

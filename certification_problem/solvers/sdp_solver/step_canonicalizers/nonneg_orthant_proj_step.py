@@ -11,9 +11,9 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
     y = step.get_output_var()
     x = step.get_input_var()
 
-    y_var = curr.iterate_vars[y]
+    y_var = curr.iterate_vars[y].get_cp_var()
     yyT_var = curr.iterate_outerproduct_vars[y]
-    x_var = curr.iterate_vars[x]
+    x_var = curr.iterate_vars[x].get_cp_var()
     xxT_var = curr.iterate_outerproduct_vars[x]
 
     yxT_var = curr.iterate_cross_vars[y][x]
@@ -34,7 +34,7 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
         b = prev_step.get_rhs_const_vec()
         block_step = steps[i-2]
         u = block_step.get_output_var()
-        u_var = curr.iterate_vars[u]
+        u_var = curr.iterate_vars[u].get_cp_var()
         uuT_var = curr.iterate_outerproduct_vars[u]
         block_vars = block_step.list_x
         # print(block_vars)

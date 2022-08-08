@@ -13,9 +13,9 @@ def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outer
     A = step.get_rhs_matrix()
     D = step.get_lhs_matrix()
     b = step.get_rhs_const_vec()
-    y_var = curr.iterate_vars[y]
+    y_var = curr.iterate_vars[y].get_cp_var()
     yyT_var = curr.iterate_outerproduct_vars[y]
-    u_var = curr.iterate_vars[u]
+    u_var = curr.iterate_vars[u].get_cp_var()
     uuT_var = curr.iterate_outerproduct_vars[u]
     yuT_var = curr.iterate_cross_vars[y][u]
     # constraints = [y_var == A @ u_var, yyT_var == A @ uuT_var @ A.T, yuT_var == A @ uuT_var]

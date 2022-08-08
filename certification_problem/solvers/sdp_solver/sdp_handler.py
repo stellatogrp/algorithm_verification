@@ -2,6 +2,7 @@ import numpy as np
 import cvxpy as cp
 
 from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
+from certification_problem.solvers.sdp_solver.var_bounds.var_bounds import CPVarAndBounds
 from certification_problem.solvers.sdp_solver import SET_CANON_METHODS, STEP_CANON_METHODS
 
 
@@ -35,7 +36,7 @@ class SDPHandler(object):
         for p in param_sets:
             param_var = p.get_iterate()
             n = param_var.get_dim()
-            self.sdp_param_vars[param_var] = cp.Variable((n, 1))
+            self.sdp_param_vars[param_var] = CPVarAndBounds((n, 1))
             self.sdp_param_outerproduct_vars[param_var] = cp.Variable((n, n), symmetric=True)
             self.param_list.append(param_var)
         # print(self.sdp_param_outerproduct_vars)
@@ -152,7 +153,7 @@ class SingleIterationHandler(object):
     def create_noncross_iterate_vars(self):
         for iterate in self.iterates:
             n = iterate.get_dim()
-            self.iterate_vars[iterate] = cp.Variable((n, 1))
+            self.iterate_vars[iterate] = CPVarAndBounds((n, 1))
             self.iterate_outerproduct_vars[iterate] = cp.Variable((n, n), symmetric=True)
 
     def create_iterate_param_vars(self):

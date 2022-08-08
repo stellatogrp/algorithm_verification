@@ -7,7 +7,8 @@ class CertificationProblem(object):
 
     """Docstring for CertificationProblem. """
 
-    def __init__(self, N, init_sets, parameter_sets, objective, algorithm, qp_problem_data=None):
+    def __init__(self, N, init_sets, parameter_sets, objective, algorithm,
+                 qp_problem_data=None, add_RLT_constraints=False):
         # number of steps
         self.N = N
         # initial iterates set
@@ -23,6 +24,7 @@ class CertificationProblem(object):
             self.qp_problem_data = qp_problem_data
         else:
             self.qp_problem_data = {}
+        self.add_RLT_constraints = add_RLT_constraints
 
     def solve(self, solver_type=s.DEFAULT):
         # Define and solve the problem

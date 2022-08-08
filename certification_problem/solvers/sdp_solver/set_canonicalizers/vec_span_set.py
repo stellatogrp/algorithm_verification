@@ -7,7 +7,7 @@ def vec_span_canon(init_set, handler):
     v = init_set.v
     a = init_set.a
     b = init_set.b
-    x_var = handler.iterate_vars[x]
+    x_var = handler.iterate_vars[x].get_cp_var()
     xxT_var = handler.iterate_outerproduct_vars[x]
 
     c = cp.Variable()  # TODO: figure out, do we need to include these extra vars in the return?

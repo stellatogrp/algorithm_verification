@@ -7,7 +7,7 @@ def box_canon(init_set, handler):
     n = x.get_dim()
     l = init_set.l
     u = init_set.u
-    x_var = handler.iterate_vars[x]
+    x_var = handler.iterate_vars[x].get_cp_var()
     xxT_var = handler.iterate_outerproduct_vars[x]
     return [
                 # l <= x_var <= u,
