@@ -14,10 +14,11 @@ class SDPSolver(Solver):
 
     def solve(self):
         # Create SDP relaxation and solve
-        self.handler.solve()
+        res = self.handler.solve()
+        return res
 
-    def canonicalize(self):
+    def canonicalize(self, **kwargs):
         # Iterate through steps and canonicalize them
-        handler = SDPHandler(self.CP)
+        handler = SDPHandler(self.CP, **kwargs)
         self.handler = handler
         handler.canonicalize()

@@ -26,11 +26,11 @@ class CertificationProblem(object):
             self.qp_problem_data = {}
         self.add_RLT_constraints = add_RLT_constraints
 
-    def solve(self, solver_type=s.DEFAULT):
+    def solve(self, solver_type=s.DEFAULT, **kwargs):
         # Define and solve the problem
         if solver_type == s.SDP:
             solver = SDPSolver(self)
-            solver.canonicalize()
+            solver.canonicalize(**kwargs)
             # TODO break this out and add a way to specify the variable
             # solver.handler.add_convexity_constraints(self.qp_problem_data['A'])
             res = solver.solve()

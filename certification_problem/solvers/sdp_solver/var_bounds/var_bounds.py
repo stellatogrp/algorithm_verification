@@ -18,8 +18,8 @@ class CPVarAndBounds(object):
     def set_lower_bound(self, new_l):
         self.l = new_l
 
-    def get_upper_bounds(self):
+    def get_upper_bound(self):
         return self.u
 
-    def set_upper_bounds(self, new_u):
+    def set_upper_bound(self, new_u):
         self.u = new_u

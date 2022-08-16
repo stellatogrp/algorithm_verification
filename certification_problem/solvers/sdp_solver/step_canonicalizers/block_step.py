@@ -2,7 +2,10 @@ import cvxpy as cp
 import numpy as np
 
 
-def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
+from certification_problem.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
+
+
+def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
     step = steps[i]
 
     # print(step.list_x)
@@ -34,6 +37,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
                 handlers_to_use.append(curr)
 
     uuT_blocks = [[None for i in range(block_size)] for j in range(block_size)]
+    extra_RLT_cons = []
 
     for i in range(block_size):
         var1 = block_vars[i]
@@ -51,15 +55,39 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
                 cvx_var = get_cross(var1, var2, var1_handler, var2_handler, iter_id_map)
                 uuT_blocks[i][j] = cvx_var
                 uuT_blocks[j][i] = cvx_var.T
+                if add_RLT:
+                    v1_cpvar = var1_handler.iterate_vars[var1].get_cp_var()
+                    lower_v1 = var1_handler.iterate_vars[var1].get_lower_bound()
+                    upper_v1 = var1_handler.iterate_vars[var1].get_upper_bound()
+                    if not var2.is_param:
+                        v2_cpvar = var2_handler.iterate_vars[var2].get_cp_var()
+                        lower_v2 = var2_handler.iterate_vars[var2].get_lower_bound()
+                        upper_v2 = var2.handler.iterate_vars[var2].get_upper_bound()
+                    else:
+                        v2_cpvar = param_vars[var2].get_cp_var()
+                        lower_v2 = param_vars[var2].get_lower_bound()
+                        upper_v2 = param_vars[var2].get_upper_bound()
+                    extra_RLT_cons += RLT_constraints(cvx_var,
+                                                      v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
 
-    return [
-                cp.bmat([
-                    [uuT_var, u_var],
-                    [u_var.T, np.array([[1]])]
-                ]) >> 0,
-                uuT_var == cp.bmat(uuT_blocks),
-                u_var == cp.vstack(u_blocks),
-            ]
+    constraints = [
+                    cp.bmat([
+                        [uuT_var, u_var],
+                        [u_var.T, np.array([[1]])]
+                    ]) >> 0,
+                    uuT_var == cp.bmat(uuT_blocks),
+                    u_var == cp.vstack(u_blocks),
+                 ]
+    constraints += extra_RLT_cons
+
+    # bound prop
+    lower_u = curr.iterate_vars[u].get_lower_bound()
+    upper_u = curr.iterate_vars[u].get_upper_bound()
+    if add_RLT:
+        constraints += RLT_constraints(uuT_var, u_var, lower_u, upper_u, u_var, lower_u, upper_u)
+        constraints += [lower_u <= u_var, u_var <= upper_u]
+
+    return constraints
 
 
 def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):
@@ -80,6 +108,39 @@ def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):
         if var1_id < var2_id:
             return out.T
         return out
+
+
+def block_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
+    step = steps[i]
+    u = step.get_output_var()
+
+    out_l = []
+    out_u = []
+
+    block_vars = step.list_x
+    for var in block_vars:
+        if var.is_param:
+            out_l.append(param_vars[var].get_lower_bound())
+            out_u.append(param_vars[var].get_upper_bound())
+        else:
+            if curr_or_prev(u, var, iter_id_map) == 0:
+                # handlers_to_use.append(prev)
+                var_bound_obj = prev.iterate_vars[var]
+                handler_to_set = prev
+                out_l.append(var_bound_obj.get_lower_bound())
+                out_u.append(var_bound_obj.get_upper_bound())
+            else:
+                # handlers_to_use.append(curr)
+                var_bound_obj = curr.iterate_vars[var]
+                handler_to_set = curr
+                out_l.append(var_bound_obj.get_lower_bound())
+                out_u.append(var_bound_obj.get_upper_bound())
+    u_lower_bound = np.vstack(out_l)
+    u_upper_bound = np.vstack(out_u)
+    # print(var_lower_bound)
+    # print(var_upper_bound)
+    curr.iterate_vars[u].set_lower_bound(u_lower_bound)
+    curr.iterate_vars[u].set_upper_bound(u_upper_bound)
 
 
 def curr_or_prev(var1, var2, iter_id_map):

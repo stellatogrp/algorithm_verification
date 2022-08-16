@@ -3,12 +3,13 @@ import cvxpy as cp
 
 from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
 from certification_problem.solvers.sdp_solver.var_bounds.var_bounds import CPVarAndBounds
-from certification_problem.solvers.sdp_solver import SET_CANON_METHODS, STEP_CANON_METHODS
+from certification_problem.solvers.sdp_solver import (
+    SET_CANON_METHODS, STEP_CANON_METHODS, RLT_CANON_SET_METHODS, RLT_CANON_STEP_METHODS)
 
 
 class SDPHandler(object):
 
-    def __init__(self, CP):
+    def __init__(self, CP, **kwargs):
         self.CP = CP
         self.N = self.CP.N
         self.iterate_list = []
@@ -21,6 +22,10 @@ class SDPHandler(object):
         self.iteration_handlers = []
         self.sdp_constraints = []
         self.sdp_obj = 0
+        if 'add_RLT' in kwargs:
+            self.add_RLT = kwargs['add_RLT']
+        else:
+            self.add_RLT = False
 
     def create_iterate_id_maps(self):
         steps = self.CP.get_algorithm_steps()
@@ -58,14 +63,6 @@ class SDPHandler(object):
         # TODO add other sets
         # TODO add cross terms with multiple params
         for param_set in self.CP.get_parameter_sets():
-            # r = param_set.r
-            # param = param_set.get_iterate()
-            # b = self.sdp_param_vars[param]
-            # bbT = self.sdp_param_outerproduct_vars[param]
-            # self.sdp_constraints += [
-            #     cp.sum_squares(b) <= r ** 2, cp.trace(bbT) <= r ** 2,
-            # ]
-
             # NOTE this is a massive placeholder
             param_handler = ParameterHandler(self.sdp_param_vars, self.sdp_param_outerproduct_vars)
             canon_method = SET_CANON_METHODS[type(param_set)]
@@ -83,7 +80,7 @@ class SDPHandler(object):
                 self.iterate_to_type_map[output_var] = type(step)
                 canon_method = STEP_CANON_METHODS[type(step)]
                 constraints = canon_method(steps, i, curr, prev, self.iterate_to_id_map,
-                                           self.sdp_param_vars, self.sdp_param_outerproduct_vars)
+                                           self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT)
                 self.sdp_constraints += constraints
 
     def add_convexity_constraints(self, A):
@@ -113,14 +110,58 @@ class SDPHandler(object):
         obj = self.CP.objective
         # print(obj)
         sdp_obj, constraints = conv_resid_canon(obj,
-                                                self.iteration_handlers[self.N], self.iteration_handlers[self.N - 1])
+                                                # self.iteration_handlers[self.N], self.iteration_handlers[self.N - 1],
+                                                self.iteration_handlers,
+                                                self.add_RLT)
         self.sdp_obj += sdp_obj
         self.sdp_constraints += constraints
+
+    def propagate_lower_upper_bounds(self):
+        self.initialize_init_set_bounds()
+        self.initialize_param_set_bounds()
+        self.propagate_iterate_bounds()
+
+    def initialize_init_set_bounds(self):
+        for init_set in self.CP.get_init_sets():
+            canon_method = RLT_CANON_SET_METHODS[type(init_set)]
+            canon_method(init_set, self.iteration_handlers[0])
+            # x = init_set.get_iterate()
+            # print(self.iteration_handlers[0].iterate_vars[x].get_lower_bound())
+            # print(self.iteration_handlers[0].iterate_vars[x].get_upper_bound())
+
+    def initialize_param_set_bounds(self):
+        for param_set in self.CP.get_parameter_sets():
+            # NOTE this is a massive placeholder
+            param_handler = ParameterHandler(self.sdp_param_vars, self.sdp_param_outerproduct_vars)
+            canon_method = RLT_CANON_SET_METHODS[type(param_set)]
+            canon_method(param_set, param_handler)
+            # p = param_set.get_iterate()
+            # print(p)
+            # print(self.sdp_param_vars[p].get_lower_bound())
+            # print(self.sdp_param_vars[p].get_upper_bound())
+
+    def propagate_iterate_bounds(self):
+        steps = self.CP.get_algorithm_steps()
+        for k in range(1, self.N + 1):
+            curr = self.iteration_handlers[k]
+            prev = self.iteration_handlers[k - 1]
+            for i, step in enumerate(steps):
+                output_var = step.get_output_var()
+                canon_method = RLT_CANON_STEP_METHODS[type(step)]
+                canon_method(steps, i, curr, prev, self.iterate_to_id_map,
+                             self.sdp_param_vars, self.sdp_param_outerproduct_vars)
+                # u = step.get_output_var()
+                # print(prev.iterate_vars[u].get_upper_bound())
+                # print(curr.iterate_vars[u].get_upper_bound())
 
     def canonicalize(self):
         self.create_iterate_id_maps()
         self.compute_sdp_param_vars()
         self.create_iteration_handlers()
+
+        if self.add_RLT:
+            self.propagate_lower_upper_bounds()
+
         self.canonicalize_initial_sets()
         self.canonicalize_parameter_sets()
         self.canonicalize_steps()
@@ -132,6 +173,7 @@ class SDPHandler(object):
         prob = cp.Problem(cp.Maximize(self.sdp_obj), self.sdp_constraints)
         res = prob.solve()
         print(res)
+        return res
 
 
 class SingleIterationHandler(object):
