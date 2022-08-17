@@ -62,7 +62,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
                     if not var2.is_param:
                         v2_cpvar = var2_handler.iterate_vars[var2].get_cp_var()
                         lower_v2 = var2_handler.iterate_vars[var2].get_lower_bound()
-                        upper_v2 = var2.handler.iterate_vars[var2].get_upper_bound()
+                        upper_v2 = var2_handler.iterate_vars[var2].get_upper_bound()
                     else:
                         v2_cpvar = param_vars[var2].get_cp_var()
                         lower_v2 = param_vars[var2].get_lower_bound()

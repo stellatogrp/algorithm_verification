@@ -4,7 +4,7 @@ import cvxpy as cp
 from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
 from certification_problem.solvers.sdp_solver.var_bounds.var_bounds import CPVarAndBounds
 from certification_problem.solvers.sdp_solver import (
-    SET_CANON_METHODS, STEP_CANON_METHODS, RLT_CANON_SET_METHODS, RLT_CANON_STEP_METHODS)
+    SET_CANON_METHODS, STEP_CANON_METHODS, OBJ_CANON_METHODS, RLT_CANON_SET_METHODS, RLT_CANON_STEP_METHODS)
 
 
 class SDPHandler(object):
@@ -109,10 +109,8 @@ class SDPHandler(object):
     def canonicalize_objective(self):
         obj = self.CP.objective
         # print(obj)
-        sdp_obj, constraints = conv_resid_canon(obj,
-                                                # self.iteration_handlers[self.N], self.iteration_handlers[self.N - 1],
-                                                self.iteration_handlers,
-                                                self.add_RLT)
+        obj_canon = OBJ_CANON_METHODS[type(obj)]
+        sdp_obj, constraints = obj_canon(obj, self.iteration_handlers, self.add_RLT)
         self.sdp_obj += sdp_obj
         self.sdp_constraints += constraints
 

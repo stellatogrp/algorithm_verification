@@ -2,7 +2,7 @@ import gurobipy as gp
 import numpy as np
 
 from gurobipy import GRB
-from certification_problem.solvers.global_solver import SET_CANON_METHODS, STEP_CANON_METHODS
+from certification_problem.solvers.global_solver import SET_CANON_METHODS, STEP_CANON_METHODS, OBJ_CANON_METHODS
 from certification_problem.solvers.global_solver.obj_canonicalizers.convergence_residual import conv_resid_canon
 
 
@@ -82,7 +82,8 @@ class GlobalHandler(object):
 
     def canonicalize_objective(self):
         obj = self.CP.objective
-        conv_resid_canon(obj, self.model, self.iterate_to_gp_var_map)
+        obj_canon = OBJ_CANON_METHODS[type(obj)]
+        obj_canon(obj, self.model, self.iterate_to_gp_var_map)
 
     def canonicalize(self):
         self.create_gp_model()

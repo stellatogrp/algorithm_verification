@@ -28,6 +28,12 @@ from certification_problem.solvers.sdp_solver.step_canonicalizers.nonneg_orthant
 from certification_problem.solvers.sdp_solver.step_canonicalizers.max_with_vec_step import max_vec_canon
 from certification_problem.solvers.sdp_solver.step_canonicalizers.min_with_vec_step import min_vec_canon
 
+from certification_problem.objectives.convergence_residual import ConvergenceResidual
+from certification_problem.objectives.outer_prod_trace import OuterProdTrace
+
+from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
+from certification_problem.solvers.sdp_solver.obj_canonicalizer.outer_prod_trace import outer_prod_trace_canon
+
 SET_CANON_METHODS = {
     CenteredL2BallSet: centered_l2_ball_canon,
     EllipsoidalSet: ellipsoidal_canon,
@@ -53,4 +59,9 @@ RLT_CANON_STEP_METHODS = {
     BlockStep: block_step_bound_canon,
     LinearStep: linear_step_bound_canon,
     NonNegProjStep: nonneg_orthant_proj_bound_canon,
+}
+
+OBJ_CANON_METHODS = {
+    ConvergenceResidual: conv_resid_canon,
+    OuterProdTrace: outer_prod_trace_canon,
 }

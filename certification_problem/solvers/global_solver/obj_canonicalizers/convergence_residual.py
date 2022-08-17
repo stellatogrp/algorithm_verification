@@ -16,7 +16,7 @@ def conv_resid_canon(iterate, model, iterate_to_gp_var_map):
     twoIn = 2 * In
 
     obj = xN @ In @ xN - xN @ twoIn @ xNminus1 + xNminus1 @ In @ xNminus1
-    # obj = 0
-    # for i in range(n):
-    #     obj += xN[i] ** 2
+    # obj = xN @ In @ xN - xNminus1 @ In @ xNminus1
+    # c = np.ones(n)
+    # obj = c @ xN
     model.setObjective(obj, GRB.MAXIMIZE)

@@ -19,6 +19,12 @@ from certification_problem.solvers.global_solver.step_canonicalizers.hl_linear_s
 from certification_problem.solvers.global_solver.step_canonicalizers.nonneg_orthant_proj_step import (
     nonneg_orthant_proj_canon, )
 
+from certification_problem.objectives.convergence_residual import ConvergenceResidual
+from certification_problem.objectives.outer_prod_trace import OuterProdTrace
+
+from certification_problem.solvers.global_solver.obj_canonicalizers.convergence_residual import conv_resid_canon
+from certification_problem.solvers.global_solver.obj_canonicalizers.outer_prod_trace import outer_prod_trace_canon
+
 SET_CANON_METHODS = {
     CenteredL2BallSet: centered_l2_ball_canon,
     EllipsoidalSet: ellipsoidal_set_canon,
@@ -31,4 +37,9 @@ SET_CANON_METHODS = {
 STEP_CANON_METHODS = {
     HighLevelLinearStep: hl_linear_step_canon,
     NonNegProjStep: nonneg_orthant_proj_canon,
+}
+
+OBJ_CANON_METHODS = {
+    ConvergenceResidual: conv_resid_canon,
+    OuterProdTrace: outer_prod_trace_canon,
 }

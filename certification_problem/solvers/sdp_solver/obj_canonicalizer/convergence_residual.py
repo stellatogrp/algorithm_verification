@@ -19,6 +19,8 @@ def conv_resid_canon(obj, handlers, add_RLT):
     xNminus1xNminus1T = handlerNminus1.iterate_outerproduct_vars[x]
     xcross = handlerN.iterate_cross_vars[x][x]
     ret_obj = cp.trace(xNxNT - 2 * xcross + xNminus1xNminus1T)
+    # ret_obj = cp.trace(xNxNT - xNminus1xNminus1T)
+
     # constraints = [
     #     cp.bmat([
     #         [xNxNT, xcross, xN],
@@ -34,7 +36,7 @@ def conv_resid_canon(obj, handlers, add_RLT):
         upper_xNminus1 = handlerNminus1.iterate_vars[x].get_upper_bound()
         constraints += RLT_constraints(xcross, xN, lower_xN, upper_xN, xNminus1, lower_xNminus1, upper_xNminus1)
 
-    test_x = True
+    test_x = False
     if test_x:
         for i in range(N):
             curr = handlers[i+1]
@@ -58,5 +60,6 @@ def conv_resid_canon(obj, handlers, add_RLT):
             if add_RLT:
                 constraints += RLT_constraints(xcross, xi, lower_xi, upper_xi, ximinus1, lower_ximinus1, upper_ximinus1)
     # c = np.ones(n)
+    # ret_obj = c @ xN
     # ret_obj = cp.trace(xNxNT)
     return ret_obj, constraints
