@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse as spa
+import matplotlib.pyplot as plt
 
 from certification_problem.certification_problem import CertificationProblem
 from certification_problem.variables.iterate import Iterate
@@ -8,6 +9,7 @@ from certification_problem.basic_algorithm_steps.block_step import BlockStep
 from certification_problem.basic_algorithm_steps.linear_step import LinearStep
 from certification_problem.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from certification_problem.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from certification_problem.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 
 from certification_problem.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 
@@ -47,14 +49,18 @@ def test_NNLS_SDP(N=1):
     x = Iterate(n, name='x')
     b = Parameter(m, name='b')
 
-    step1 = BlockStep(u, [x, b])
-    step2 = LinearStep(y, u, A=C, D=D, b=b_const)
-    step3 = NonNegProjStep(x, y)
-    zeros = np.zeros((n, 1))
-    ones = np.ones((n, 1))
-    # step3 = MaxWithVecStep(x, y, l=ones)
-    steps = [step1, step2, step3]
-    # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
+    # step1 = BlockStep(u, [x, b])
+    # step2 = LinearStep(y, u, A=C, D=D, b=b_const)
+    # step3 = NonNegProjStep(x, y)
+    # zeros = np.zeros((n, 1))
+    # ones = np.ones((n, 1))
+    # # step3 = MaxWithVecStep(x, y, l=ones)
+    # steps = [step1, step2, step3]
+    # # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
+
+    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const)
+    step2 = NonNegProjStep(x, y)
+    steps = [step1, step2]
 
     Q = np.eye(n)
     c = np.zeros((n, 1))
@@ -108,13 +114,15 @@ def test_NNLS_GLOBAL(N=1):
     D = spa.eye(n)
     # b_const = spa.csc_matrix(np.zeros((n, 1)))
     b_const = np.zeros(n)
+    l = np.zeros(n)
 
     y = Iterate(n, name='y')
     x = Iterate(n, name='x')
     b = Parameter(m, name='b')
 
     step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const)
-    step2 = NonNegProjStep(x, y)
+    # step2 = NonNegProjStep(x, y)
+    step2 = MaxWithVecStep(x, y, l)
     # step2 = HighLevelLinearStep(x, [y], D=D, A=D, b=b_const)
 
     steps = [step1]
@@ -140,11 +148,35 @@ def test_NNLS_GLOBAL(N=1):
     return res
 
 
+def plot_N_vals():
+    N_vals = [1, 2, 3, 4, 5, 6, 7]
+    sdp_vals = []
+    global_vals = []
+    for N in N_vals:
+        res_sdp = test_NNLS_SDP(N=N)
+        res_global = test_NNLS_GLOBAL(N=N)[0]
+        sdp_vals.append(res_sdp)
+        global_vals.append(res_global)
+    print(sdp_vals, global_vals)
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.plot(N_vals, global_vals, label='QCQP', color='red')
+    ax.plot(N_vals, sdp_vals, label='SDP', color='blue')
+
+    plt.title('Convergence residuals')
+    plt.xlabel('$N$')
+    plt.ylabel('maximum $||x^N - x^{N-1}||_2^2$')
+    plt.yscale('log')
+
+    plt.legend()
+    plt.show()
+
+
 def main():
-    N = 2
+    N = 1
     res_sdp = test_NNLS_SDP(N=N)
-    res_global = test_NNLS_GLOBAL(N=N)
-    print('sdp:', res_sdp, 'global:', res_global)
+    # res_global = test_NNLS_GLOBAL(N=N)
+    # print('sdp:', res_sdp, 'global:', res_global)
+    # plot_N_vals()
 
 
 if __name__ == '__main__':

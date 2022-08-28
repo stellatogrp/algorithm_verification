@@ -10,7 +10,7 @@ def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map
     u = step.get_input_var()  # remember that this is a block of variables
 
     y_var = iter_to_gp_var_map[y]
-    constraint_lhs = y_var[k]
+    constraint_lhs = D @ y_var[k]
     constraint_rhs = 0
 
     # create the boundaries to partition the A matrix

@@ -1,10 +1,11 @@
 import numpy as np
 import cvxpy as cp
 
-from certification_problem.solvers.sdp_solver.obj_canonicalizer.convergence_residual import conv_resid_canon
 from certification_problem.solvers.sdp_solver.var_bounds.var_bounds import CPVarAndBounds
 from certification_problem.solvers.sdp_solver import (
-    SET_CANON_METHODS, STEP_CANON_METHODS, OBJ_CANON_METHODS, RLT_CANON_SET_METHODS, RLT_CANON_STEP_METHODS)
+    SET_CANON_METHODS, STEP_CANON_METHODS, OBJ_CANON_METHODS, RLT_CANON_SET_METHODS, RLT_CANON_STEP_METHODS,
+    HL_TO_BASIC_STEP_METHODS,
+)
 
 
 class SDPHandler(object):
@@ -26,6 +27,22 @@ class SDPHandler(object):
             self.add_RLT = kwargs['add_RLT']
         else:
             self.add_RLT = False
+
+    def convert_hl_to_basic_steps(self):
+        all_steps_canonicalizeable = True
+        steps = self.CP.get_algorithm_steps()
+        new_steps = []
+        for step in steps:
+            if type(step) in HL_TO_BASIC_STEP_METHODS:
+                all_steps_canonicalizeable = False
+                canon_method = HL_TO_BASIC_STEP_METHODS[type(step)]
+                new_vars, canon_steps = canon_method(step)
+                new_steps += canon_steps
+            else:
+                new_steps += [step]
+        self.CP.set_algorithm_steps(new_steps)
+        if not all_steps_canonicalizeable:
+            self.convert_hl_to_basic_steps()
 
     def create_iterate_id_maps(self):
         steps = self.CP.get_algorithm_steps()
@@ -153,6 +170,10 @@ class SDPHandler(object):
                 # print(curr.iterate_vars[u].get_upper_bound())
 
     def canonicalize(self):
+        self.convert_hl_to_basic_steps()
+        print('----BASIC STEP SDP----')
+        self.CP.print_cp()
+
         self.create_iterate_id_maps()
         self.compute_sdp_param_vars()
         self.create_iteration_handlers()

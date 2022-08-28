@@ -32,11 +32,13 @@ class HighLevelLinearStep(Step):
         if D_dim[1] != y_dim[0]:
             raise AssertionError('LHS D and y dimensions do not match')
         if A_dim[1] != u_dim:
+            print(A_dim, u_dim)
             raise AssertionError('RHS A and u dimensions do not match')
         if A_dim[0] != b_dim[0]:
             print(A_dim, b_dim)
             raise AssertionError('RHS A and b dimensions do not match')
         if D_dim[0] != A_dim[0]:
+            print(D_dim, A_dim)
             raise AssertionError('LHS and RHS vector dimensions do not match')
 
     def __str__(self):

@@ -66,3 +66,6 @@ class CertificationProblem(object):
 
     def get_algorithm_steps(self):
         return self.algorithm
+
+    def set_algorithm_steps(self, new_steps):
+        self.algorithm = new_steps

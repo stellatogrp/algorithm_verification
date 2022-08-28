@@ -7,7 +7,7 @@ class MaxWithVecStep(Step):
     """Docstring for MaxWithVecStep. """
 
     def __init__(self, y: Iterate, x: Iterate, l=None):
-        """Step representing y = (x)_+
+        """Step representing y = max(x, l) elementwise
         """
         self.x = x
         self.y = y

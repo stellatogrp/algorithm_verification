@@ -187,6 +187,15 @@ def test_NNLS_SDPRLT(m, n, N, t, r, A):
         ]) >> 0,
     ]
 
+    x2x0T = cp.Variable((n, n))
+    constraints += [
+        cp.bmat([
+            [x2x2T, x2x0T, x2],
+            [x2x0T.T, x0x0T, x0],
+            [x2.T, x0.T, np.array([[1]])]
+        ]) >> 0,
+    ]
+
 
     # RLT
     RLT_add = True
@@ -199,6 +208,12 @@ def test_NNLS_SDPRLT(m, n, N, t, r, A):
         y1_l, y1_u = lin_bound_map(u1_l, u1_u, C)
         y1_vb = VarBounds(y1, y1y1T, y1_l, y1_u)
         x1_l, x1_u = nonneg_proj_bound_map(y1_l, y1_u, n)
+
+        u2_l = np.vstack([x1_l, b_l])
+        u2_u = np.vstack([x1_u, b_u])
+        y2_l, y2_u = lin_bound_map(u2_l, u2_u, C)
+        x2_l, x2_u = nonneg_proj_bound_map(y2_l, y2_u, n)
+
         # RLT constraints with iterates and b
         constraints += RLT_constraints(x0bT, x0, x0_l, x0_u, b, b_l, b_u)
         # constraints += RLT_constraints(u1bT)
@@ -215,8 +230,11 @@ def test_NNLS_SDPRLT(m, n, N, t, r, A):
         constraints += RLT_constraints(x1x0T, x1, x1_l, x1_u, x0, x0_l, x0_u)
         constraints += RLT_constraints(y1u1T, y1, y1_l, y1_u, u1, u1_l, u1_u)
 
-    # obj = cp.trace(x2x2T - 2 * x2x1T + x1x1T)
-    obj = cp.trace(x1x1T - 2 * x1x0T + x0x0T)
+        constraints += RLT_constraints(x2x1T, x2, x2_l, x2_u, x1, x1_l, x1_u)
+        constraints += RLT_constraints(x2x2T, x2, x2_l, x2_u, x2, x2_l, x2_u)
+
+    obj = cp.trace(x2x2T - 2 * x2x1T + x1x1T)
+    # obj = cp.trace(x1x1T - 2 * x1x0T + x0x0T)
     prob = cp.Problem(cp.Maximize(obj), constraints)
     res = prob.solve()
     print(res)
@@ -319,7 +337,7 @@ def test_nonneg_proj_map():
 def main():
     m = 5
     n = 3
-    N = 1
+    N = 2
     t = .05
     r = 1
 

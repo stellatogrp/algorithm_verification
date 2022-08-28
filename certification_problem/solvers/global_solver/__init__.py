@@ -14,10 +14,16 @@ from certification_problem.solvers.global_solver.set_canonicalizers.vec_span_set
 
 from certification_problem.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from certification_problem.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from certification_problem.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from certification_problem.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 
 from certification_problem.solvers.global_solver.step_canonicalizers.hl_linear_step import hl_linear_step_canon
 from certification_problem.solvers.global_solver.step_canonicalizers.nonneg_orthant_proj_step import (
     nonneg_orthant_proj_canon, )
+from certification_problem.solvers.global_solver.step_canonicalizers.max_with_vec_step import (
+    max_vec_canon, )
+from certification_problem.solvers.global_solver.step_canonicalizers.min_with_vec_step import (
+    min_vec_canon, )
 
 from certification_problem.objectives.convergence_residual import ConvergenceResidual
 from certification_problem.objectives.outer_prod_trace import OuterProdTrace
@@ -37,6 +43,8 @@ SET_CANON_METHODS = {
 STEP_CANON_METHODS = {
     HighLevelLinearStep: hl_linear_step_canon,
     NonNegProjStep: nonneg_orthant_proj_canon,
+    MaxWithVecStep: max_vec_canon,
+    MinWithVecStep: min_vec_canon,
 }
 
 OBJ_CANON_METHODS = {
