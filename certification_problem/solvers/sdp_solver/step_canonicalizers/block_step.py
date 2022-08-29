@@ -70,6 +70,9 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
                     extra_RLT_cons += RLT_constraints(cvx_var,
                                                       v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
 
+    # print(u)
+    # print(uuT_blocks)
+    # exit(0)
     constraints = [
                     cp.bmat([
                         [uuT_var, u_var],

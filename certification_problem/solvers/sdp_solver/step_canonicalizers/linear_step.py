@@ -14,12 +14,16 @@ def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outer
     A = step.get_rhs_matrix()
     D = step.get_lhs_matrix()
     b = step.get_rhs_const_vec()
+    b = b.reshape(-1, 1)
     y_var = curr.iterate_vars[y].get_cp_var()
     yyT_var = curr.iterate_outerproduct_vars[y]
     u_var = curr.iterate_vars[u].get_cp_var()
     uuT_var = curr.iterate_outerproduct_vars[u]
     yuT_var = curr.iterate_cross_vars[y][u]
     # constraints = [y_var == A @ u_var, yyT_var == A @ uuT_var @ A.T, yuT_var == A @ uuT_var]
+    # print(A.shape, u_var.shape, b.shape)
+    # print(A @ u_var @ b.T)
+    # exit(0)
     constraints = [D @ y_var == A @ u_var + b,
                    D @ yyT_var @ D.T == A @ uuT_var @ A.T + A @ u_var @ b.T + b @ u_var.T @ A.T + b @ b.T,
                    D @ yuT_var == A @ uuT_var + b @ u_var.T,
@@ -68,14 +72,18 @@ def linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param
     y = step.get_output_var()
     A = step.get_rhs_matrix()
     D = step.get_lhs_matrix()
+    Dinv = step.get_lhs_matrix_inv()
     b = step.get_rhs_const_vec()
+
+    DinvA = Dinv @ A
+    Dinvb = Dinv @ b
     lower_u = curr.iterate_vars[u].get_lower_bound()
     upper_u = curr.iterate_vars[u].get_upper_bound()
     # print(lower_u, upper_u)
-    lower_y, upper_y = lin_bound_map(lower_u, upper_u, A)
+    lower_y, upper_y = lin_bound_map(lower_u, upper_u, DinvA)
     # print(lower_y + b, upper_y + b)
-    curr.iterate_vars[y].set_lower_bound(lower_y + b)
-    curr.iterate_vars[y].set_upper_bound(upper_y + b)
+    curr.iterate_vars[y].set_lower_bound(lower_y + Dinvb)
+    curr.iterate_vars[y].set_upper_bound(upper_y + Dinvb)
 
 
 def lin_bound_map(l, u, A):

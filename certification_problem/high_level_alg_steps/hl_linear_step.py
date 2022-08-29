@@ -6,7 +6,7 @@ class HighLevelLinearStep(Step):
 
     """Docstring for HighLevelLinearStep. """
 
-    def __init__(self, y: Iterate, u: [Iterate], D=None, A=None, b=None):
+    def __init__(self, y: Iterate, u: [Iterate], D=None, A=None, b=None, Dinv=None):
         """Step representing Dy = A[u] + b
 
         Args:
@@ -17,6 +17,7 @@ class HighLevelLinearStep(Step):
         self.b = b
         self.u = u
         self.y = y
+        self.Dinv = Dinv
         self._test_dims()
 
     def _test_dims(self):
@@ -59,6 +60,9 @@ class HighLevelLinearStep(Step):
 
     def get_lhs_matrix(self):
         return self.D
+
+    def get_lhs_matrix_inv(self):
+        return self.Dinv
 
     def get_rhs_const_vec(self):
         return self.b

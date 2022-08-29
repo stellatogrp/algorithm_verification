@@ -24,7 +24,7 @@ from certification_problem.objectives.outer_prod_trace import OuterProdTrace
 
 def test_OSQP_GLOBAL(N=1):
     print('--GLOBAL--')
-    m = 5
+    m = 3
     n = 3
     r = 1
 
@@ -59,10 +59,10 @@ def test_OSQP_GLOBAL(N=1):
 
     # step 1
     s1_Dtemp = P + sigma * In + rho * ATA
-    s1_Atemp = spa.bmat([[sigma * In, -In, rho*A.T, -rho * A.T]])
+    s1_Atemp = spa.bmat([[sigma * In, rho*A.T, -rho * A.T, -In]])
     s1_D = In
     s1_A = spa.csc_matrix(np.linalg.inv(s1_Dtemp) @ s1_Atemp)
-    step1 = HighLevelLinearStep(x, [x, b, z, y], D=s1_D, A=s1_A, b=zeros_n)
+    step1 = HighLevelLinearStep(x, [x, z, y, b], D=s1_D, A=s1_A, b=zeros_n)
 
     # step 2
     s2_D = Im
@@ -102,7 +102,8 @@ def test_OSQP_GLOBAL(N=1):
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
-    res = CP.solve(solver_type='GLOBAL')
+    # res = CP.solve(solver_type='GLOBAL')
+    res = CP.solve(solver_type='SDP', add_RLT=False)
     return res
 
 

@@ -58,7 +58,7 @@ def test_NNLS_SDP(N=1):
     # steps = [step1, step2, step3]
     # # print(step1.get_output_var().name, step2.get_output_var().name, step3.get_output_var().name)
 
-    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const)
+    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
     step2 = NonNegProjStep(x, y)
     steps = [step1, step2]
 
@@ -120,7 +120,7 @@ def test_NNLS_GLOBAL(N=1):
     x = Iterate(n, name='x')
     b = Parameter(m, name='b')
 
-    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const)
+    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
     # step2 = NonNegProjStep(x, y)
     step2 = MaxWithVecStep(x, y, l)
     # step2 = HighLevelLinearStep(x, [y], D=D, A=D, b=b_const)
