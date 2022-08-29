@@ -20,48 +20,85 @@ from certification_problem.objectives.convergence_residual import ConvergenceRes
 from certification_problem.objectives.outer_prod_trace import OuterProdTrace
 
 
+class VarLoc:
+    def __init__(self, dim, start_loc):
+        self.dim = dim
+        self.plus_var = cp.Variable((dim, 1))
+        self.plus_start_loc = start_loc
+        self.plus_end_loc = start_loc + dim
+        self.minus_var = cp.Variable((dim, 1))
+        self.minus_start_loc = start_loc + dim
+        self.minus_end_loc = start_loc + 2 * dim
+        # self.slack_var = cp.Variable((dim, 1))
+        # self.slack_l = start_loc + 2 * dim
+        # self.slack_u = start_loc + 3 * dim
+
+
+class SlackLoc:
+    def __init__(self, dim, start_loc):
+        self.dim = dim
+        self.var = cp.Variable((dim, 1))
+        self.start_loc = start_loc
+        self.end_loc = start_loc + dim
+
+
+def get_full_var(lambd, x):
+    x_plus = lambd[x.plus_start_loc: x.plus_end_loc]
+    x_minus = lambd[x.minus_start_loc: x.minus_end_loc]
+    return x_plus - x_minus
+
+
+def get_outer_product(Lambd_mat, x, y):
+    x_plus_start = x.plus_start_loc
+    x_plus_end = x.plus_end_loc
+    x_minus_start = x.minus_start_loc
+    x_minus_end = x.minus_end_loc
+    y_plus_start = y.plus_start_loc
+    y_plus_end = y.plus_end_loc
+    y_minus_start = y.minus_start_loc
+    y_minus_end = y.minus_end_loc
+    # print(x_plus_start, x_plus_end, x_minus_start, x_minus_end)
+    xplus_yplusT = Lambd_mat[x_plus_start: x_plus_end, y_plus_start: y_plus_end]
+    xplus_yminusT = Lambd_mat[x_plus_start: x_plus_end, y_minus_start: y_minus_end]
+    xminus_yplusT = Lambd_mat[x_minus_start: x_minus_end, y_plus_start: y_plus_end]
+    xminus_yminusT = Lambd_mat[x_minus_start: x_minus_end, y_minus_start: y_minus_end]
+    return xplus_yplusT - xplus_yminusT - xminus_yplusT + xminus_yminusT
+
+
+def get_plus_part(lambd, x):
+    # print(x.plus_start_loc, x.plus_end_loc)
+    x_plus = lambd[x.plus_start_loc: x.plus_end_loc]
+    return x_plus
+
+
+def get_plus_plus_outer_prod(Lambd_mat, x, y):
+    x_plus_start = x.plus_start_loc
+    x_plus_end = x.plus_end_loc
+    y_plus_start = y.plus_start_loc
+    y_plus_end = y.plus_end_loc
+    xplus_yplusT = Lambd_mat[x_plus_start: x_plus_end, y_plus_start: y_plus_end]
+    return xplus_yplusT
+
+
+def get_plus_minus_outer_prod(Lambd_mat, x, y):
+    x_plus_start = x.plus_start_loc
+    x_plus_end = x.plus_end_loc
+    y_minus_start = y.minus_start_loc
+    y_minus_end = y.minus_end_loc
+    xplus_yminusT = Lambd_mat[x_plus_start: x_plus_end, y_minus_start: y_minus_end]
+    return xplus_yminusT
+
+
+def get_minus_minus_outer_prod(Lambd_mat, x, y):
+    x_minus_start = x.minus_start_loc
+    x_minus_end = x.minus_end_loc
+    y_minus_start = y.minus_start_loc
+    y_minus_end = y.minus_end_loc
+    xminus_yminusT = Lambd_mat[x_minus_start: x_minus_end, y_minus_start: y_minus_end]
+    return xminus_yminusT
+
+
 def test_NNLS_one_step_splitting():
-    class VarLoc:
-        def __init__(self, dim, start_loc):
-            self.dim = dim
-            self.plus_var = cp.Variable((dim, 1))
-            self.plus_start_loc = start_loc
-            self.plus_end_loc = start_loc + dim
-            self.minus_var = cp.Variable((dim, 1))
-            self.minus_start_loc = start_loc + dim
-            self.minus_end_loc = start_loc + 2 * dim
-            # self.slack_var = cp.Variable((dim, 1))
-            # self.slack_l = start_loc + 2 * dim
-            # self.slack_u = start_loc + 3 * dim
-
-    class SlackLoc:
-        def __init__(self, dim, start_loc):
-            self.dim = dim
-            self.var = cp.Variable((dim, 1))
-            self.start_loc = start_loc
-            self.end_loc = start_loc + dim
-
-    def get_full_var(lambd, x):
-        x_plus = lambd[x.plus_start_loc: x.plus_end_loc]
-        x_minus = lambd[x.minus_start_loc: x.minus_end_loc]
-        return x_plus - x_minus
-
-    def get_outer_product(Lambd_mat, x, y):
-        x_plus_start = x.plus_start_loc
-        x_plus_end = x.plus_end_loc
-        x_minus_start = x.minus_start_loc
-        x_minus_end = x.minus_end_loc
-        y_plus_start = y.plus_start_loc
-        y_plus_end = y.plus_end_loc
-        y_minus_start = y.minus_start_loc
-        y_minus_end = y.minus_end_loc
-        # print(x_plus_start, x_plus_end, x_minus_start, x_minus_end)
-        xplus_yplusT = Lambd_mat[x_plus_start: x_plus_end, y_plus_start: y_plus_end]
-        xplus_yminusT = Lambd_mat[x_plus_start: x_plus_end, y_minus_start: y_minus_end]
-        xminus_yplusT = Lambd_mat[x_minus_start: x_minus_end, y_plus_start: y_plus_end]
-        xminus_yminusT = Lambd_mat[x_minus_start: x_minus_end, y_minus_start: y_minus_end]
-        return xplus_yplusT - xplus_yminusT - xminus_yplusT + xminus_yminusT
-
     m = 5
     n = 3
     r = 1
@@ -151,7 +188,7 @@ def test_NNLS_one_step_splitting():
         y1y1T_var == C @ cp.bmat([
             [x0x0T_var, x0bT_var],
             [x0bT_var.T, bbT_var]
-        ])@ C.T,
+        ]) @ C.T,
     ]
 
     #proj for x1
@@ -168,10 +205,121 @@ def test_NNLS_one_step_splitting():
     # constraints += [x1x0T_var >= 0]
     # obj = cp.Maximize(cp.trace(y1y1T_var))
     obj = cp.Maximize(cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var))
+    # obj = cp.Maximize(cp.trace(x1x1T_var))
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
     print(res)
     # print(Lambd_mat.value, y1_var.value)
+
+
+def test_NNLS_one_step_split_only_y():
+    m = 5
+    n = 3
+    r = 1
+
+    In = spa.eye(n)
+
+    np.random.seed(0)
+    A = np.random.randn(m, n)
+    A = spa.csc_matrix(A)
+    ATA = A.T @ A
+    # print(A)
+
+    t = .05
+
+    C = spa.bmat([[In - t * ATA, t * A.T]])
+    D = spa.eye(n)
+    b_const = np.zeros(n)
+
+    y1 = VarLoc(n, 0)
+    x0 = VarLoc(n, 2 * n)
+    b = VarLoc(m, 4 * n)
+    iter_end = 4 * n + 2 * m
+    print(iter_end)
+    s_x0 = SlackLoc(1, iter_end)
+    s_b = SlackLoc(1, iter_end + 1)
+
+    lambd = cp.vstack([y1.plus_var, y1.minus_var,
+                       x0.plus_var, x0.minus_var,
+                       b.plus_var, b.minus_var,
+                       s_x0.var, s_b.var])
+    print(lambd.shape, iter_end + 1)
+
+    lambd_dim = lambd.shape[0]
+    Lambd_mat = cp.Variable((lambd_dim, lambd_dim), symmetric=True)
+    full_mat = cp.bmat([
+        [Lambd_mat, lambd],
+        [lambd.T, np.array([[1]])]
+    ])
+    constraints = [full_mat >= 0, full_mat >> 0]
+
+    bbT_var = get_outer_product(Lambd_mat, b, b)
+    x0x0T_var = get_outer_product(Lambd_mat, x0, x0)
+    constraints += [
+        cp.trace(bbT_var) + s_b.var == r ** 2,
+        cp.trace(x0x0T_var) + s_x0.var == r ** 2
+    ]
+    # linstep for y1
+    # x0_var = get_full_var(lambd, x0)
+    # b_var = get_full_var(lambd, b)
+    # y1_var = get_full_var(lambd, y1)
+    # y1y1T_var = get_outer_product(Lambd_mat, y1, y1)
+    # x0bT_var = get_outer_product(Lambd_mat, x0, b)
+    # constraints += [
+    #     y1_var == C @ cp.vstack([x0_var, b_var]),
+    #     y1y1T_var == C @ cp.bmat([
+    #         [x0x0T_var, x0bT_var],
+    #         [x0bT_var.T, bbT_var]
+    #     ]) @ C.T,
+    # ]
+    x0_var = get_full_var(lambd, x0)
+    x0x0T_var = get_outer_product(Lambd_mat, x0, x0)
+    x0bT_var = get_outer_product(Lambd_mat, x0, b)
+    x0plus_var = get_plus_part(lambd, x0)
+    x0plus_x0plusT_var = get_plus_plus_outer_prod(Lambd_mat, x0, x0)
+    b_var = get_full_var(lambd, b)
+    y1_var = get_full_var(lambd, y1)
+    y1y1T_var = get_outer_product(Lambd_mat, y1, y1)
+    y1plus_y1plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, y1)
+    y1minus_y1minusT_var = get_minus_minus_outer_prod(Lambd_mat, y1, y1)
+
+    x0plus_bplusT_var = get_plus_plus_outer_prod(Lambd_mat, x0, b)
+    x0plus_bminusT_var = Lambd_mat[x0.plus_start_loc: x0.plus_end_loc, b.minus_start_loc: b.minus_end_loc]
+    x0plus_bT_var = x0plus_bplusT_var - x0plus_bminusT_var
+    # constraints += [
+    #     y1_var == C @ cp.vstack([x0plus_var, b_var]),
+    #     y1y1T_var == C @ cp.bmat([
+    #         [x0plus_x0plusT_var, x0plus_bT_var],
+    #         [x0plus_bT_var.T, bbT_var]
+    #     ]) @ C.T,
+    #     # y1y1T_var == y1plus_y1plusT_var + y1minus_y1minusT_var,
+    # ]
+    constraints += [
+        y1_var == C @ cp.vstack([x0_var, b_var]),
+        y1y1T_var == C @ cp.bmat([
+            [x0x0T_var, x0bT_var],
+            [x0bT_var.T, bbT_var]
+        ]) @ C.T,
+    ]
+    # key idea, the 'projection' of y1 has already happened because its just y1plus
+    # so, just need to enforce the complementarity constraint
+    y1plus_y1minus_var = get_plus_minus_outer_prod(Lambd_mat, y1, y1)
+    constraints += [y1plus_y1minus_var == 0]
+
+    # for the objective, x1 is just y1plus
+    # so tr(x1x1T - x1x0T + x0x0T) becomes
+    # tr(y1plus_y1plusT - y1plus_x0plusT + x0plus_x0plusT)
+    y1plus_y1plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, y1)
+    y1plus_x0plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, x0)
+    y1plus_x0minusT_var = get_plus_minus_outer_prod(Lambd_mat, y1, x0)
+    y1plus_x0T_var = y1plus_x0plusT_var - y1plus_x0minusT_var
+    # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0plusT_var + x0plus_x0plusT_var))
+
+    obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0T_var + x0x0T_var))
+    # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var))
+    prob = cp.Problem(obj, constraints)
+    res = prob.solve()
+    print(res)
 
 
 def test_NNLS_GLOBAL(N=1):
@@ -229,9 +377,10 @@ def test_NNLS_GLOBAL(N=1):
 
 
 def main():
-    test_NNLS_one_step_splitting()
+    # test_NNLS_one_step_splitting()
+    test_NNLS_one_step_split_only_y()
     N = 1
-    test_NNLS_GLOBAL(N=N)
+    # test_NNLS_GLOBAL(N=N)
 
 
 if __name__ == '__main__':
