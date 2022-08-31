@@ -19,6 +19,7 @@ from certification_problem.init_set.ellipsoidal_set import EllipsoidalSet
 from certification_problem.init_set.linf_ball_set import LInfBallSet
 from certification_problem.objectives.convergence_residual import ConvergenceResidual
 from certification_problem.objectives.outer_prod_trace import OuterProdTrace
+from certification_problem.objectives.linf_conv_resid import LInfConvResid
 
 
 def test_NNLS_SDP(N=1):
@@ -138,8 +139,9 @@ def test_NNLS_GLOBAL(N=1):
     b_u = 3 * np.ones(m)
     bset = BoxSet(b, b_l, b_u)
 
-    obj = ConvergenceResidual(x)
+    # obj = ConvergenceResidual(x)
     # obj = OuterProdTrace(x)
+    obj = LInfConvResid(x)
 
     CP = CertificationProblem(N, [xset], [bset], obj, steps)
 
@@ -173,8 +175,8 @@ def plot_N_vals():
 
 def main():
     N = 1
-    res_sdp = test_NNLS_SDP(N=N)
-    # res_global = test_NNLS_GLOBAL(N=N)
+    # res_sdp = test_NNLS_SDP(N=N)
+    res_global = test_NNLS_GLOBAL(N=N)
     # print('sdp:', res_sdp, 'global:', res_global)
     # plot_N_vals()
 

@@ -27,9 +27,11 @@ from certification_problem.solvers.global_solver.step_canonicalizers.min_with_ve
 
 from certification_problem.objectives.convergence_residual import ConvergenceResidual
 from certification_problem.objectives.outer_prod_trace import OuterProdTrace
+from certification_problem.objectives.linf_conv_resid import LInfConvResid
 
 from certification_problem.solvers.global_solver.obj_canonicalizers.convergence_residual import conv_resid_canon
 from certification_problem.solvers.global_solver.obj_canonicalizers.outer_prod_trace import outer_prod_trace_canon
+from certification_problem.solvers.global_solver.obj_canonicalizers.linf_conv_resid import linf_conv_resid_canon
 
 SET_CANON_METHODS = {
     CenteredL2BallSet: centered_l2_ball_canon,
@@ -50,4 +52,5 @@ STEP_CANON_METHODS = {
 OBJ_CANON_METHODS = {
     ConvergenceResidual: conv_resid_canon,
     OuterProdTrace: outer_prod_trace_canon,
+    LInfConvResid: linf_conv_resid_canon,
 }

@@ -98,4 +98,6 @@ class GlobalHandler(object):
 
     def solve(self):
         self.model.optimize()
+        # x = self.iterate_list[-1]
+        # print(self.iterate_to_gp_var_map[x].X)
         return self.model.objVal, self.model.Runtime

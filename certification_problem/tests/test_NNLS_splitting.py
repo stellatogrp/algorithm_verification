@@ -18,6 +18,7 @@ from certification_problem.init_set.ellipsoidal_set import EllipsoidalSet
 from certification_problem.init_set.linf_ball_set import LInfBallSet
 from certification_problem.objectives.convergence_residual import ConvergenceResidual
 from certification_problem.objectives.outer_prod_trace import OuterProdTrace
+from certification_problem.objectives.linf_conv_resid import LInfConvResid
 
 
 class VarLoc:
@@ -99,6 +100,7 @@ def get_minus_minus_outer_prod(Lambd_mat, x, y):
 
 
 def test_NNLS_one_step_splitting():
+    print('splitting normal')
     m = 5
     n = 3
     r = 1
@@ -204,8 +206,8 @@ def test_NNLS_one_step_splitting():
     x1x0T_var = get_outer_product(Lambd_mat, x1, x0)
     # constraints += [x1x0T_var >= 0]
     # obj = cp.Maximize(cp.trace(y1y1T_var))
-    obj = cp.Maximize(cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var))
-    # obj = cp.Maximize(cp.trace(x1x1T_var))
+    # obj = cp.Maximize(cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var))
+    obj = cp.Maximize(cp.trace(x1x1T_var))
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
     print(res)
@@ -213,6 +215,7 @@ def test_NNLS_one_step_splitting():
 
 
 def test_NNLS_one_step_split_only_y():
+    print('splitting only y')
     m = 5
     n = 3
     r = 1
@@ -315,8 +318,8 @@ def test_NNLS_one_step_split_only_y():
     y1plus_x0T_var = y1plus_x0plusT_var - y1plus_x0minusT_var
     # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0plusT_var + x0plus_x0plusT_var))
 
-    obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0T_var + x0x0T_var))
-    # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var))
+    # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0T_var + x0x0T_var))
+    obj = cp.Maximize(cp.trace(y1plus_y1plusT_var))
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
     print(res)
@@ -358,16 +361,17 @@ def test_NNLS_GLOBAL(N=1):
     x_l = -1 * np.ones(n)
     x_u = np.ones(n)
     # xset = BoxSet(x, x_l, x_u)
-    xset = CenteredL2BallSet(x, r=1)
+    xset = CenteredL2BallSet(x, r=r)
 
     # bset = CenteredL2BallSet(b, r=r)
     b_l = np.ones(m)
     b_u = 3 * np.ones(m)
     bset = BoxSet(b, b_l, b_u)
-    bset = CenteredL2BallSet(b, r=1)
+    bset = CenteredL2BallSet(b, r=r)
 
-    obj = ConvergenceResidual(x)
-    # obj = OuterProdTrace(x)
+    # obj = ConvergenceResidual(x)
+    obj = OuterProdTrace(x)
+    # obj = LInfConvResid(x)
 
     CP = CertificationProblem(N, [xset], [bset], obj, steps)
 
@@ -377,8 +381,8 @@ def test_NNLS_GLOBAL(N=1):
 
 
 def main():
-    # test_NNLS_one_step_splitting()
-    test_NNLS_one_step_split_only_y()
+    test_NNLS_one_step_splitting()
+    # test_NNLS_one_step_split_only_y()
     N = 1
     # test_NNLS_GLOBAL(N=N)
 
