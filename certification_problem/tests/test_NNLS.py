@@ -139,9 +139,9 @@ def test_NNLS_GLOBAL(N=1):
     b_u = 3 * np.ones(m)
     bset = BoxSet(b, b_l, b_u)
 
-    # obj = ConvergenceResidual(x)
+    obj = ConvergenceResidual(x)
     # obj = OuterProdTrace(x)
-    obj = LInfConvResid(x)
+    # obj = LInfConvResid(x)
 
     CP = CertificationProblem(N, [xset], [bset], obj, steps)
 
@@ -174,11 +174,11 @@ def plot_N_vals():
 
 
 def main():
-    N = 1
-    # res_sdp = test_NNLS_SDP(N=N)
+    N = 2
+    res_sdp = test_NNLS_SDP(N=N)
     res_global = test_NNLS_GLOBAL(N=N)
-    # print('sdp:', res_sdp, 'global:', res_global)
-    # plot_N_vals()
+    print('sdp:', res_sdp, 'global:', res_global)
+    plot_N_vals()
 
 
 if __name__ == '__main__':

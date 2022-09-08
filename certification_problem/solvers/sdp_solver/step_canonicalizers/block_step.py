@@ -45,6 +45,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
         for j in range(i, block_size):
             var2 = block_vars[j]
             var2_handler = handlers_to_use[j]
+            print(var1, var2)
 
             if i == j:
                 if var1.is_param:

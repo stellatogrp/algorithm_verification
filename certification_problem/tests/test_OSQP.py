@@ -24,7 +24,7 @@ from certification_problem.objectives.outer_prod_trace import OuterProdTrace
 
 def test_OSQP_GLOBAL(N=1):
     print('--GLOBAL--')
-    m = 3
+    m = 5
     n = 3
     r = 1
 

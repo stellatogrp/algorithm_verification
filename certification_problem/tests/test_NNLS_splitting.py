@@ -99,6 +99,15 @@ def get_minus_minus_outer_prod(Lambd_mat, x, y):
     return xminus_yminusT
 
 
+def get_nearest_rank_one_mat(X):
+    U, Sigma, V = np.linalg.svd(X, full_matrices=False)
+    return Sigma[0] * np.outer(U.T[0], V[0])
+
+
+def mat_to_vec_sqrt(X):
+    return np.sqrt(np.diag(X))
+
+
 def test_NNLS_one_step_splitting():
     print('splitting normal')
     m = 5
@@ -206,12 +215,57 @@ def test_NNLS_one_step_splitting():
     x1x0T_var = get_outer_product(Lambd_mat, x1, x0)
     # constraints += [x1x0T_var >= 0]
     # obj = cp.Maximize(cp.trace(y1y1T_var))
-    # obj = cp.Maximize(cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var))
-    obj = cp.Maximize(cp.trace(x1x1T_var))
+
+    # resid_var = x1_var - x0_var
+    # M = 100
+    # t = cp.Variable()
+    # z_pos = cp.Variable((n, 1))
+    # z_neg = cp.Variable((n, 1))
+    # constraints += [
+    #     resid_var <= t,
+    #     t <= resid_var + M * (1-z_pos),
+    #     0 <= z_pos,
+    #     z_pos <= 1,
+    #     cp.sum(z_pos) == 1,
+    #
+    #     -resid_var <= t,
+    #     t <= -resid_var + M * (1 - z_neg),
+    #     0 <= z_neg,
+    #     z_neg <= 1,
+    #     cp.sum(z_neg) == 1,
+    # ]
+
+
+
+    # obj = cp.Maximize(cp.trace(x1x1T_var))
+    # obj = cp.Maximize(t)
+    obj = cp.Maximize(cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var))
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
     print(res)
-    # print(Lambd_mat.value, y1_var.value)
+    temp = np.bmat([
+        [x1x1T_var.value, x1x0T_var.value, x1_var.value],
+        [x1x0T_var.T.value, x0x0T_var.value, x0_var.value],
+        [x1_var.T.value, x0_var.T.value, np.array([[1]])]
+    ])
+    # print(temp)
+    # print('eigenvalues:', np.round(np.linalg.eigvals(temp), 4))
+    # print(np.round(np.linalg.eigvals(Lambd_mat.value), 4))
+    print('x1x1T eigvals:', np.round(np.linalg.eigvals(x1x1T_var.value), 4))
+    print('x1x1T:', np.round(x1x1T_var.value, 4))
+    x1_rank1_approx = get_nearest_rank_one_mat(x1x1T_var.value)
+    print(np.round(x1_rank1_approx, 4))
+    x1_test = mat_to_vec_sqrt(x1_rank1_approx)
+    print(np.round(x1_test, 4))
+
+    print('x0x0T eigvals:', np.round(np.linalg.eigvals(x0x0T_var.value), 4))
+    x0_rank1_approx = get_nearest_rank_one_mat(x0x0T_var.value)
+    print('x0x0T:', x0x0T_var.value)
+    x0_test = mat_to_vec_sqrt(x0_rank1_approx)
+    x0_test[0] = -x0_test[0]
+    print(np.round(x0_test, 4))
+    print(np.linalg.norm(x1_test-x0_test) ** 2)
+    # print(cp.trace(x1x1T_var).value)
 
 
 def test_NNLS_one_step_split_only_y():
@@ -369,8 +423,8 @@ def test_NNLS_GLOBAL(N=1):
     bset = BoxSet(b, b_l, b_u)
     bset = CenteredL2BallSet(b, r=r)
 
-    # obj = ConvergenceResidual(x)
-    obj = OuterProdTrace(x)
+    obj = ConvergenceResidual(x)
+    # obj = OuterProdTrace(x)
     # obj = LInfConvResid(x)
 
     CP = CertificationProblem(N, [xset], [bset], obj, steps)
@@ -384,7 +438,7 @@ def main():
     test_NNLS_one_step_splitting()
     # test_NNLS_one_step_split_only_y()
     N = 1
-    # test_NNLS_GLOBAL(N=N)
+    test_NNLS_GLOBAL(N=N)
 
 
 if __name__ == '__main__':
