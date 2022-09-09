@@ -78,14 +78,36 @@ def test_l1_SDP_basic(w):
 
 
 def test_l1_SDP_full(x):
-    x_norm = np.linalg.norm(x, 1)
     print('--------testing full SDP with xplus and xminus included--------')
     d = x.shape[0]
+    x_var = cp.Variable(d)
+    xxT_var = cp.Variable((d, d))
+    constraints = [
+        x_var == x,
+        xxT_var == np.outer(x, x)
+    ]
+    test_l1_SDP_full_inner(d, x_var, xxT_var, constraints, np.linalg.norm(x, 1))
+
+
+def test_l1_SDP_variable_x(d):
+    print('-------testing full SDP with x variable--------')
+    x_var = cp.Variable(d)
+    xxT_var = cp.Variable((d, d))
+
+    # cp.reshape(cp.diag(xxT_var), (n, 1)) <= cp.multiply((l + u), x_var) - l * u,
+    l = np.zeros(d)
+    u = np.ones(d)
+    constraints = [
+        cp.diag(xxT_var) <= cp.multiply(l + u, x_var) - l * u,
+    ]
+    test_l1_SDP_full_inner(d, x_var, xxT_var, constraints, 10)
+
+
+def test_l1_SDP_full_inner(d, x, xxT, constraints, max_val):
     M = cp.Variable((3 * d + 2, 3 * d + 2), symmetric=True)
-    xxT = np.outer(x, x)
     ones = np.ones((d, 1))
     # print(np.round(xxT, 4))
-    constraints = [M >= 0, M >> 0, M[-1, -1] == 1]
+    constraints += [M >= 0, M >> 0, M[-1, -1] == 1]
     xplus = M[0: d, -1]
     xminus = M[d: 2 * d, -1]
     z = M[2 * d: 3 * d, -1]
@@ -108,14 +130,17 @@ def test_l1_SDP_full(x):
         ccT == ones.T @ (xplus_xplusT + xplus_xminusT + xminus_xplusT + xminus_xminusT) @ ones,
         z == cp.diag(zzT),
         z <= 1, zzT <= 1,
-        # c <= 10,
-        ccT <= x_norm ** 2,
+        # ccT <= 50,
+        ccT <= max_val ** 2,
     ]
-    obj = cp.Maximize(ccT)
+
+    obj = cp.Maximize(c)
     prob = cp.Problem(obj, constraints)
     res = prob.solve(verbose=False)
-    print(res)
-    print(xplus.value)
+    print('result', res)
+    print('xplus:', np.round(xplus.value, 4))
+    print('xminus:', np.round(xminus.value, 4))
+    print('z:', np.round(z.value, 4))
     print(c.value)
 
 
@@ -127,6 +152,7 @@ def test_l1(d):
     # test_l1_exact(x)
     # test_l1_SDP_basic(x)
     test_l1_SDP_full(x)
+    test_l1_SDP_variable_x(d)
 
 
 def main():
