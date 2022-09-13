@@ -72,9 +72,9 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
         # constraints += RLT_constraints(yyT_var, y_var, lower_y, upper_y, y_var, lower_y, upper_y)
         # constraints += [lower_y <= y_var, y_var <= upper_y]
         # triangle constraints
-        print(upper_y, lower_y, upper_x, lower_x)
+        # print(upper_y, lower_y, upper_x, lower_x)
         frac = np.divide(upper_y - lower_y, upper_x - lower_x)
-        print('frac', frac)
+        # print('frac', frac)
         A = np.zeros((n, n))
         for i in range(n):
             # this aboslutely should not have been necessary, but for some reason I couldn't get the numpy functions

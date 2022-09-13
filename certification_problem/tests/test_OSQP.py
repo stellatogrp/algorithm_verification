@@ -45,8 +45,8 @@ def test_OSQP_GLOBAL(N=1):
     # b_const = spa.csc_matrix(np.zeros((n, 1)))
     zeros_n = np.zeros((n, 1))
     zeros_m = np.zeros((m, 1))
-    l = 2 * np.ones(m)
-    u = 4 * np.ones(m)
+    l = 2 * np.ones((m, 1))
+    u = 4 * np.ones((m, 1))
     sigma = 1
     rho = 1
 
@@ -102,13 +102,13 @@ def test_OSQP_GLOBAL(N=1):
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
-    # res = CP.solve(solver_type='GLOBAL')
-    res = CP.solve(solver_type='SDP', add_RLT=True)
+    res = CP.solve(solver_type='GLOBAL')
+    # res = CP.solve(solver_type='SDP', add_RLT=True)
     return res
 
 
 def main():
-    N = 1
+    N = 3
     res_global = test_OSQP_GLOBAL(N=N)
 
 

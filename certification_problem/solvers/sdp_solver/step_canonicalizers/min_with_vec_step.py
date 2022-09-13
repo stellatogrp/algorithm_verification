@@ -64,3 +64,17 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
         ]
 
     return constraints
+
+
+def min_vec_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
+    step = steps[i]
+    prev_step = steps[i - 1]
+    y = step.get_output_var()
+    x = step.get_input_var()
+    u = step.get_upper_bound_vec()
+    lower_x = curr.iterate_vars[x].get_lower_bound()
+    upper_x = curr.iterate_vars[x].get_upper_bound()
+    lower_y = np.minimum(lower_x, u)
+    upper_y = np.minimum(upper_x, u)
+    curr.iterate_vars[y].set_lower_bound(lower_y)
+    curr.iterate_vars[y].set_upper_bound(upper_y)

@@ -153,6 +153,8 @@ def block_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_
                 handler_to_set = curr
                 out_l.append(var_bound_obj.get_lower_bound())
                 out_u.append(var_bound_obj.get_upper_bound())
+    # for x in out_l:
+    #     print(x.shape)
     u_lower_bound = np.vstack(out_l)
     u_upper_bound = np.vstack(out_u)
     # print(var_lower_bound)

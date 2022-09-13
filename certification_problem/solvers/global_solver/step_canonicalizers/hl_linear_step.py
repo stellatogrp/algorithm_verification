@@ -44,6 +44,6 @@ def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map
     # print('rhs', constraint_rhs.shape)
     # print('lhs', constraint_lhs.shape)
     # print(b, b.shape)
-    constraint_rhs += b
+    constraint_rhs += b.reshape(-1, )
 
     model.addConstr(constraint_lhs == constraint_rhs)

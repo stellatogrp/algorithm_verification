@@ -176,9 +176,9 @@ def plot_N_vals():
 def main():
     N = 2
     res_sdp = test_NNLS_SDP(N=N)
-    # res_global = test_NNLS_GLOBAL(N=N)
-    # print('sdp:', res_sdp, 'global:', res_global)
-    # plot_N_vals()
+    res_global = test_NNLS_GLOBAL(N=N)
+    print('sdp:', res_sdp, 'global:', res_global)
+    # plot_N_vals(max_N=N)
 
 
 if __name__ == '__main__':

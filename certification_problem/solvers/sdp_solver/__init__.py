@@ -29,8 +29,10 @@ from certification_problem.solvers.sdp_solver.step_canonicalizers.linear_step im
     linear_step_canon, linear_step_bound_canon, )
 from certification_problem.solvers.sdp_solver.step_canonicalizers.nonneg_orthant_proj_step import (
     nonneg_orthant_proj_canon, nonneg_orthant_proj_bound_canon)
-from certification_problem.solvers.sdp_solver.step_canonicalizers.max_with_vec_step import max_vec_canon
-from certification_problem.solvers.sdp_solver.step_canonicalizers.min_with_vec_step import min_vec_canon
+from certification_problem.solvers.sdp_solver.step_canonicalizers.max_with_vec_step import (
+    max_vec_canon, max_vec_bound_canon, )
+from certification_problem.solvers.sdp_solver.step_canonicalizers.min_with_vec_step import (
+    min_vec_canon, min_vec_bound_canon, )
 
 from certification_problem.solvers.sdp_solver.step_canonicalizers.hl_linear_step import hl_linear_step_canon
 from certification_problem.solvers.sdp_solver.step_canonicalizers.box_proj_step import box_proj_step_canon
@@ -67,6 +69,8 @@ RLT_CANON_STEP_METHODS = {
     BlockStep: block_step_bound_canon,
     LinearStep: linear_step_bound_canon,
     NonNegProjStep: nonneg_orthant_proj_bound_canon,
+    MaxWithVecStep: max_vec_bound_canon,
+    MinWithVecStep: min_vec_bound_canon,
 }
 
 OBJ_CANON_METHODS = {
