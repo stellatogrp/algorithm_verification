@@ -26,7 +26,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
                 u_blocks.append(prev.iterate_vars[var].get_cp_var())
             else:
                 u_blocks.append(curr.iterate_vars[var].get_cp_var())
-
+    # why are these separate for loops ?? just combine them
     for var in block_vars:
         if var.is_param:
             handlers_to_use.append(None)
@@ -45,7 +45,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
         for j in range(i, block_size):
             var2 = block_vars[j]
             var2_handler = handlers_to_use[j]
-            print(var1, var2)
+            # print(var1, var2)
 
             if i == j:
                 if var1.is_param:
@@ -54,6 +54,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
                     uuT_blocks[i][i] = var1_handler.iterate_outerproduct_vars[var1]
             else:
                 cvx_var = get_cross(var1, var2, var1_handler, var2_handler, iter_id_map)
+                # print(var1, var2, cvx_var.shape)
                 uuT_blocks[i][j] = cvx_var
                 uuT_blocks[j][i] = cvx_var.T
                 if add_RLT:
@@ -73,6 +74,7 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
 
     # print(u)
     # print(uuT_blocks)
+    constraints = []
     # exit(0)
     constraints = [
                     cp.bmat([
@@ -100,18 +102,30 @@ def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):
     else:  # both are iterates, not parameters
         var1_id = iter_id_map[var1]
         var2_id = iter_id_map[var2]
-        if var1_handler != var2_handler:
+        if var1_handler == var2_handler:
             if var1_id < var2_id:
-                handler_to_use = var1_handler
+                return var1_handler.iterate_cross_vars[var2][var1].T
             else:
-                handler_to_use = var2_handler
-        else:  # both handlers are the same
-            handler_to_use = var1_handler
+                return var1_handler.iterate_cross_vars[var1][var2]
+        else:  # diff handlers, use the earlier var handler
+            if var1_id < var2_id:
+                return var1_handler.iterate_cross_vars[var1][var2]
+            else:
+                return var2_handler.iterate_cross_vars[var2][var1].T
 
-        out = handler_to_use.iterate_cross_vars[var1][var2]
-        if var1_id < var2_id:
-            return out.T
-        return out
+        # if var1_handler != var2_handler:
+        #     if var1_id < var2_id:
+        #         handler_to_use = var1_handler
+        #     else:
+        #         handler_to_use = var2_handler
+        # else:  # both handlers are the same
+        #     handler_to_use = var1_handler
+        #
+        # out = handler_to_use.iterate_cross_vars[var1][var2]
+        # print(var1, var1_id, var2, var2_id, out.shape)
+        # if var1_id < var2_id:
+        #     return out.T
+        # return out
 
 
 def block_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):

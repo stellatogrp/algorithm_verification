@@ -239,6 +239,7 @@ def test_NNLS_one_step_splitting():
 
     # obj = cp.Maximize(cp.trace(x1x1T_var))
     # obj = cp.Maximize(t)
+    # constraints += [cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var) <= 1]
     obj = cp.Maximize(cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var))
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
@@ -251,20 +252,20 @@ def test_NNLS_one_step_splitting():
     # print(temp)
     # print('eigenvalues:', np.round(np.linalg.eigvals(temp), 4))
     # print(np.round(np.linalg.eigvals(Lambd_mat.value), 4))
-    print('x1x1T eigvals:', np.round(np.linalg.eigvals(x1x1T_var.value), 4))
-    print('x1x1T:', np.round(x1x1T_var.value, 4))
-    x1_rank1_approx = get_nearest_rank_one_mat(x1x1T_var.value)
-    print(np.round(x1_rank1_approx, 4))
-    x1_test = mat_to_vec_sqrt(x1_rank1_approx)
-    print(np.round(x1_test, 4))
-
-    print('x0x0T eigvals:', np.round(np.linalg.eigvals(x0x0T_var.value), 4))
-    x0_rank1_approx = get_nearest_rank_one_mat(x0x0T_var.value)
-    print('x0x0T:', x0x0T_var.value)
-    x0_test = mat_to_vec_sqrt(x0_rank1_approx)
-    x0_test[0] = -x0_test[0]
-    print(np.round(x0_test, 4))
-    print(np.linalg.norm(x1_test-x0_test) ** 2)
+    # print('x1x1T eigvals:', np.round(np.linalg.eigvals(x1x1T_var.value), 4))
+    # print('x1x1T:', np.round(x1x1T_var.value, 4))
+    # x1_rank1_approx = get_nearest_rank_one_mat(x1x1T_var.value)
+    # print(np.round(x1_rank1_approx, 4))
+    # x1_test = mat_to_vec_sqrt(x1_rank1_approx)
+    # print(np.round(x1_test, 4))
+    #
+    # print('x0x0T eigvals:', np.round(np.linalg.eigvals(x0x0T_var.value), 4))
+    # x0_rank1_approx = get_nearest_rank_one_mat(x0x0T_var.value)
+    # print('x0x0T:', x0x0T_var.value)
+    # x0_test = mat_to_vec_sqrt(x0_rank1_approx)
+    # x0_test[0] = -x0_test[0]
+    # print(np.round(x0_test, 4))
+    # print(np.linalg.norm(x1_test-x0_test) ** 2)
     # print(cp.trace(x1x1T_var).value)
 
 
@@ -438,7 +439,7 @@ def main():
     test_NNLS_one_step_splitting()
     # test_NNLS_one_step_split_only_y()
     N = 1
-    test_NNLS_GLOBAL(N=N)
+    # test_NNLS_GLOBAL(N=N)
 
 
 if __name__ == '__main__':

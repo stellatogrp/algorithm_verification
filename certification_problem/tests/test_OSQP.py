@@ -43,8 +43,8 @@ def test_OSQP_GLOBAL(N=1):
     sigma = 1
 
     # b_const = spa.csc_matrix(np.zeros((n, 1)))
-    zeros_n = np.zeros(n)
-    zeros_m = np.zeros(m)
+    zeros_n = np.zeros((n, 1))
+    zeros_m = np.zeros((m, 1))
     l = 2 * np.ones(m)
     u = 4 * np.ones(m)
     sigma = 1
@@ -62,17 +62,17 @@ def test_OSQP_GLOBAL(N=1):
     s1_Atemp = spa.bmat([[sigma * In, rho*A.T, -rho * A.T, -In]])
     s1_D = In
     s1_A = spa.csc_matrix(np.linalg.inv(s1_Dtemp) @ s1_Atemp)
-    step1 = HighLevelLinearStep(x, [x, z, y, b], D=s1_D, A=s1_A, b=zeros_n)
+    step1 = HighLevelLinearStep(x, [x, z, y, b], D=s1_D, A=s1_A, b=zeros_n, Dinv=s1_D)
 
     # step 2
     s2_D = Im
     s2_A = spa.bmat([[Im, rho * A, rho * Im]])
-    step2 = HighLevelLinearStep(y, [y, x, z], D=s2_D, A=s2_A, b=zeros_m)
+    step2 = HighLevelLinearStep(y, [y, x, z], D=s2_D, A=s2_A, b=zeros_m, Dinv=s2_D)
 
     # step 3
     s3_D = Im
     s3_A = spa.bmat([[A, 1/rho * Im]])
-    step3 = HighLevelLinearStep(w, [x, y], D=s3_D, A=s3_A, b=zeros_m)
+    step3 = HighLevelLinearStep(w, [x, y], D=s3_D, A=s3_A, b=zeros_m, Dinv=s3_D)
 
     # step 4
     step4 = MaxWithVecStep(z_tilde, w, l=l)
@@ -83,17 +83,17 @@ def test_OSQP_GLOBAL(N=1):
     steps = [step1, step2, step3, step4, step5]
 
     # xset = CenteredL2BallSet(x, r=r)
-    x_l = -1 * np.ones(n)
-    x_u = np.ones(n)
+    x_l = -1 * np.ones((n, 1))
+    x_u = np.ones((n, 1))
     xset = BoxSet(x, x_l, x_u)
 
-    yset = ConstSet(y, zeros_m)
+    yset = ConstSet(y, np.zeros((m, 1)))
 
-    zset = ConstSet(z, zeros_m)
+    zset = ConstSet(z, np.zeros((m, 1)))
 
     # bset = CenteredL2BallSet(b, r=r)
-    b_l = np.ones(n)
-    b_u = 3 * np.ones(n)
+    b_l = np.ones((n, 1))
+    b_u = 3 * np.ones((n, 1))
     bset = BoxSet(b, b_l, b_u)
 
     obj = ConvergenceResidual(x)
@@ -103,7 +103,7 @@ def test_OSQP_GLOBAL(N=1):
 
     # CP.print_cp()
     # res = CP.solve(solver_type='GLOBAL')
-    res = CP.solve(solver_type='SDP', add_RLT=False)
+    res = CP.solve(solver_type='SDP', add_RLT=True)
     return res
 
 

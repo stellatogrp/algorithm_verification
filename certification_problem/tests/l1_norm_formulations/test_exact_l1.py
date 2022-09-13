@@ -132,9 +132,11 @@ def test_l1_SDP_full_inner(d, x, xxT, constraints, max_val):
         z <= 1, zzT <= 1,
         # ccT <= 50,
         ccT <= max_val ** 2,
+        # ccT == max_val ** 2 - 1,
     ]
 
     obj = cp.Maximize(c)
+    # obj = cp.Maximize(cp.sum(xplus))
     prob = cp.Problem(obj, constraints)
     res = prob.solve(verbose=False)
     print('result', res)
@@ -152,7 +154,7 @@ def test_l1(d):
     # test_l1_exact(x)
     # test_l1_SDP_basic(x)
     test_l1_SDP_full(x)
-    test_l1_SDP_variable_x(d)
+    # test_l1_SDP_variable_x(d)
 
 
 def main():

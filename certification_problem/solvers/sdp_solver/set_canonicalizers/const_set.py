@@ -12,3 +12,10 @@ def const_canon(init_set, handler):
                 x_var == val,
                 xxT_var == val @ val.T,
            ]
+
+
+def const_bound_canon(init_set, handler):
+    x = init_set.get_iterate()
+    val = init_set.val
+    handler.iterate_vars[x].set_lower_bound(val)
+    handler.iterate_vars[x].set_upper_bound(val)

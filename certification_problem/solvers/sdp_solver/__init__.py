@@ -9,7 +9,8 @@ from certification_problem.solvers.sdp_solver.set_canonicalizers.centered_l2_bal
 from certification_problem.solvers.sdp_solver.set_canonicalizers.ellipsoidal_set import ellipsoidal_canon
 from certification_problem.solvers.sdp_solver.set_canonicalizers.box_set import (
     box_canon, box_bound_canon)
-from certification_problem.solvers.sdp_solver.set_canonicalizers.const_set import const_canon
+from certification_problem.solvers.sdp_solver.set_canonicalizers.const_set import (
+    const_canon, const_bound_canon)
 from certification_problem.solvers.sdp_solver.set_canonicalizers.linf_ball_set import linf_ball_canon
 from certification_problem.solvers.sdp_solver.set_canonicalizers.vec_span_set import vec_span_canon
 
@@ -59,6 +60,7 @@ STEP_CANON_METHODS = {
 
 RLT_CANON_SET_METHODS = {
     BoxSet: box_bound_canon,
+    ConstSet: const_bound_canon,
 }
 
 RLT_CANON_STEP_METHODS = {
