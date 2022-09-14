@@ -4,17 +4,17 @@ import cvxpy as cp
 import scipy.sparse as spa
 import pandas as pd
 from tqdm import tqdm, trange
-from certification_problem.certification_problem import CertificationProblem
-from certification_problem.variables.iterate import Iterate
-from certification_problem.variables.parameter import Parameter
-from certification_problem.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from certification_problem.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-import certification_problem.init_set as cpi
-from certification_problem.init_set.centered_l2_ball_set import CenteredL2BallSet
-from certification_problem.init_set.box_set import BoxSet
-from certification_problem.init_set.ellipsoidal_set import EllipsoidalSet
-from certification_problem.init_set.const_set import ConstSet
-from certification_problem.objectives.convergence_residual import ConvergenceResidual
+from algocert.algocert import CertificationProblem
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
+from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+import algocert.init_set as cpi
+from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algocert.init_set.box_set import BoxSet
+from algocert.init_set.ellipsoidal_set import EllipsoidalSet
+from algocert.init_set.const_set import ConstSet
+from algocert.objectives.convergence_residual import ConvergenceResidual
 
 from PEPit import PEP
 from PEPit.functions import SmoothStronglyConvexFunction, ConvexFunction
