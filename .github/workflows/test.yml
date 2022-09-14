@@ -14,7 +14,7 @@ jobs:
       - name: isort
         uses: jamescurtin/isort-action@master
       - name: flake8
-        uses: py-actions/flake8
+        uses: py-actions/flake8@v2
 
   test:
     runs-on: ubuntu-latest
