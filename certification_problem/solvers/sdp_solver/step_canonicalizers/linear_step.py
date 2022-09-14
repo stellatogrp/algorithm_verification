@@ -76,13 +76,12 @@ def linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param
     b = step.get_rhs_const_vec()
 
     DinvA = Dinv @ A
-    Dinvb = Dinv @ b
+    Dinvb = (Dinv @ b).reshape((-1, 1))
     lower_u = curr.iterate_vars[u].get_lower_bound()
     upper_u = curr.iterate_vars[u].get_upper_bound()
     # print(lower_u, upper_u)
     lower_y, upper_y = lin_bound_map(lower_u, upper_u, DinvA)
 
-    # print(lower_y + b, upper_y + b)
     curr.iterate_vars[y].set_lower_bound(lower_y + Dinvb)
     curr.iterate_vars[y].set_upper_bound(upper_y + Dinvb)
 

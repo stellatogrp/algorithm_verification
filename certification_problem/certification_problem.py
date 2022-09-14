@@ -36,7 +36,7 @@ class CertificationProblem(object):
             res = solver.solve()
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
-            solver.canonicalize()
+            solver.canonicalize(**kwargs)
             res = solver.solve()
         return res
 

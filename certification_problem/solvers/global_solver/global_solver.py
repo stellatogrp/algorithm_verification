@@ -18,8 +18,8 @@ class GlobalSolver(Solver):
         res = self.handler.solve()
         return res
 
-    def canonicalize(self):
+    def canonicalize(self, **kwargs):
         # Iterate through steps and canonicalize them
-        handler = GlobalHandler(self.CP)
+        handler = GlobalHandler(self.CP, **kwargs)
         self.handler = handler
         handler.canonicalize()

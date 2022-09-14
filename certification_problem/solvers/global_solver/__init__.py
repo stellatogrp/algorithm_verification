@@ -7,8 +7,10 @@ from certification_problem.init_set.vec_span_set import VecSpanSet
 
 from certification_problem.solvers.global_solver.set_canonicalizers.centered_l2_ball_set import centered_l2_ball_canon
 from certification_problem.solvers.global_solver.set_canonicalizers.ellipsoidal_set import ellipsoidal_set_canon
-from certification_problem.solvers.global_solver.set_canonicalizers.box_set import box_set_canon
-from certification_problem.solvers.global_solver.set_canonicalizers.const_set import const_set_canon
+from certification_problem.solvers.global_solver.set_canonicalizers.box_set import (
+    box_set_canon, box_set_bound_canon, )
+from certification_problem.solvers.global_solver.set_canonicalizers.const_set import (
+    const_set_canon, const_set_bound_canon, )
 from certification_problem.solvers.global_solver.set_canonicalizers.linf_ball_set import linf_ball_set_canon
 from certification_problem.solvers.global_solver.set_canonicalizers.vec_span_set import vec_span_set_canon
 
@@ -40,6 +42,11 @@ SET_CANON_METHODS = {
     ConstSet: const_set_canon,
     LInfBallSet: linf_ball_set_canon,
     VecSpanSet: vec_span_set_canon,
+}
+
+BOUND_SET_CANON_METHODS = {
+    BoxSet: box_set_bound_canon,
+    ConstSet: const_set_bound_canon,
 }
 
 STEP_CANON_METHODS = {
