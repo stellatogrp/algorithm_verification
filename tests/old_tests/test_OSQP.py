@@ -1,5 +1,5 @@
-import numpy as np
 import cvxpy as cp
+import numpy as np
 import scipy.sparse as spa
 
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
