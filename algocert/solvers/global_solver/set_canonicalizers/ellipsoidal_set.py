@@ -1,7 +1,3 @@
-import numpy as np
-import scipy.sparse as spa
-
-
 def ellipsoidal_set_canon(init_set, model, var_to_gp_var_map):
     x = init_set.get_iterate()
     Q = init_set.Q

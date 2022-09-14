@@ -1,11 +1,11 @@
-import numpy as np
 import cvxpy as cp
 
+from algocert.solvers.sdp_solver import (HL_TO_BASIC_STEP_METHODS,
+                                         OBJ_CANON_METHODS,
+                                         RLT_CANON_SET_METHODS,
+                                         RLT_CANON_STEP_METHODS,
+                                         SET_CANON_METHODS, STEP_CANON_METHODS)
 from algocert.solvers.sdp_solver.var_bounds.var_bounds import CPVarAndBounds
-from algocert.solvers.sdp_solver import (
-    SET_CANON_METHODS, STEP_CANON_METHODS, OBJ_CANON_METHODS, RLT_CANON_SET_METHODS, RLT_CANON_STEP_METHODS,
-    HL_TO_BASIC_STEP_METHODS,
-)
 
 
 class SDPHandler(object):
@@ -92,36 +92,12 @@ class SDPHandler(object):
             curr = self.iteration_handlers[k]
             prev = self.iteration_handlers[k - 1]
             for i, step in enumerate(steps):
-                prev_step = steps[i-1]
                 output_var = step.get_output_var()
                 self.iterate_to_type_map[output_var] = type(step)
                 canon_method = STEP_CANON_METHODS[type(step)]
                 constraints = canon_method(steps, i, curr, prev, self.iterate_to_id_map,
                                            self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT)
                 self.sdp_constraints += constraints
-
-    def add_convexity_constraints(self, A):
-        # TODO add this as a settable flag
-        x = self.iterate_list[-1]  # TODO placeholder until function allows iterate specification
-        b = self.param_list[-1]
-
-        for k in range(1, self.N + 1):
-            handler_k = self.iteration_handlers[k]
-            handler_kminus1 = self.iteration_handlers[k-1]
-            xk = handler_k.iterate_vars[x]
-            xkxkT = handler_k.iterate_outerproduct_vars[x]
-            xkminus1 = handler_kminus1.iterate_vars[x]
-            xkminus1_xkminus1T = handler_kminus1.iterate_outerproduct_vars[x]
-            xk_xkminus1T = handler_k.iterate_cross_vars[x][x]
-            self.sdp_constraints += [
-                cp.trace(A @ xkxkT) + cp.trace(A @ xkminus1_xkminus1T) >= 2 * cp.trace(A @ xk_xkminus1T),
-                # cp.bmat([
-                #     [xkxkT, xk_xkminus1T, xk],
-                #     [xk_xkminus1T.T, xkminus1_xkminus1T, xkminus1],
-                #     [xk.T, xkminus1.T, np.array([[1]])]
-                # ]) >> 0,
-                # cp.trace(A @ xkxkT) + cp.trace(A @ bbT_var) >= 2 * cp.trace(A @ xkbT)
-            ]
 
     def canonicalize_objective(self):
         obj = self.CP.objective
@@ -161,7 +137,6 @@ class SDPHandler(object):
             curr = self.iteration_handlers[k]
             prev = self.iteration_handlers[k - 1]
             for i, step in enumerate(steps):
-                output_var = step.get_output_var()
                 canon_method = RLT_CANON_STEP_METHODS[type(step)]
                 canon_method(steps, i, curr, prev, self.iterate_to_id_map,
                              self.sdp_param_vars, self.sdp_param_outerproduct_vars)

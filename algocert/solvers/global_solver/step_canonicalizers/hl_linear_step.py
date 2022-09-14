@@ -1,7 +1,3 @@
-import numpy as np
-import scipy.sparse as spa
-
-
 def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):
     D = step.get_lhs_matrix()
     A = step.get_rhs_matrix()

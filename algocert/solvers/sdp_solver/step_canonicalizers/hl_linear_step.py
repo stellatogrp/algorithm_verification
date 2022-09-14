@@ -1,6 +1,6 @@
-from algocert.variables.iterate import Iterate
 from algocert.basic_algorithm_steps.block_step import BlockStep
 from algocert.basic_algorithm_steps.linear_step import LinearStep
+from algocert.variables.iterate import Iterate
 
 
 def hl_linear_step_canon(step):

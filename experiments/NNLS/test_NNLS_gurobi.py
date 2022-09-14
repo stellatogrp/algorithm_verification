@@ -1,15 +1,15 @@
-from joblib import Parallel, delayed
 import numpy as np
 import scipy.sparse as spa
-from algocert.algocert import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+
+from algocert import CertificationProblem
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-import algocert.init_set as cpi
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.ellipsoidal_set import EllipsoidalSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 def centered_l2_xset(*args):

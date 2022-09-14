@@ -1,6 +1,6 @@
-import numpy as np
-import gurobipy as gp
 import cvxpy as cp
+import gurobipy as gp
+import numpy as np
 
 
 def test_l1_exact(x):

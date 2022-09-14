@@ -1,9 +1,9 @@
-# TODO: Check https://github.com/cvxpy/cvxpy/blob/fb1f271b94edcbfe5f02fa4bd93ef6bb9fbdd269/cvxpy/reductions/eliminate_pwl/atom_canonicalizers/abs_canon.py
 import cvxpy as cp
 import numpy as np
 
 from algocert.basic_algorithm_steps.block_step import BlockStep
-from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
+from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
+    RLT_constraints
 
 
 def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
@@ -67,11 +67,11 @@ def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outer
 
 def linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
-    prev_step = steps[i - 1]
+    #  prev_step = steps[i - 1]
     u = step.get_rhs_var()
     y = step.get_output_var()
     A = step.get_rhs_matrix()
-    D = step.get_lhs_matrix()
+    #  D = step.get_lhs_matrix()
     Dinv = step.get_lhs_matrix_inv()
     b = step.get_rhs_const_vec()
 

@@ -1,32 +1,22 @@
 import numpy as np
 import scipy.sparse as spa
-import matplotlib.pyplot as plt
 
-from algocert.certification_problem import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
-from algocert.basic_algorithm_steps.block_step import BlockStep
-from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
-
+from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.const_set import ConstSet
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.objectives.outer_prod_trace import OuterProdTrace
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 def test_OSQP_GLOBAL(N=1):
     print('--GLOBAL--')
     m = 5
     n = 3
-    r = 1
+    #  r = 1
 
     In = spa.eye(n)
     Im = spa.eye(m)
@@ -110,6 +100,7 @@ def test_OSQP_GLOBAL(N=1):
 def main():
     N = 1
     res_global = test_OSQP_GLOBAL(N=N)
+    res_global
 
 
 if __name__ == '__main__':

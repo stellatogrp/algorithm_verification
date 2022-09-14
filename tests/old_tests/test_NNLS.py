@@ -1,25 +1,17 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
-import matplotlib.pyplot as plt
 
-from algocert.certification_problem import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
-from algocert.basic_algorithm_steps.block_step import BlockStep
-from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algocert import CertificationProblem
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
-
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.objectives.outer_prod_trace import OuterProdTrace
-from algocert.objectives.linf_conv_resid import LInfConvResid
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 def test_NNLS_SDP(N=1):
@@ -45,7 +37,7 @@ def test_NNLS_SDP(N=1):
     b_l = 1
     b_u = 3
 
-    u = Iterate(n + m, name='u')
+    #  u = Iterate(n + m, name='u')
     y = Iterate(n, name='y')
     x = Iterate(n, name='x')
     b = Parameter(m, name='b')
@@ -63,8 +55,8 @@ def test_NNLS_SDP(N=1):
     step2 = NonNegProjStep(x, y)
     steps = [step1, step2]
 
-    Q = np.eye(n)
-    c = np.zeros((n, 1))
+    #  Q = np.eye(n)
+    #  c = np.zeros((n, 1))
     xset = CenteredL2BallSet(x, r=r)
     # xset = EllipsoidalSet(x, Q=Q, c=c)
 
@@ -99,7 +91,7 @@ def test_NNLS_GLOBAL(N=1):
     print('--GLOBAL--')
     m = 5
     n = 3
-    r = 1
+    #  r = 1
 
     In = spa.eye(n)
 

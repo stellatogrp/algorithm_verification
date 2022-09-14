@@ -67,7 +67,7 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
 def max_vec_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
-    prev_step = steps[i - 1]
+    #  prev_step = steps[i - 1]
     y = step.get_output_var()
     x = step.get_input_var()
     l = step.get_lower_bound_vec()

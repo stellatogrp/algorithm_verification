@@ -1,6 +1,3 @@
-import cvxpy as cp
-import numpy as np
-
 from algocert.solvers.sdp_solver.set_canonicalizers.box_set import box_canon
 
 

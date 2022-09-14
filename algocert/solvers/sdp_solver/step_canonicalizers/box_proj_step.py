@@ -1,6 +1,6 @@
-from algocert.variables.iterate import Iterate
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
+from algocert.variables.iterate import Iterate
 
 
 def box_proj_step_canon(step):

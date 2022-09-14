@@ -14,16 +14,16 @@ def vec_span_canon(init_set, handler):
     c_squared = cp.Variable()
 
     return [
-                a <= c <= b,
-                a ** 2 <= c_squared <= b ** 2,
-                x_var == c * v,
-                xxT_var == c_squared * v @ v.T,
-                cp.bmat([
-                    [xxT_var, x_var],
-                    [x_var.T, np.array([[1]])]
-                ]) >> 0,
-                cp.bmat([
-                    [c_squared, c],
-                    [c, 1]
-                ]) >> 0,
-           ]
+        a <= c <= b,
+        a ** 2 <= c_squared <= b ** 2,
+        x_var == c * v,
+        xxT_var == c_squared * v @ v.T,
+        cp.bmat([
+            [xxT_var, x_var],
+            [x_var.T, np.array([[1]])]
+        ]) >> 0,
+        cp.bmat([
+            [c_squared, c],
+            [c, 1]
+        ]) >> 0,
+    ]

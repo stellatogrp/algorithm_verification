@@ -1,24 +1,23 @@
-from joblib import Parallel, delayed
-import numpy as np
 import cvxpy as cp
-import scipy.sparse as spa
+import numpy as np
 import pandas as pd
-from tqdm import tqdm, trange
-from algocert.algocert import CertificationProblem
+import scipy.sparse as spa
+from PEPit import PEP
+from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
+from PEPit.primitive_steps.proximal_step import proximal_step
+from tqdm import trange
+
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
+from algocert.certification_problem import CertificationProblem
+from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.init_set.box_set import BoxSet
+from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algocert.init_set.const_set import ConstSet
+from algocert.init_set.ellipsoidal_set import EllipsoidalSet
+from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-import algocert.init_set as cpi
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.init_set.const_set import ConstSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-
-from PEPit import PEP
-from PEPit.functions import SmoothStronglyConvexFunction, ConvexFunction
-from PEPit.primitive_steps.proximal_step import proximal_step
 
 
 def test_PEPit_val(L, mu, t, r, N=1):
@@ -174,7 +173,7 @@ def test_pep_part(A, t, ws_center, out_fname_avg=None, out_fname_pep=None, N_max
     num_samples = 100
     max_r = 0
     iterate_rows = []
-    ws_iterate_rows = []
+    #  ws_iterate_rows = []
     for _ in trange(num_samples):
         test_x = sample_x(n)
         test_b = sample_b(m)
@@ -226,7 +225,7 @@ def test_global_param_effect():
     np.random.seed(2)
     m = 10
     n = 5
-    N = 6
+    #  N = 6
     t = .05
     r = 1
 
@@ -244,7 +243,7 @@ def test_global_param_effect():
 
     # PEP part
     print('--------PEP BOUND--------')
-    out_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NNLS/data/'
+    #  out_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NNLS/data/'
     tATA = t * A.T @ A
     print('testing')
     num_samples = 10000
@@ -254,7 +253,7 @@ def test_global_param_effect():
     print('prox grad iter', prox_grad_iter)
 
     for _ in trange(num_samples):
-        test_b = sample_b(m)
+        #  test_b = sample_b(m)
         tATb = t * A.T @ sample_b(m)
         test_x = sample_x(n)
         cs_test = run_single_prox_grad_descent(tATA, tATb, num_iter=prox_grad_iter, x_init=test_x)
@@ -264,7 +263,10 @@ def test_global_param_effect():
         ws_vals.append(np.linalg.norm(ws_test[-1] - ws_test[-2]) ** 2)
     print('cold starting', np.mean(cs_vals))
     print('warm starting', np.mean(ws_vals))
-    # test_pep_part(A, t, center, out_fname_avg=out_dir + 'test_NNLS_multstep_avg.csv', out_fname_pep=out_dir + 'test_NNLS_multstep_PEP.csv', N_max=6)
+    # test_pep_part(A, t, center, out_fname_avg=out_dir +
+    #               'test_NNLS_multstep_avg.csv',
+    #               out_fname_pep=out_dir +
+    #               'test_NNLS_multstep_PEP.csv', N_max=6)
 
 
 def main():

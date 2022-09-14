@@ -1,10 +1,10 @@
 import gurobipy as gp
 import numpy as np
 
-from gurobipy import GRB
-from algocert.solvers.global_solver import (
-    SET_CANON_METHODS, STEP_CANON_METHODS, OBJ_CANON_METHODS, BOUND_SET_CANON_METHODS, )
-from algocert.solvers.global_solver.obj_canonicalizers.convergence_residual import conv_resid_canon
+from algocert.solvers.global_solver import (BOUND_SET_CANON_METHODS,
+                                            OBJ_CANON_METHODS,
+                                            SET_CANON_METHODS,
+                                            STEP_CANON_METHODS)
 
 
 class GlobalHandler(object):

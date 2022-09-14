@@ -1,7 +1,3 @@
-import numpy as np
-import scipy.sparse as spa
-
-
 def const_set_canon(init_set, model, var_to_gp_var_map):
     x = init_set.get_iterate()
     val = init_set.get_val()
@@ -15,7 +11,7 @@ def const_set_canon(init_set, model, var_to_gp_var_map):
 
 
 def const_set_bound_canon(init_set):
-    x = init_set.get_iterate()
+    #  x = init_set.get_iterate()
     val = init_set.get_val()
     val_vec = val.reshape(-1, )
     return val_vec, val_vec

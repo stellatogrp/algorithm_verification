@@ -1,19 +1,16 @@
 import unittest
 
-import numpy as np
 import cvxpy as cp
-import scipy.sparse as spa
+import numpy as np
 import numpy.testing as npt
+import scipy.sparse as spa
 
 from algocert.certification_problem import CertificationProblem
+from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.init_set.box_set import BoxSet
+from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
-
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-
-from algocert.init_set.box_set import BoxSet
-
-from algocert.objectives.convergence_residual import ConvergenceResidual
 
 
 class TestBasicGD(unittest.TestCase):
@@ -33,7 +30,7 @@ class TestBasicGD(unittest.TestCase):
 
     def test_CP_vs_brute_force_SDP(self):
         N = 1
-        t, n, C, x_l, x_u, q_l, q_u = self.t, self.n, self.C, self.x_l, self.x_u, self.q_l, self.q_u
+        n, C, x_l, x_u, q_l, q_u = self.n, self.C, self.x_l, self.x_u, self.q_l, self.q_u
 
         # first run the brute force SDP
         q = cp.Variable((n, 1))

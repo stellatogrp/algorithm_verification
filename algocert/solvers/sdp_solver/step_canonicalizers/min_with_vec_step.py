@@ -68,7 +68,6 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
 def min_vec_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
-    prev_step = steps[i - 1]
     y = step.get_output_var()
     x = step.get_input_var()
     u = step.get_upper_bound_vec()

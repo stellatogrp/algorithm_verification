@@ -1,15 +1,15 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.certification_problem import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
 from algocert.basic_algorithm_steps.block_step import BlockStep
 from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.init_set.box_set import BoxSet
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
+from algocert.certification_problem import CertificationProblem
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 def main():
@@ -31,11 +31,11 @@ def main():
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
 
-    b_l = 1
-    b_u = 3
+    #  b_l = 1
+    #  b_u = 3
 
     u = Iterate(n + n + k, name='u')
-    w = Iterate(n + m + k, name='w')
+    #  w = Iterate(n + m + k, name='w')
     y = Iterate(n, name='y')
     x = Iterate(n, name='x')
     b = Parameter(k, name='b')

@@ -1,5 +1,5 @@
-import numpy as np
 import gurobipy as gp
+import numpy as np
 
 
 def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):
@@ -33,4 +33,3 @@ def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_
     model.addConstr(z == y_var - x_var)
     model.addConstr(w == y_var - l_vec)
     model.addConstr(w @ z == 0)
-

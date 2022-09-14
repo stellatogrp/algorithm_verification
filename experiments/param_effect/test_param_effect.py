@@ -1,13 +1,12 @@
-import numpy as np
-import cvxpy as cp
 import os
+
+import cvxpy as cp
 import joblib
+import numpy as np
 import pandas as pd
-
 from PEPit import PEP
-from PEPit.functions import SmoothStronglyConvexFunction, ConvexFunction
+from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps.proximal_step import proximal_step
-
 from scipy.stats import ortho_group
 
 
@@ -110,8 +109,8 @@ def generate_single_A(m, n, L, mu):
     # print(Um @ P @ Un)
     A = Um @ P @ Un
     # print(Um.shape, P.shape, Un.shape)
-    ATA = A.T @ A
-    eigvals = np.linalg.eigvals(ATA)
+    #  ATA = A.T @ A
+    #  eigvals = np.linalg.eigvals(ATA)
     # print(np.min(eigvals), np.max(eigvals))
     return A
 

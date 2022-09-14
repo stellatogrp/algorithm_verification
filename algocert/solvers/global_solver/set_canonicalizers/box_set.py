@@ -1,7 +1,3 @@
-import numpy as np
-import scipy.sparse as spa
-
-
 def box_set_canon(init_set, model, var_to_gp_var_map):
     x = init_set.get_iterate()
     l = init_set.l
@@ -21,7 +17,7 @@ def box_set_canon(init_set, model, var_to_gp_var_map):
 
 
 def box_set_bound_canon(init_set):
-    x = init_set.get_iterate()
+    #  x = init_set.get_iterate()
     l = init_set.l
     u = init_set.u
     return l.reshape(-1, ), u.reshape(-1, )

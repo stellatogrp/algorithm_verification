@@ -1,4 +1,5 @@
 import numpy as np
+
 from algocert.init_set.box_set import BoxSet
 
 

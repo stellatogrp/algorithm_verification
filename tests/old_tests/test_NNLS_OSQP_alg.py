@@ -1,15 +1,12 @@
 import numpy as np
-import scipy.sparse as spa
 
-from algocert.certification_problem import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
 from algocert.basic_algorithm_steps.block_step import BlockStep
 from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.init_set.box_set import BoxSet
+from algocert.certification_problem import CertificationProblem
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 def main():
@@ -18,20 +15,20 @@ def main():
     n = 3
     r = 1
 
-    In = spa.eye(n)
+    #  In = spa.eye(n)
 
     np.random.seed(0)
     P = np.random.randn(m, n)
-    P = spa.csc_matrix(A)
+    #  P = spa.csc_matrix(A)
     # print(A)
 
-    rho = .05
-    sigma = 1
-
-    In = spa.eye(n, n)
-    Im = spa.eye(m, m)
-    zeros_n = np.zeros((n, 1))
-    zeros_m = np.zeros((m, 1))
+    #  rho = .05
+    #  sigma = 1
+    #
+    #  In = spa.eye(n, n)
+    #  Im = spa.eye(m, m)
+    #  zeros_n = np.zeros((n, 1))
+    #  zeros_m = np.zeros((m, 1))
 
     x = Iterate(n, name='x')
     y = Iterate(m, name='y')
@@ -46,8 +43,8 @@ def main():
 
     xblock = Iterate(n + 3 * m, name='xblock')
     step1 = BlockStep(xblock, [x, y, z, q])
-    xblock_mat = spa.bmat([[]])
-    step2 = LinearStep(x, xblock, A)
+    #  xblock_mat = spa.bmat([[]])
+    step2 = LinearStep(x, xblock, P)
 
     steps = [step1, step2]
     obj = ConvergenceResidual(x)

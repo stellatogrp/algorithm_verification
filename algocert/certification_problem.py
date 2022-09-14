@@ -1,6 +1,6 @@
 import algocert.settings as s
-from algocert.solvers.sdp_solver.sdp_solver import SDPSolver
 from algocert.solvers.global_solver.global_solver import GlobalSolver
+from algocert.solvers.sdp_solver.sdp_solver import SDPSolver
 
 
 class CertificationProblem(object):

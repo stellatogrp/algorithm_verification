@@ -1,24 +1,16 @@
-import numpy as np
 import cvxpy as cp
+import numpy as np
 import scipy.sparse as spa
 
-from algocert.certification_problem import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
-from algocert.basic_algorithm_steps.block_step import BlockStep
-from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-
+from algocert import CertificationProblem
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.objectives.outer_prod_trace import OuterProdTrace
-from algocert.objectives.linf_conv_resid import LInfConvResid
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 class VarLoc:
@@ -125,15 +117,15 @@ def test_NNLS_one_step_splitting():
     t = .05
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
-    D = spa.eye(n)
-    b_const = np.zeros(n)
+    #  D = spa.eye(n)
+    #  b_const = np.zeros(n)
 
-    x_l = -1 * np.ones(n)
-    x_u = np.ones(n)
+    #  x_l = -1 * np.ones(n)
+    #  x_u = np.ones(n)
     # xset = BoxSet(x, x_l, x_u)
 
-    b_l = np.ones(m)
-    b_u = 3 * np.ones(m)
+    #  b_l = np.ones(m)
+    #  b_u = 3 * np.ones(m)
     # bset = BoxSet(b, b_l, b_u)
 
     # x1_plus = cp.Variable((n, 1))
@@ -170,9 +162,9 @@ def test_NNLS_one_step_splitting():
     lambd_dim = lambd.shape[0]
     Lambd_mat = cp.Variable((lambd_dim, lambd_dim), symmetric=True)
     full_mat = cp.bmat([
-            [Lambd_mat, lambd],
-            [lambd.T, np.array([[1]])]
-        ])
+        [Lambd_mat, lambd],
+        [lambd.T, np.array([[1]])]
+    ])
     constraints = [full_mat >= 0, full_mat >> 0]
     # print(b.plus_start_loc, b.plus_end_loc, b.minus_start_loc, b.minus_end_loc)
     # bplus_bplusT = Lambd_mat[b.plus_start_loc: b.plus_end_loc, b.plus_start_loc: b.plus_end_loc]
@@ -202,7 +194,7 @@ def test_NNLS_one_step_splitting():
         ]) @ C.T,
     ]
 
-    #proj for x1
+    # proj for x1
     x1_var = get_full_var(lambd, x1)
     x1x1T_var = get_outer_product(Lambd_mat, x1, x1)
     x1y1T_var = get_outer_product(Lambd_mat, x1, y1)
@@ -235,8 +227,6 @@ def test_NNLS_one_step_splitting():
     #     cp.sum(z_neg) == 1,
     # ]
 
-
-
     # obj = cp.Maximize(cp.trace(x1x1T_var))
     # obj = cp.Maximize(t)
     # constraints += [cp.trace(x1x1T_var - 2 * x1x0T_var + x0x0T_var) <= 1]
@@ -244,11 +234,11 @@ def test_NNLS_one_step_splitting():
     prob = cp.Problem(obj, constraints)
     res = prob.solve()
     print(res)
-    temp = np.bmat([
-        [x1x1T_var.value, x1x0T_var.value, x1_var.value],
-        [x1x0T_var.T.value, x0x0T_var.value, x0_var.value],
-        [x1_var.T.value, x0_var.T.value, np.array([[1]])]
-    ])
+    #  temp = np.bmat([
+    #      [x1x1T_var.value, x1x0T_var.value, x1_var.value],
+    #      [x1x0T_var.T.value, x0x0T_var.value, x0_var.value],
+    #      [x1_var.T.value, x0_var.T.value, np.array([[1]])]
+    #  ])
     # print(temp)
     # print('eigenvalues:', np.round(np.linalg.eigvals(temp), 4))
     # print(np.round(np.linalg.eigvals(Lambd_mat.value), 4))
@@ -286,8 +276,8 @@ def test_NNLS_one_step_split_only_y():
     t = .05
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
-    D = spa.eye(n)
-    b_const = np.zeros(n)
+    #  D = spa.eye(n)
+    #  b_const = np.zeros(n)
 
     y1 = VarLoc(n, 0)
     x0 = VarLoc(n, 2 * n)
@@ -333,17 +323,17 @@ def test_NNLS_one_step_split_only_y():
     x0_var = get_full_var(lambd, x0)
     x0x0T_var = get_outer_product(Lambd_mat, x0, x0)
     x0bT_var = get_outer_product(Lambd_mat, x0, b)
-    x0plus_var = get_plus_part(lambd, x0)
-    x0plus_x0plusT_var = get_plus_plus_outer_prod(Lambd_mat, x0, x0)
+    #  x0plus_var = get_plus_part(lambd, x0)
+    #  x0plus_x0plusT_var = get_plus_plus_outer_prod(Lambd_mat, x0, x0)
     b_var = get_full_var(lambd, b)
     y1_var = get_full_var(lambd, y1)
     y1y1T_var = get_outer_product(Lambd_mat, y1, y1)
     y1plus_y1plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, y1)
-    y1minus_y1minusT_var = get_minus_minus_outer_prod(Lambd_mat, y1, y1)
+    #  y1minus_y1minusT_var = get_minus_minus_outer_prod(Lambd_mat, y1, y1)
 
-    x0plus_bplusT_var = get_plus_plus_outer_prod(Lambd_mat, x0, b)
-    x0plus_bminusT_var = Lambd_mat[x0.plus_start_loc: x0.plus_end_loc, b.minus_start_loc: b.minus_end_loc]
-    x0plus_bT_var = x0plus_bplusT_var - x0plus_bminusT_var
+    #  x0plus_bplusT_var = get_plus_plus_outer_prod(Lambd_mat, x0, b)
+    #  x0plus_bminusT_var = Lambd_mat[x0.plus_start_loc: x0.plus_end_loc, b.minus_start_loc: b.minus_end_loc]
+    #  x0plus_bT_var = x0plus_bplusT_var - x0plus_bminusT_var
     # constraints += [
     #     y1_var == C @ cp.vstack([x0plus_var, b_var]),
     #     y1y1T_var == C @ cp.bmat([
@@ -368,9 +358,9 @@ def test_NNLS_one_step_split_only_y():
     # so tr(x1x1T - x1x0T + x0x0T) becomes
     # tr(y1plus_y1plusT - y1plus_x0plusT + x0plus_x0plusT)
     y1plus_y1plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, y1)
-    y1plus_x0plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, x0)
-    y1plus_x0minusT_var = get_plus_minus_outer_prod(Lambd_mat, y1, x0)
-    y1plus_x0T_var = y1plus_x0plusT_var - y1plus_x0minusT_var
+    #  y1plus_x0plusT_var = get_plus_plus_outer_prod(Lambd_mat, y1, x0)
+    #  y1plus_x0minusT_var = get_plus_minus_outer_prod(Lambd_mat, y1, x0)
+    #  y1plus_x0T_var = y1plus_x0plusT_var - y1plus_x0minusT_var
     # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0plusT_var + x0plus_x0plusT_var))
 
     # obj = cp.Maximize(cp.trace(y1plus_y1plusT_var - 2 * y1plus_x0T_var + x0x0T_var))
@@ -413,8 +403,8 @@ def test_NNLS_GLOBAL(N=1):
     steps = [step1, step2]
 
     # xset = CenteredL2BallSet(x, r=r)
-    x_l = -1 * np.ones(n)
-    x_u = np.ones(n)
+    #  x_l = -1 * np.ones(n)
+    #  x_u = np.ones(n)
     # xset = BoxSet(x, x_l, x_u)
     xset = CenteredL2BallSet(x, r=r)
 
@@ -438,7 +428,7 @@ def test_NNLS_GLOBAL(N=1):
 def main():
     test_NNLS_one_step_splitting()
     # test_NNLS_one_step_split_only_y()
-    N = 1
+    #  N = 1
     # test_NNLS_GLOBAL(N=N)
 
 

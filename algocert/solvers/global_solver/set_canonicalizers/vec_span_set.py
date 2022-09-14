@@ -1,5 +1,4 @@
 import numpy as np
-import scipy.sparse as spa
 
 
 def vec_span_set_canon(init_set, model, var_to_gp_var_map):

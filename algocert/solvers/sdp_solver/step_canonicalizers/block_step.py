@@ -1,8 +1,8 @@
 import cvxpy as cp
 import numpy as np
 
-
-from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
+from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
+    RLT_constraints
 
 
 def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
@@ -77,13 +77,13 @@ def block_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerp
     constraints = []
     # exit(0)
     constraints = [
-                    cp.bmat([
-                        [uuT_var, u_var],
-                        [u_var.T, np.array([[1]])]
-                    ]) >> 0,
-                    uuT_var == cp.bmat(uuT_blocks),
-                    u_var == cp.vstack(u_blocks),
-                 ]
+        cp.bmat([
+            [uuT_var, u_var],
+            [u_var.T, np.array([[1]])]
+        ]) >> 0,
+        uuT_var == cp.bmat(uuT_blocks),
+        u_var == cp.vstack(u_blocks),
+    ]
     constraints += extra_RLT_cons
 
     # bound prop
@@ -144,13 +144,11 @@ def block_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_
             if curr_or_prev(u, var, iter_id_map) == 0:
                 # handlers_to_use.append(prev)
                 var_bound_obj = prev.iterate_vars[var]
-                handler_to_set = prev
                 out_l.append(var_bound_obj.get_lower_bound())
                 out_u.append(var_bound_obj.get_upper_bound())
             else:
                 # handlers_to_use.append(curr)
                 var_bound_obj = curr.iterate_vars[var]
-                handler_to_set = curr
                 out_l.append(var_bound_obj.get_lower_bound())
                 out_u.append(var_bound_obj.get_upper_bound())
     # for x in out_l:

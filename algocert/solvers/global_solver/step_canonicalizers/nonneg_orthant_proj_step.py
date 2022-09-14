@@ -1,5 +1,5 @@
-import numpy as np
 import gurobipy as gp
+import numpy as np
 
 
 def nonneg_orthant_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):

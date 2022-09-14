@@ -1,22 +1,17 @@
+import cvxpy as cp
 import numpy as np
 import scipy.sparse as spa
-import cvxpy as cp
 
-from algocert.certification_problem import CertificationProblem
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
 from algocert.basic_algorithm_steps.block_step import BlockStep
 from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
+from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-
 from algocert.init_set.box_set import BoxSet
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.variables.iterate import Iterate
+from algocert.variables.parameter import Parameter
 
 
 def lin_bound_map(l, u, A):
@@ -196,17 +191,16 @@ def test_NNLS_SDPRLT(m, n, N, t, r, A):
         ]) >> 0,
     ]
 
-
     # RLT
     RLT_add = True
     if RLT_add:
-        b_vb = VarBounds(b, bbT, b_l, b_u)
-        x0_vb = VarBounds(x0, x0x0T, x0_l, x0_u)
+        #  b_vb = VarBounds(b, bbT, b_l, b_u)
+        #  x0_vb = VarBounds(x0, x0x0T, x0_l, x0_u)
         u1_l = np.vstack([x0_l, b_l])
         u1_u = np.vstack([x0_u, b_u])
-        u1_vb = VarBounds(u1, u1u1T, u1_l, u1_u)
+        #  u1_vb = VarBounds(u1, u1u1T, u1_l, u1_u)
         y1_l, y1_u = lin_bound_map(u1_l, u1_u, C)
-        y1_vb = VarBounds(y1, y1y1T, y1_l, y1_u)
+        #  y1_vb = VarBounds(y1, y1y1T, y1_l, y1_u)
         x1_l, x1_u = nonneg_proj_bound_map(y1_l, y1_u, n)
 
         u2_l = np.vstack([x1_l, b_l])
@@ -309,6 +303,7 @@ def test_NNLS_GLOBAL(m, n, N, t, r, A):
     obj = ConvergenceResidual(x)
     CP = CertificationProblem(N, [xset], [bset], obj, steps)
     res = CP.solve(solver_type='GLOBAL')
+    res
 
 
 def test_linbound_map():

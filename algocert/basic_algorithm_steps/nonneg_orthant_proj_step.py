@@ -1,5 +1,5 @@
-from algocert.variables.iterate import Iterate
 from algocert.basic_algorithm_steps.step import Step
+from algocert.variables.iterate import Iterate
 
 
 class NonNegProjStep(Step):

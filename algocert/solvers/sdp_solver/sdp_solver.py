@@ -1,5 +1,5 @@
-from algocert.solvers.solver import Solver
 from algocert.solvers.sdp_solver.sdp_handler import SDPHandler
+from algocert.solvers.solver import Solver
 
 
 class SDPSolver(Solver):

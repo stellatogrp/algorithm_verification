@@ -1,6 +1,6 @@
-import numpy as np
-import gurobipy as gp
 import cvxpy as cp
+import gurobipy as gp
+import numpy as np
 
 
 def eta_trick(w):
@@ -149,17 +149,18 @@ def eta_trick_KKT_norm_obj(w):
 
 def eta_trick_KKT_SDP(w):
     d = w.shape[0]
-    w_sq = np.square(w)
+    #  w_sq = np.square(w)
     # print(w, w_sq)
     x_dim = 4 * d + 1
     x = cp.Variable((x_dim, 1))
-    eta = x[0: d]
-    alpha = x[d: 2 * d]
-    sigma = x[2 * d: 3 * d]
-    lambd = x[3 * d: 4 * d]
-    gamma = x[4 * d]
-
-    X = cp.Variable((x_dim, x_dim), symmetric=True)
+    x
+    #  eta = x[0: d]
+    #  alpha = x[d: 2 * d]
+    #  sigma = x[2 * d: 3 * d]
+    #  lambd = x[3 * d: 4 * d]
+    #  gamma = x[4 * d]
+    #
+    #  X = cp.Variable((x_dim, x_dim), symmetric=True)
 
 
 def test_eta_trick_squared_l1(d=2):

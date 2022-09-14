@@ -1,2 +1,1 @@
-class CertificationProblem:
-    pass
+from algocert.certification_problem import CertificationProblem

@@ -1,8 +1,8 @@
 import cvxpy as cp
 import numpy as np
 
-
-from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
+from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
+    RLT_constraints
 
 
 def conv_resid_canon(obj, handlers, add_RLT):
@@ -12,7 +12,7 @@ def conv_resid_canon(obj, handlers, add_RLT):
     handlerN = handlers[N]
     handlerNminus1 = handlers[N - 1]
     x = obj.get_iterate()
-    n = x.get_dim()
+    #  n = x.get_dim()
     xN = handlerN.iterate_vars[x].get_cp_var()
     xNxNT = handlerN.iterate_outerproduct_vars[x]
     xNminus1 = handlerNminus1.iterate_vars[x].get_cp_var()

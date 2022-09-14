@@ -1,7 +1,6 @@
-from algocert.variables.variable import Variable
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
 from algocert.basic_algorithm_steps.step import Step
+from algocert.variables.iterate import Iterate
+from algocert.variables.variable import Variable
 
 
 class BlockStep(Step):

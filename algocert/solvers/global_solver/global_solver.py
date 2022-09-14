@@ -1,5 +1,5 @@
-from algocert.solvers.solver import Solver
 from algocert.solvers.global_solver.global_handler import GlobalHandler
+from algocert.solvers.solver import Solver
 
 
 class GlobalSolver(Solver):
