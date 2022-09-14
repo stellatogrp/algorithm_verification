@@ -11,11 +11,11 @@ class GlobalSolver(Solver):
         self.CP = CP
         self.handler = None
 
-    def solve(self):
+    def solve(self, **kwargs):
         # Create and solve with Gurobi
         if self.handler is None:
             raise AssertionError('Certification Problem has not been canonicalized yet.')
-        res = self.handler.solve()
+        res = self.handler.solve(**kwargs)
         return res
 
     def canonicalize(self, **kwargs):

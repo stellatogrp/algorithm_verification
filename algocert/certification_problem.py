@@ -27,11 +27,11 @@ class CertificationProblem(object):
             solver.canonicalize(**kwargs)
             # TODO break this out and add a way to specify the variable
             # solver.handler.add_convexity_constraints(self.qp_problem_data['A'])
-            res = solver.solve()
+            res = solver.solve(**kwargs)
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
             solver.canonicalize(**kwargs)
-            res = solver.solve()
+            res = solver.solve(**kwargs)
         return res
 
     def print_cp(self):

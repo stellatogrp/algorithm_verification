@@ -129,7 +129,7 @@ class GlobalHandler(object):
         obj_canon = OBJ_CANON_METHODS[type(obj)]
         obj_canon(obj, self.model, self.iterate_to_gp_var_map)
 
-    def canonicalize(self):
+    def canonicalize(self, **kwargs):
         self.create_gp_model()
         self.create_iterate_id_maps()
         self.create_param_list()
@@ -143,7 +143,7 @@ class GlobalHandler(object):
         self.canonicalize_steps()
         self.canonicalize_objective()
 
-    def solve(self):
+    def solve(self, **kwargs):
         self.model.optimize()
         # x = self.iterate_list[-1]
         # print(self.iterate_to_gp_var_map[x].X)

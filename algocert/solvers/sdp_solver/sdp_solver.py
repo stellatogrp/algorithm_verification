@@ -12,9 +12,9 @@ class SDPSolver(Solver):
         self.CP = CP
         self.handler = None
 
-    def solve(self):
+    def solve(self, **kwargs):
         # Create SDP relaxation and solve
-        res = self.handler.solve()
+        res = self.handler.solve(**kwargs)
         return res
 
     def canonicalize(self, **kwargs):

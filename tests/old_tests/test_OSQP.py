@@ -1,4 +1,5 @@
 import numpy as np
+import cvxpy as cp
 import scipy.sparse as spa
 
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
@@ -92,8 +93,8 @@ def test_OSQP_GLOBAL(N=1):
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
-    res = CP.solve(solver_type='GLOBAL', add_bounds=True)
-    # res = CP.solve(solver_type='SDP', add_RLT=True)
+    # res = CP.solve(solver_type='GLOBAL', add_bounds=True)
+    res = CP.solve(solver_type='SDP', add_RLT=True, solver=cp.SCS, verbose=True)
     return res
 
 

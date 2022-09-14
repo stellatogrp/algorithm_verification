@@ -71,7 +71,7 @@ class TestBasicGD(unittest.TestCase):
         ]
         obj = cp.trace(x1x1T - 2 * x1x0T + x0x0T)
         prob = cp.Problem(cp.Maximize(obj), constraints)
-        brute_force_res = prob.solve()
+        brute_force_res = prob.solve(solver=cp.SCS)
 
         # then, use a CP instead
         b_const = np.zeros(n)
@@ -93,5 +93,5 @@ class TestBasicGD(unittest.TestCase):
         obj = ConvergenceResidual(x)
         CP = CertificationProblem(N, [xset], [qset], obj, [step1])
 
-        CP_res = CP.solve(solver_type='SDP')
+        CP_res = CP.solve(solver_type='SDP', solver=cp.SCS)
         npt.assert_allclose(brute_force_res, CP_res, rtol=1e-4, atol=1e-4)

@@ -163,9 +163,17 @@ class SDPHandler(object):
         self.canonicalize_objective()
         # print(len(self.sdp_constraints))
 
-    def solve(self):
+    def solve(self, **kwargs):
         prob = cp.Problem(cp.Maximize(self.sdp_obj), self.sdp_constraints)
-        res = prob.solve()
+        if 'solver' in kwargs:
+            solver = kwargs['solver']
+        else:
+            solver = cp.MOSEK
+        if 'verbose' in kwargs:
+            verbose = kwargs['verbose']
+        else:
+            verbose = False
+        res = prob.solve(solver=solver, verbose=verbose)
         print(res)
         return res
 
