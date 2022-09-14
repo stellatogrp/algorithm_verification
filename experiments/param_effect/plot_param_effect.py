@@ -1,12 +1,12 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",   # This is needed only in the slides
     "font.sans-serif": ["Helvetica Neue"],   # This is needed only in the slides
     "font.size": 12,   # In the paper you can put 11 or 12
-    })
-import pandas as pd
+})
 
 
 def plot_all_points(df_samples, df_pep):
@@ -46,7 +46,7 @@ def plot_averages(df_samples, df_pep):
     ax.plot(n_vals, df_ws_avg.to_numpy(), label='Warm started sample avg', color='orange', linestyle='--')
     ax.plot(n_vals, pep_resid_vals, label='Theoretical bound', color='green')
 
-    plt.title('Average convergence residuals, $k=5, \mu=1, L=10$')
+    plt.title(r'Average convergence residuals, $k=5, \mu=1, L=10$')
     plt.xlabel('$n$')
     plt.ylabel('maximum $||x^k - x^{k-1}||_2^2$')
     plt.yscale('log')

@@ -1,14 +1,7 @@
 import numpy as np
-import cvxpy as cp
-import os
-import joblib
-import pandas as pd
-
 from PEPit import PEP
-from PEPit.functions import SmoothStronglyConvexFunction, ConvexFunction
+from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps.proximal_step import proximal_step
-
-from scipy.stats import ortho_group
 
 
 def test_PEPit_val(L, mu, t, r, N=1):

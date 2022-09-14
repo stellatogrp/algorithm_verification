@@ -1,12 +1,12 @@
-import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",   # This is needed only in the slides
     "font.sans-serif": ["Helvetica Neue"],   # This is needed only in the slides
     "font.size": 12,   # In the paper you can put 11 or 12
-    })
-import pandas as pd
+})
 
 
 def plot_vals(df, df_pep, df_avg):
@@ -63,11 +63,11 @@ def plot_times(df):
 def main():
     data_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NNLS/data/'
     fname = data_dir + 'test_NNLS_multstep.csv'
-    pep_fname = data_dir + 'test_NNLS_multstep_PEP.csv'
-    avg_fname = data_dir + 'test_NNLS_multstep_avg_alttest.csv'
+    #  pep_fname = data_dir + 'test_NNLS_multstep_PEP.csv'
+    #  avg_fname = data_dir + 'test_NNLS_multstep_avg_alttest.csv'
     df = pd.read_csv(fname)
-    df_pep = pd.read_csv(pep_fname)
-    df_avg = pd.read_csv(avg_fname)
+    #  df_pep = pd.read_csv(pep_fname)
+    #  df_avg = pd.read_csv(avg_fname)
     # print(df_pep)
     # plot_vals(df, df_pep, df_avg)
     plot_times(df)

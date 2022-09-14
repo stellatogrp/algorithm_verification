@@ -1,15 +1,19 @@
-from joblib import Parallel, delayed
+#  import certification_problem.init_set as cpi
 import numpy as np
 import scipy.sparse as spa
+from certification_problem.basic_algorithm_steps.block_step import BlockStep
+from certification_problem.basic_algorithm_steps.linear_step import LinearStep
+from certification_problem.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
 from certification_problem.certification_problem import CertificationProblem
+from certification_problem.init_set.centered_l2_ball_set import \
+    CenteredL2BallSet
+from certification_problem.objectives.convergence_residual import \
+    ConvergenceResidual
 from certification_problem.variables.iterate import Iterate
 from certification_problem.variables.parameter import Parameter
-from certification_problem.basic_algorithm_steps.linear_step import LinearStep
-from certification_problem.basic_algorithm_steps.block_step import BlockStep
-from certification_problem.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-import certification_problem.init_set as cpi
-from certification_problem.init_set.centered_l2_ball_set import CenteredL2BallSet
-from certification_problem.objectives.convergence_residual import ConvergenceResidual
+
+#  from joblib import Parallel, delayed
 
 
 def NNLS_cert_prob(n, m, A, N=1, t=.05, xset=None, bset=None):
@@ -25,7 +29,7 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, xset=None, bset=None):
     '''
     ATA = A.T @ A
     In = spa.eye(n)
-    r=1
+    r = 1
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
     D = spa.eye(n, n)
