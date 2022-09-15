@@ -12,10 +12,7 @@ from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
 
-def test_OSQP_GLOBAL(N=1):
-    print('--GLOBAL--')
-    m = 5
-    n = 3
+def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     #  r = 1
 
     In = spa.eye(n)
@@ -92,18 +89,17 @@ def test_OSQP_GLOBAL(N=1):
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
-    res = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
-    # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True)
-    # res = CP.solve(solver_type='SDP', add_RLT=False, verbose=True)
-    print(res)
-    return res
+    res = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=1000)
+    # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=False)
+    # res = CP.solve(solver_type='SDP', add_RLT=False)
+    print('global', res)
 
 
 def main():
-    N = 5
-    res_global = test_OSQP_GLOBAL(N=N)
-    # print(res_global)
-    res_global
+    m = 5
+    n = 3
+    N = 3
+    OSQP_cert_prob(n, m, N=N)
 
 
 if __name__ == '__main__':

@@ -175,7 +175,7 @@ class SDPHandler(object):
             verbose = False
         res = prob.solve(solver=solver, verbose=verbose)
         # print(res)
-        return res
+        return res, prob.solver_stats.solve_time
 
 
 class SingleIterationHandler(object):

@@ -28,6 +28,10 @@ class GlobalHandler(object):
             self.add_bounds = kwargs['add_bounds']
         else:
             self.add_bounds = False
+        if 'TimeLimit' in kwargs:
+            self.TimeLimit = kwargs['TimeLimit']
+        else:
+            self.TimeLimit = -1  # a 'default' value to flag that we don't want to set it
 
     def create_gp_model(self):
         self.model = gp.Model()
@@ -36,6 +40,8 @@ class GlobalHandler(object):
         # self.model.setParam('OptimalityTol', 1e-4)
         # self.model.setParam('FeasibilityTol', 1e-3)
         self.model.setParam('MIPGap', .01)
+        if self.TimeLimit > 0:
+            self.model.setParam('TimeLimit', self.TimeLimit)
 
     def create_iterate_id_maps(self):
         steps = self.CP.get_algorithm_steps()
