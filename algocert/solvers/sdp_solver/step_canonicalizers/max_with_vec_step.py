@@ -2,6 +2,7 @@ import cvxpy as cp
 import numpy as np
 
 from algocert.basic_algorithm_steps.linear_step import LinearStep
+from algocert.variables.parameter import Parameter
 
 
 def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
@@ -11,7 +12,6 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
     y = step.get_output_var()
     x = step.get_input_var()
     l = step.get_lower_bound_vec()
-    l = l.reshape(-1, 1)
 
     y_var = curr.iterate_vars[y].get_cp_var()
     yyT_var = curr.iterate_outerproduct_vars[y]
@@ -20,10 +20,20 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
     yxT_var = curr.iterate_cross_vars[y][x]
 
-    constraints = [y_var >= l, y_var >= x_var,
-                   cp.diag(yyT_var) >= cp.diag(l @ l.T),
-                   # cp.diag(yyT_var) >= cp.diag(xxT_var),
-                   cp.diag(yyT_var - yxT_var - l @ y_var.T + l @ x_var.T) == 0]
+    if not type(l) == Parameter:
+        l_vec = l.reshape(-1, 1)
+        constraints = [y_var >= l_vec, y_var >= x_var,
+                       cp.diag(yyT_var) >= cp.diag(l @ l.T),
+                       cp.diag(yyT_var - yxT_var - l_vec @ y_var.T + l_vec @ x_var.T) == 0]
+    else:
+        l_var = param_vars[l].get_cp_var()
+        llT_var = param_outerproduct_vars[l]
+        ylT_var = curr.iterate_param_vars[y][l]
+        xlT_var = curr.iterate_param_vars[x][l]
+        constraints = [y_var >= l_var, y_var >= x_var,
+                       cp.diag(yyT_var) >= cp.diag(llT_var),
+                       cp.diag(yyT_var - yxT_var - ylT_var + xlT_var) == 0]
+
     constraints += [
         cp.bmat([
             [yyT_var, yxT_var, y_var],
