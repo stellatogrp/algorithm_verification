@@ -11,5 +11,5 @@ class ConstSet(InitSet):
         return self.val
 
     def __str__(self):
-        to_string = f'SET({self.x.name}): const = {self.val}'
+        to_string = f'SET({self.x.name}): const = {self.val.reshape(-1,)}'
         return to_string

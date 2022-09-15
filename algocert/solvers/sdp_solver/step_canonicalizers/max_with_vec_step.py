@@ -22,7 +22,7 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
     constraints = [y_var >= l, y_var >= x_var,
                    cp.diag(yyT_var) >= cp.diag(l @ l.T),
-                   cp.diag(yyT_var) >= cp.diag(xxT_var),
+                   # cp.diag(yyT_var) >= cp.diag(xxT_var),
                    cp.diag(yyT_var - yxT_var - l @ y_var.T + l @ x_var.T) == 0]
     constraints += [
         cp.bmat([

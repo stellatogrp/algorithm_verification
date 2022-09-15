@@ -89,19 +89,19 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
 
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
-    # CP.print_cp()
+    CP.print_cp()
     # resg = CP.solve(solver_type='GLOBAL', add_bounds=False, TimeLimit=1000)
-    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=1000)
+    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print('global', resg)
     # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True)
+    # res = CP.solve(solver_type='SDP', add_RLT=False, verbose=True)
     # print('sdp', res)
-    # res = CP.solve(solver_type='SDP', add_RLT=False)
 
 
 def main():
-    m = 31
-    n = 30
-    N = 1
+    m = 21
+    n = 20
+    N = 2
     OSQP_cert_prob(n, m, N=N)
 
 

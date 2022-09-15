@@ -9,5 +9,5 @@ class BoxSet(InitSet):
         self.u = u
 
     def __str__(self):
-        to_string = f'SET({self.x.name}): box with l = {self.l} and u = {self.u}'
+        to_string = f'SET({self.x.name}): box with l = {self.l.reshape(-1,)} and u = {self.u.reshape(-1,)}'
         return to_string
