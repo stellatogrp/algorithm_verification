@@ -12,6 +12,7 @@ def vec_span_canon(init_set, handler):
 
     c = cp.Variable()  # TODO: figure out, do we need to include these extra vars in the return?
     c_squared = cp.Variable()
+    init_set.set_c_vars(c, c_squared)
 
     return [
         a <= c <= b,

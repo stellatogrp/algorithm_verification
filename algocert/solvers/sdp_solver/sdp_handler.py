@@ -174,7 +174,7 @@ class SDPHandler(object):
         else:
             verbose = False
         res = prob.solve(solver=solver, verbose=verbose)
-        print(res)
+        # print(res)
         return res
 
 

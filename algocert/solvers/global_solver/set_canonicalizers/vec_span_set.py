@@ -12,5 +12,6 @@ def vec_span_set_canon(init_set, model, var_to_gp_var_map):
     c = model.addMVar(1,
                       ub=a * np.ones(1),
                       lb=b * np.ones(1))
+    init_set.set_c_vars(c, None)
 
     model.addConstr(x_var == c * v)

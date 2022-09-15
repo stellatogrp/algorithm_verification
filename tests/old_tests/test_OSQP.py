@@ -1,4 +1,3 @@
-import cvxpy as cp
 import numpy as np
 import scipy.sparse as spa
 
@@ -94,13 +93,15 @@ def test_OSQP_GLOBAL(N=1):
 
     # CP.print_cp()
     # res = CP.solve(solver_type='GLOBAL', add_bounds=True)
-    res = CP.solve(solver_type='SDP', add_RLT=True, solver=cp.SCS, verbose=True)
+    res = CP.solve(solver_type='SDP', add_RLT=True, verbose=False)
+    # res = CP.solve(solver_type='SDP', add_RLT=False)
     return res
 
 
 def main():
-    N = 1
+    N = 2
     res_global = test_OSQP_GLOBAL(N=N)
+    print(res_global)
     res_global
 
 

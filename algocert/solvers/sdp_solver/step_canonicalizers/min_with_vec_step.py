@@ -22,7 +22,9 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
     constraints = [y_var <= u, y_var <= x_var,
                    cp.diag(yyT_var) <= cp.diag(u @ u.T),
+                   cp.diag(yyT_var) <= cp.diag(xxT_var),
                    cp.diag(yyT_var - yxT_var - u @ y_var.T + u @ x_var.T) == 0]
+
     constraints += [
         cp.bmat([
             [yyT_var, yxT_var, y_var],
