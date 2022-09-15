@@ -30,12 +30,12 @@ from algocert.solvers.global_solver.set_canonicalizers.linf_ball_set import \
     linf_ball_set_canon
 from algocert.solvers.global_solver.set_canonicalizers.vec_span_set import \
     vec_span_set_canon
-from algocert.solvers.global_solver.step_canonicalizers.hl_linear_step import \
-    hl_linear_step_canon
-from algocert.solvers.global_solver.step_canonicalizers.max_with_vec_step import \
-    max_vec_canon
-from algocert.solvers.global_solver.step_canonicalizers.min_with_vec_step import \
-    min_vec_canon
+from algocert.solvers.global_solver.step_canonicalizers.hl_linear_step import (
+    hl_lin_step_bound_canon, hl_linear_step_canon)
+from algocert.solvers.global_solver.step_canonicalizers.max_with_vec_step import (
+    max_vec_bound_canon, max_vec_canon)
+from algocert.solvers.global_solver.step_canonicalizers.min_with_vec_step import (
+    min_vec_bound_canon, min_vec_canon)
 from algocert.solvers.global_solver.step_canonicalizers.nonneg_orthant_proj_step import \
     nonneg_orthant_proj_canon
 
@@ -58,6 +58,12 @@ STEP_CANON_METHODS = {
     NonNegProjStep: nonneg_orthant_proj_canon,
     MaxWithVecStep: max_vec_canon,
     MinWithVecStep: min_vec_canon,
+}
+
+BOUND_STEP_CANON_METHODS = {
+    HighLevelLinearStep: hl_lin_step_bound_canon,
+    MaxWithVecStep: max_vec_bound_canon,
+    MinWithVecStep: min_vec_bound_canon,
 }
 
 OBJ_CANON_METHODS = {

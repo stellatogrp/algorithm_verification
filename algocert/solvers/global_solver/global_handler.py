@@ -2,6 +2,7 @@ import gurobipy as gp
 import numpy as np
 
 from algocert.solvers.global_solver import (BOUND_SET_CANON_METHODS,
+                                            BOUND_STEP_CANON_METHODS,
                                             OBJ_CANON_METHODS,
                                             SET_CANON_METHODS,
                                             STEP_CANON_METHODS)
@@ -72,10 +73,20 @@ class GlobalHandler(object):
             self.iterate_to_lower_bound_map[iterate] = lb
             self.iterate_to_upper_bound_map[iterate] = ub
 
+        for iterate in self.iterate_list:
+            if iterate not in self.iterate_to_lower_bound_map:
+                lb = np.zeros((N + 1, n))
+                ub = np.zeros((N + 1, n))
+                self.iterate_to_lower_bound_map[iterate] = lb
+                self.iterate_to_upper_bound_map[iterate] = ub
+
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.N + 1):
             for step in steps:
-                canon_method = STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
+                canon_method = BOUND_STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
+                canon_method(step, k, self.iterate_to_id_map,
+                             self.iterate_to_lower_bound_map, self.iterate_to_upper_bound_map,
+                             self.param_to_lower_bound_map, self.param_to_upper_bound_map)
 
     def create_param_bound_map(self):
         for param_set in self.CP.get_parameter_sets():
@@ -90,10 +101,16 @@ class GlobalHandler(object):
         for iterate in self.iterate_list:
             # print(iterate)
             n = iterate.get_dim()
+            if self.add_bounds:
+                lb = self.iterate_to_lower_bound_map[iterate]
+                ub = self.iterate_to_upper_bound_map[iterate]
+            else:
+                lb = -gp.GRB.INFINITY * np.ones((N + 1, n))
+                ub = gp.GRB.INFINITY * np.ones((N + 1, n))
             var = self.model.addMVar((N + 1, n),
                                      name=iterate.get_name(),
-                                     ub=gp.GRB.INFINITY * np.ones((N + 1, n)),
-                                     lb=-gp.GRB.INFINITY * np.ones((N + 1, n)))
+                                     ub=ub,
+                                     lb=lb)
             self.iterate_to_gp_var_map[iterate] = var
 
     def create_param_gp_var_map(self):
@@ -140,8 +157,8 @@ class GlobalHandler(object):
         self.create_iterate_id_maps()
         self.create_param_list()
         if self.add_bounds:
-            self.create_iterate_bound_map()
             self.create_param_bound_map()
+            self.create_iterate_bound_map()
         self.create_iterate_gp_var_map()
         self.create_param_gp_var_map()
         self.canonicalize_initial_sets()

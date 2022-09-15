@@ -73,6 +73,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     x_l = -1 * np.ones((n, 1))
     x_u = np.ones((n, 1))
     xset = BoxSet(x, x_l, x_u)
+    xset = ConstSet(x, np.zeros((n, 1)))
 
     yset = ConstSet(y, np.zeros((m, 1)))
 
@@ -80,7 +81,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
 
     # bset = CenteredL2BallSet(b, r=r)
     b_l = np.ones((n, 1))
-    b_u = 3 * np.ones((n, 1))
+    b_u = 10 * np.ones((n, 1))
     bset = BoxSet(b, b_l, b_u)
 
     obj = ConvergenceResidual(x)
@@ -89,16 +90,18 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
-    res = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=1000)
-    # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=False)
+    # resg = CP.solve(solver_type='GLOBAL', add_bounds=False, TimeLimit=1000)
+    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=1000)
+    print('global', resg)
+    # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True)
+    # print('sdp', res)
     # res = CP.solve(solver_type='SDP', add_RLT=False)
-    print('global', res)
 
 
 def main():
-    m = 5
-    n = 3
-    N = 3
+    m = 31
+    n = 30
+    N = 1
     OSQP_cert_prob(n, m, N=N)
 
 
