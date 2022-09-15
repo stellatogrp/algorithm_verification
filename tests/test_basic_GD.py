@@ -93,5 +93,5 @@ class TestBasicGD(unittest.TestCase):
         obj = ConvergenceResidual(x)
         CP = CertificationProblem(N, [xset], [qset], obj, [step1])
 
-        CP_res = CP.solve(solver_type='SDP', solver=cp.SCS)
+        CP_res, _ = CP.solve(solver_type='SDP', solver=cp.SCS)
         npt.assert_allclose(brute_force_res, CP_res, rtol=1e-4, atol=1e-4)
