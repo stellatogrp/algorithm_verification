@@ -1,8 +1,8 @@
 import unittest
 
-# import cvxpy as cp
+import cvxpy as cp
 import numpy as np
-# import numpy.testing as npt
+import numpy.testing as npt
 import scipy.sparse as spa
 
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
@@ -65,10 +65,13 @@ class TestBasicGD(unittest.TestCase):
         # obj = OuterProdTrace(x)
 
         CP = CertificationProblem(N, [xset], [bset], obj, steps)
-        # res = CP.solve(solver_type='GLOBAL', add_bounds=False, TimeLimit=100)
-        res = CP.solve(solver_type='SDP', add_RLT=False, verbose=True)
-        # res = CP.solve(solver_type='SDP', add_RLT=False, verbose=True)
-        print(res)
+        res_global = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
+        print('global', res_global)
+        res = CP.solve(solver_type='SDP', add_RLT=False, verbose=False, solver=cp.SCS)
+        res_RLT = CP.solve(solver_type='SDP', add_RLT=True, verbose=False, solver=cp.SCS)
+        print('normal', res)
+        print('RLT', res_RLT)
+        npt.assert_array_less([res_RLT[0]], [res[0]])  # this might be problematic with numerical precision
 
     def test_brute_force_max_proj(self):
         # m, n, N, t = self.m, self.n, self.N, self.t
