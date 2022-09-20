@@ -2,6 +2,7 @@ import cvxpy as cp
 import numpy as np
 
 from algocert.basic_algorithm_steps.linear_step import LinearStep
+from algocert.variables.parameter import Parameter
 
 
 def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
@@ -11,7 +12,6 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
     y = step.get_output_var()
     x = step.get_input_var()
     u = step.get_upper_bound_vec()
-    u = u.reshape(-1, 1)
 
     y_var = curr.iterate_vars[y].get_cp_var()
     yyT_var = curr.iterate_outerproduct_vars[y]
@@ -20,18 +20,37 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
     yxT_var = curr.iterate_cross_vars[y][x]
 
-    constraints = [y_var <= u, y_var <= x_var,
-                   cp.diag(yyT_var) <= cp.diag(u @ u.T),
-                   # cp.diag(yyT_var) <= cp.diag(xxT_var),
-                   cp.diag(yyT_var - yxT_var - u @ y_var.T + u @ x_var.T) == 0]
+    if not type(u) == Parameter:
+        u_vec = u.reshape(-1, 1)
+        constraints = [y_var <= u_vec, y_var <= x_var,
+                       # cp.diag(yyT_var) <= cp.diag(u @ u.T),
+                       cp.diag(yyT_var - yxT_var - u_vec @ y_var.T + u_vec @ x_var.T) == 0]
 
-    constraints += [
-        cp.bmat([
-            [yyT_var, yxT_var, y_var],
-            [yxT_var.T, xxT_var, x_var],
-            [y_var.T, x_var.T, np.array([[1]])]
-        ]) >> 0,
-    ]
+        constraints += [
+            cp.bmat([
+                [yyT_var, yxT_var, y_var],
+                [yxT_var.T, xxT_var, x_var],
+                [y_var.T, x_var.T, np.array([[1]])]
+            ]) >> 0,
+        ]
+
+    else:
+        u_var = param_vars[u].get_cp_var()
+        uuT_var = param_outerproduct_vars[u]
+        yuT_var = curr.iterate_param_vars[y][u]
+        xuT_var = curr.iterate_param_vars[x][u]
+        constraints = [y_var <= u_var, y_var <= x_var,
+                       # cp.diag(yyT_var) <= cp.diag(uuT_var),
+                       cp.diag(yyT_var - yxT_var - yuT_var + xuT_var) == 0]
+
+        constraints += [
+            cp.bmat([
+                [yyT_var, yxT_var, yuT_var, y_var],
+                [yxT_var.T, xxT_var, xuT_var, x_var],
+                [yuT_var.T, xuT_var.T, uuT_var, u_var],
+                [y_var.T, x_var.T, u_var.T, np.array([[1]])]
+            ]) >> 0,
+        ]
 
     if type(prev_step) == LinearStep:
         # print(type(x))
@@ -39,7 +58,6 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
         D = prev_step.get_lhs_matrix()
         b = prev_step.get_rhs_const_vec()
         b = b.reshape(-1, 1)
-
         block_step = steps[i-2]
         u = block_step.get_output_var()
         u_var = curr.iterate_vars[u].get_cp_var()
@@ -75,7 +93,13 @@ def min_vec_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_out
     u = step.get_upper_bound_vec()
     lower_x = curr.iterate_vars[x].get_lower_bound()
     upper_x = curr.iterate_vars[x].get_upper_bound()
-    lower_y = np.minimum(lower_x, u)
-    upper_y = np.minimum(upper_x, u)
+    if not type(u) == Parameter:
+        lower_u = u
+        upper_u = u
+    else:
+        lower_u = param_vars[u].get_lower_bound()
+        upper_u = param_vars[u].get_upper_bound()
+    lower_y = np.minimum(lower_x, lower_u)
+    upper_y = np.minimum(upper_x, upper_u)
     curr.iterate_vars[y].set_lower_bound(lower_y)
     curr.iterate_vars[y].set_upper_bound(upper_y)

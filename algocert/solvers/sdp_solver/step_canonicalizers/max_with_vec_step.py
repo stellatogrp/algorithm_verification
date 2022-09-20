@@ -23,24 +23,34 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
     if not type(l) == Parameter:
         l_vec = l.reshape(-1, 1)
         constraints = [y_var >= l_vec, y_var >= x_var,
-                       cp.diag(yyT_var) >= cp.diag(l @ l.T),
+                       # cp.diag(yyT_var) >= cp.diag(l @ l.T),
                        cp.diag(yyT_var - yxT_var - l_vec @ y_var.T + l_vec @ x_var.T) == 0]
+
+        constraints += [
+            cp.bmat([
+                [yyT_var, yxT_var, y_var],
+                [yxT_var.T, xxT_var, x_var],
+                [y_var.T, x_var.T, np.array([[1]])]
+            ]) >> 0,
+        ]
+
     else:
         l_var = param_vars[l].get_cp_var()
         llT_var = param_outerproduct_vars[l]
         ylT_var = curr.iterate_param_vars[y][l]
         xlT_var = curr.iterate_param_vars[x][l]
         constraints = [y_var >= l_var, y_var >= x_var,
-                       cp.diag(yyT_var) >= cp.diag(llT_var),
+                       # cp.diag(yyT_var) >= cp.diag(llT_var),
                        cp.diag(yyT_var - yxT_var - ylT_var + xlT_var) == 0]
 
-    constraints += [
-        cp.bmat([
-            [yyT_var, yxT_var, y_var],
-            [yxT_var.T, xxT_var, x_var],
-            [y_var.T, x_var.T, np.array([[1]])]
-        ]) >> 0,
-    ]
+        constraints += [
+            cp.bmat([
+                [yyT_var, yxT_var, ylT_var, y_var],
+                [yxT_var.T, xxT_var, xlT_var, x_var],
+                [ylT_var.T, xlT_var.T, llT_var, l_var],
+                [y_var.T, x_var.T, l_var.T, np.array([[1]])]
+            ]) >> 0,
+        ]
 
     if type(prev_step) == LinearStep:
         # print(type(x))
@@ -78,13 +88,18 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
 def max_vec_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
-    #  prev_step = steps[i - 1]
     y = step.get_output_var()
     x = step.get_input_var()
     l = step.get_lower_bound_vec()
     lower_x = curr.iterate_vars[x].get_lower_bound()
     upper_x = curr.iterate_vars[x].get_upper_bound()
-    lower_y = np.maximum(lower_x, l)
-    upper_y = np.maximum(upper_x, l)
+    if not type(l) == Parameter:
+        lower_l = l
+        upper_l = l
+    else:
+        lower_l = param_vars[l].get_lower_bound()
+        upper_l = param_vars[l].get_upper_bound()
+    lower_y = np.maximum(lower_x, lower_l)
+    upper_y = np.maximum(upper_x, upper_l)
     curr.iterate_vars[y].set_lower_bound(lower_y)
     curr.iterate_vars[y].set_upper_bound(upper_y)
