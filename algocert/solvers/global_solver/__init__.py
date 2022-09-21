@@ -3,6 +3,7 @@ from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
     NonNegProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.init_set.affine_vec_set import AffineVecSet
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.const_set import ConstSet
@@ -18,6 +19,8 @@ from algocert.solvers.global_solver.obj_canonicalizers.linf_conv_resid import \
     linf_conv_resid_canon
 from algocert.solvers.global_solver.obj_canonicalizers.outer_prod_trace import \
     outer_prod_trace_canon
+from algocert.solvers.global_solver.set_canonicalizers.affine_vec_set import \
+    affine_vec_set_canon
 from algocert.solvers.global_solver.set_canonicalizers.box_set import (
     box_set_bound_canon, box_set_canon)
 from algocert.solvers.global_solver.set_canonicalizers.centered_l2_ball_set import \

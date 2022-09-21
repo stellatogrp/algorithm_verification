@@ -7,6 +7,7 @@ class AffineVecSet(InitSet):
         super().__init__(x)
         self.S = S
         self.b = b
+        self.m, self.n = S.shape
         self.theta_set = theta_set
         self.theta_var = None
         self.theta_thetaT_var = None
@@ -21,3 +22,9 @@ class AffineVecSet(InitSet):
 
     def get_theta_vars(self):
         return self.theta_var, self.theta_thetaT_var
+
+    def get_theta_dim(self):
+        return self.n
+
+    def get_output_var_dim(self):
+        return self.m

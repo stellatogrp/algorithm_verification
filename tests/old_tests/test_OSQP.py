@@ -92,15 +92,15 @@ def test_OSQP_GLOBAL(N=1):
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
-    res = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
-    # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True)
+    # res = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
+    res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True)
     # res = CP.solve(solver_type='SDP', add_RLT=False, verbose=True)
     print(res)
     return res
 
 
 def main():
-    N = 5
+    N = 1
     res_global = test_OSQP_GLOBAL(N=N)
     # print(res_global)
     res_global
