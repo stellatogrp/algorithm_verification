@@ -84,7 +84,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     b_u = 10 * np.ones((n, 1))
     bset = BoxSet(b, b_l, b_u)
 
-    obj = ConvergenceResidual(x)
+    obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
     # obj = OuterProdTrace(x)
 
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
@@ -100,8 +100,8 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
 
 
 def main():
-    m = 6
-    n = 5
+    m = 4
+    n = 3
     N = 1
     OSQP_cert_prob(n, m, N=N)
 

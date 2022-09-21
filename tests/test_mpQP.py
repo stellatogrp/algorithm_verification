@@ -67,8 +67,15 @@ class TestBasicGD(unittest.TestCase):
         CP = CertificationProblem(N, [xset], [bset], obj, steps)
         res_global = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
         print('global', res_global)
-        res = CP.solve(solver_type='SDP', add_RLT=False, verbose=False, solver=cp.SCS)
-        res_RLT = CP.solve(solver_type='SDP', add_RLT=True, verbose=False, solver=cp.SCS)
+
+        use_mosek = True
+        # use_mosek = False
+        if use_mosek:
+            solver = cp.MOSEK
+        else:
+            solver = cp.SCS
+        res = CP.solve(solver_type='SDP', add_RLT=False, verbose=False, solver=solver)
+        res_RLT = CP.solve(solver_type='SDP', add_RLT=True, verbose=False, solver=solver)
         print('normal', res)
         print('RLT', res_RLT)
         npt.assert_array_less([res_RLT[0]], [res[0]])  # this might be problematic with numerical precision

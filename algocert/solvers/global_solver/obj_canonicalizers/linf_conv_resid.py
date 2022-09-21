@@ -24,4 +24,5 @@ def linf_conv_resid_canon(iterate, model, iterate_to_gp_var_map):
         model.addConstr(t <= -(xN[i] - xNminus1[i]) + M * (1-z_neg[i]))
     model.addConstr(z_pos.sum() + z_neg.sum() == 1)
 
-    model.setObjective(t, GRB.MAXIMIZE)
+    # model.setObjective(t, GRB.MAXIMIZE)
+    return t

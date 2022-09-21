@@ -1,5 +1,6 @@
 import scipy.sparse as spa
-from gurobipy import GRB
+
+# from gurobipy import GRB
 
 
 def conv_resid_canon(iterate, model, iterate_to_gp_var_map):
@@ -17,4 +18,5 @@ def conv_resid_canon(iterate, model, iterate_to_gp_var_map):
     # obj = xN @ In @ xN - xNminus1 @ In @ xNminus1
     # c = np.ones(n)
     # obj = c @ xN
-    model.setObjective(obj, GRB.MAXIMIZE)
+    # model.setObjective(obj, GRB.MAXIMIZE)
+    return obj

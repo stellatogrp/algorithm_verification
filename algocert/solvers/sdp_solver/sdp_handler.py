@@ -100,12 +100,21 @@ class SDPHandler(object):
                 self.sdp_constraints += constraints
 
     def canonicalize_objective(self):
-        obj = self.CP.objective
-        # print(obj)
-        obj_canon = OBJ_CANON_METHODS[type(obj)]
-        sdp_obj, constraints = obj_canon(obj, self.iteration_handlers, self.add_RLT)
-        self.sdp_obj += sdp_obj
-        self.sdp_constraints += constraints
+        # obj = self.CP.objective
+        # obj_canon = OBJ_CANON_METHODS[type(obj)]
+        # sdp_obj, constraints = obj_canon(obj, self.iteration_handlers, self.add_RLT)
+        # self.sdp_obj += sdp_obj
+        # self.sdp_constraints += constraints
+        if type(self.CP.objective) != list:
+            obj_list = [self.CP.objective]
+        else:
+            obj_list = self.CP.objective
+
+        for obj in obj_list:
+            obj_canon = OBJ_CANON_METHODS[type(obj)]
+            single_obj, constraints = obj_canon(obj, self.iteration_handlers, self.add_RLT)
+            self.sdp_obj += single_obj
+            self.sdp_constraints += constraints
 
     def propagate_lower_upper_bounds(self):
         self.initialize_init_set_bounds()

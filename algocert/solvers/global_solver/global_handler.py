@@ -148,9 +148,17 @@ class GlobalHandler(object):
                              self.iterate_to_gp_var_map, self.param_to_gp_var_map, self.iterate_to_id_map)
 
     def canonicalize_objective(self):
-        obj = self.CP.objective
-        obj_canon = OBJ_CANON_METHODS[type(obj)]
-        obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+        # obj = self.CP.objective
+        if type(self.CP.objective) != list:
+            obj_list = [self.CP.objective]
+        else:
+            obj_list = self.CP.objective
+
+        gp_obj = 0
+        for obj in obj_list:
+            obj_canon = OBJ_CANON_METHODS[type(obj)]
+            gp_obj += obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+        self.model.setObjective(gp_obj, gp.GRB.MAXIMIZE)
 
     def canonicalize(self, **kwargs):
         self.create_gp_model()

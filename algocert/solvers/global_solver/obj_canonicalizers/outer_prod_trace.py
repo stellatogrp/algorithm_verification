@@ -1,4 +1,4 @@
-from gurobipy import GRB
+# from gurobipy import GRB
 
 
 def outer_prod_trace_canon(iterate, model, iterate_to_gp_var_map):
@@ -12,4 +12,5 @@ def outer_prod_trace_canon(iterate, model, iterate_to_gp_var_map):
     for i in range(n):
         obj += xN[i] ** 2
 
-    model.setObjective(obj, GRB.MAXIMIZE)
+    # model.setObjective(obj, GRB.MAXIMIZE)
+    return obj
