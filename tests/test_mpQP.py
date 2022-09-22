@@ -65,11 +65,11 @@ class TestBasicGD(unittest.TestCase):
         # obj = OuterProdTrace(x)
 
         CP = CertificationProblem(N, [xset], [bset], obj, steps)
-        res_global = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
-        print('global', res_global)
+        # res_global = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
+        # print('global', res_global)
 
-        use_mosek = True
-        # use_mosek = False
+        # use_mosek = True
+        use_mosek = False
         if use_mosek:
             solver = cp.MOSEK
         else:
