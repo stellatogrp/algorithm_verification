@@ -26,9 +26,6 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     P = Phalf.T @ Phalf
     # print(A)
 
-    rho = 1
-    sigma = 1
-
     # b_const = spa.csc_matrix(np.zeros((n, 1)))
     zeros_n = np.zeros((n, 1))
     zeros_m = np.zeros((m, 1))
@@ -36,6 +33,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     u = 4 * np.ones((m, 1))
     sigma = 1
     rho = 1
+    rho_inv = 1 / rho
 
     x = Iterate(n, name='x')
     y = Iterate(m, name='y')
@@ -67,7 +65,13 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     # step 5
     step5 = MinWithVecStep(z, z_tilde, u=u)
 
-    steps = [step1, step2, step3, step4, step5]
+    # step 6 for fixed point residual
+    s = Iterate(m, name='s')
+    s6_D = Im
+    s6_A = spa.bmat([[Im, rho_inv * Im]])
+    step6 = HighLevelLinearStep(s, [z, y], D=s6_D, A=s6_A, b=zeros_m, Dinv=s6_D)
+
+    steps = [step1, step2, step3, step4, step5, step6]
 
     # xset = CenteredL2BallSet(x, r=r)
     x_l = -1 * np.ones((n, 1))
@@ -83,8 +87,10 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     b_l = np.ones((n, 1))
     b_u = 10 * np.ones((n, 1))
     bset = BoxSet(b, b_l, b_u)
+    # bset = ConstSet(b, np.zeros((n, 1)))
 
-    obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
+    # obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
+    obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
     # obj = OuterProdTrace(x)
 
     CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
@@ -102,7 +108,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
 def main():
     m = 4
     n = 3
-    N = 1
+    N = 5
     OSQP_cert_prob(n, m, N=N)
 
 

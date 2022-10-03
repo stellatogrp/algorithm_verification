@@ -55,12 +55,12 @@ def plot_times(df):
 def plot_resids(df):
     N_vals = df['num_iter'].to_numpy()
     # sdp_resid_vals = df['conv_resid_sdp'].to_numpy()
-    sdp_rlt_resid_vals = df['conv_resid_sdp_rlt'].to_numpy()
+    # sdp_rlt_resid_vals = df['conv_resid_sdp_rlt'].to_numpy()
     global_resid_vals = df['conv_resid_global'].to_numpy()
 
     fig, ax = plt.subplots(figsize=(6, 4))
     # ax.plot(N_vals, sdp_resid_vals, label='SDP', color='red')
-    ax.plot(N_vals, sdp_rlt_resid_vals, label='SDP RLT', color='blue')
+    # ax.plot(N_vals, sdp_rlt_resid_vals, label='SDP RLT', color='blue')
     ax.plot(N_vals, global_resid_vals, label='Global', color='green')
 
     plt.title('Convergence residuals')
@@ -70,18 +70,18 @@ def plot_resids(df):
     #
     plt.legend()
     # plt.show()
-    plt.savefig('images/OSQP_fixedpt_resids.pdf')
+    plt.savefig('images/OSQP_fixedpt_resids_svec.pdf')
 
 
 def plot_resid_times(df):
     N_vals = df['num_iter'].to_numpy()
     # sdp_time = df['sdp_time'].to_numpy()
-    sdp_rlt_time = df['sdp_rlt_time'].to_numpy()
+    # sdp_rlt_time = df['sdp_rlt_time'].to_numpy()
     global_time = df['global_time'].to_numpy()
 
     fig, ax = plt.subplots(figsize=(6, 4))
     # ax.plot(N_vals, sdp_time, label='SDP', color='red')
-    ax.plot(N_vals, sdp_rlt_time, label='SDP RLT', color='blue')
+    # ax.plot(N_vals, sdp_rlt_time, label='SDP RLT', color='blue')
     ax.plot(N_vals, global_time, label='Global', color='green')
 
     plt.title('Solve times')
@@ -91,12 +91,12 @@ def plot_resid_times(df):
     #
     plt.legend()
     # plt.show()
-    plt.savefig('images/OSQP_fixedpt_times.pdf')
+    plt.savefig('images/OSQP_fixedpt_times_svec.pdf')
 
 
 def plot_fixed_point_resids():
     data_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/OSQP/data/'
-    fname = data_dir + 'test_OSQP_fixedpoint.csv'
+    fname = data_dir + 'test_OSQP_fixedpoint_svec.csv'
     df = pd.read_csv(fname)
     plot_resids(df)
     plot_resid_times(df)
