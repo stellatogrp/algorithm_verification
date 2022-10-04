@@ -1,5 +1,6 @@
 import algocert.settings as s
 from algocert.solvers.global_solver.global_solver import GlobalSolver
+from algocert.solvers.sdp_admm_solver.sdp_admm_solver import SDPADMMSolver
 from algocert.solvers.sdp_solver.sdp_solver import SDPSolver
 
 
@@ -30,6 +31,10 @@ class CertificationProblem(object):
             res = solver.solve(**kwargs)
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
+            solver.canonicalize(**kwargs)
+            res = solver.solve(**kwargs)
+        if solver_type == s.SDP_ADMM:
+            solver = SDPADMMSolver(self)
             solver.canonicalize(**kwargs)
             res = solver.solve(**kwargs)
         return res

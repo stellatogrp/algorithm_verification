@@ -83,7 +83,9 @@ def test_NNLS_SDP(N=1):
 
     # CP.problem_data = qp_problem_data
     # CP.print_cp()
-    res = CP.solve(solver_type='SDP', add_RLT=True)
+    # res = CP.solve(solver_type='SDP', add_RLT=True)
+    res = CP.solve(solver_type='SDP_ADMM')
+    print(res)  # remove this once solver more in place
     return res
 
 
@@ -166,10 +168,11 @@ def plot_N_vals():
 
 
 def main():
-    N = 2
+    N = 1
     res_sdp = test_NNLS_SDP(N=N)
-    res_global = test_NNLS_GLOBAL(N=N)
-    print('sdp:', res_sdp, 'global:', res_global)
+    print(res_sdp)
+    # res_global = test_NNLS_GLOBAL(N=N)
+    # print('sdp:', res_sdp, 'global:', res_global)
     # plot_N_vals(max_N=N)
 
 
