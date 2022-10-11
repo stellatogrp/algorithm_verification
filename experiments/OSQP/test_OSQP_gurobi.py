@@ -6,7 +6,10 @@ from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
+from algocert.init_set.box_stack_set import BoxStackSet
 from algocert.init_set.const_set import ConstSet
+from algocert.init_set.control_example_set import ControlExampleSet
+# from algocert.init_set.init_set import InitSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
@@ -33,7 +36,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     u = 4 * np.ones((m, 1))
     sigma = 1
     rho = 1
-    rho_inv = 1 / rho
+    # rho_inv = 1 / rho
 
     x = Iterate(n, name='x')
     y = Iterate(m, name='y')
@@ -66,12 +69,13 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     step5 = MinWithVecStep(z, z_tilde, u=u)
 
     # step 6 for fixed point residual
-    s = Iterate(m, name='s')
-    s6_D = Im
-    s6_A = spa.bmat([[Im, rho_inv * Im]])
-    step6 = HighLevelLinearStep(s, [z, y], D=s6_D, A=s6_A, b=zeros_m, Dinv=s6_D)
+    # s = Iterate(m, name='s')
+    # s6_D = Im
+    # s6_A = spa.bmat([[Im, rho_inv * Im]])
+    # step6 = HighLevelLinearStep(s, [z, y], D=s6_D, A=s6_A, b=zeros_m, Dinv=s6_D)
 
-    steps = [step1, step2, step3, step4, step5, step6]
+    steps = [step1, step2, step3, step4, step5]
+    # steps = [step1, step2, step3, step4, step5, step6]
 
     # xset = CenteredL2BallSet(x, r=r)
     x_l = -1 * np.ones((n, 1))
@@ -84,16 +88,25 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     zset = ConstSet(z, np.zeros((m, 1)))
 
     # bset = CenteredL2BallSet(b, r=r)
-    b_l = np.ones((n, 1))
-    b_u = 10 * np.ones((n, 1))
-    bset = BoxSet(b, b_l, b_u)
+    offset = 3
+    b_l = np.ones((n-offset, 1))
+    b_u = 10 * np.ones((n-offset, 1))
+    # bset = BoxSet(b, b_l, b_u)
+    bset = ControlExampleSet(b, b_l, b_u)
     # bset = ConstSet(b, np.zeros((n, 1)))
 
-    # obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
-    obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
+    test = Parameter(n-offset, name='test')
+    test_l = np.ones((n-offset, 1))
+    test_u = 10 * np.ones((n-offset, 1))
+    offset_zeros = np.zeros((offset, 1))
+    test_set = BoxSet(test, test_l, test_u)
+    bset = BoxStackSet(b, [test_set, [offset_zeros, offset_zeros]])
+
+    obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
+    # obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
     # obj = OuterProdTrace(x)
 
-    CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
+    CP = CertificationProblem(N, [xset, yset, zset], [test_set, bset], obj, steps)
 
     CP.print_cp()
 
@@ -106,9 +119,9 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
 
 
 def main():
-    m = 4
-    n = 3
-    N = 5
+    m = 10
+    n = 6
+    N = 1
     OSQP_cert_prob(n, m, N=N)
 
 
