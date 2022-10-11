@@ -5,8 +5,10 @@ from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.affine_vec_set import AffineVecSet
 from algocert.init_set.box_set import BoxSet
+from algocert.init_set.box_stack_set import BoxStackSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.const_set import ConstSet
+from algocert.init_set.control_example_set import ControlExampleSet
 from algocert.init_set.ellipsoidal_set import EllipsoidalSet
 from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.init_set.vec_span_set import VecSpanSet
@@ -23,10 +25,14 @@ from algocert.solvers.global_solver.set_canonicalizers.affine_vec_set import \
     affine_vec_set_canon
 from algocert.solvers.global_solver.set_canonicalizers.box_set import (
     box_set_bound_canon, box_set_canon)
+from algocert.solvers.global_solver.set_canonicalizers.box_stack_set import (
+    box_stack_set_bound_canon, box_stack_set_canon)
 from algocert.solvers.global_solver.set_canonicalizers.centered_l2_ball_set import \
     centered_l2_ball_canon
 from algocert.solvers.global_solver.set_canonicalizers.const_set import (
     const_set_bound_canon, const_set_canon)
+from algocert.solvers.global_solver.set_canonicalizers.control_example_set import (
+    control_example_set_bound_canon, control_example_set_canon)
 from algocert.solvers.global_solver.set_canonicalizers.ellipsoidal_set import \
     ellipsoidal_set_canon
 from algocert.solvers.global_solver.set_canonicalizers.linf_ball_set import \
@@ -46,14 +52,18 @@ SET_CANON_METHODS = {
     CenteredL2BallSet: centered_l2_ball_canon,
     EllipsoidalSet: ellipsoidal_set_canon,
     BoxSet: box_set_canon,
+    BoxStackSet: box_stack_set_canon,
     ConstSet: const_set_canon,
+    ControlExampleSet: control_example_set_canon,
     LInfBallSet: linf_ball_set_canon,
     VecSpanSet: vec_span_set_canon,
 }
 
 BOUND_SET_CANON_METHODS = {
     BoxSet: box_set_bound_canon,
+    BoxStackSet: box_stack_set_bound_canon,
     ConstSet: const_set_bound_canon,
+    ControlExampleSet: control_example_set_bound_canon,
 }
 
 STEP_CANON_METHODS = {
