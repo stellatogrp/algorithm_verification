@@ -135,8 +135,8 @@ def control_cert_prob(n, N=1):
 
 def main():
     # m = 4
-    n = 4
-    N = 5
+    n = 3
+    N = 4
     # control_cert_prob(n, m, N=N)
     # test_control_gen(n)
     control_cert_prob(n, N=N)
