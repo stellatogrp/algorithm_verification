@@ -13,10 +13,13 @@ from algocert.init_set.ellipsoidal_set import EllipsoidalSet
 from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.init_set.vec_span_set import VecSpanSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
 from algocert.objectives.linf_conv_resid import LInfConvResid
 from algocert.objectives.outer_prod_trace import OuterProdTrace
 from algocert.solvers.global_solver.obj_canonicalizers.convergence_residual import \
     conv_resid_canon
+from algocert.solvers.global_solver.obj_canonicalizers.lin_comb_squared_norm import \
+    lin_comb_squared_norm_canon
 from algocert.solvers.global_solver.obj_canonicalizers.linf_conv_resid import \
     linf_conv_resid_canon
 from algocert.solvers.global_solver.obj_canonicalizers.outer_prod_trace import \
@@ -83,4 +86,5 @@ OBJ_CANON_METHODS = {
     ConvergenceResidual: conv_resid_canon,
     OuterProdTrace: outer_prod_trace_canon,
     LInfConvResid: linf_conv_resid_canon,
+    LinCombSquaredNorm: lin_comb_squared_norm_canon,
 }

@@ -10,7 +10,8 @@ from algocert.init_set.box_set import BoxSet
 from algocert.init_set.box_stack_set import BoxStackSet
 from algocert.init_set.const_set import ConstSet
 # from algocert.init_set.control_example_set import ControlExampleSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
@@ -117,10 +118,19 @@ def control_cert_prob(n, N=1):
     zset = ConstSet(z, zeros_fm)
 #
 #
-    obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
+    # obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
 #     obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
 #     # obj = OuterProdTrace(x)
-#
+    obj_A = [A, -I_fm]
+    obj_x = [x, z]
+    obj1 = LinCombSquaredNorm(obj_A, obj_x)
+
+    obj_B = [P, A.T]
+    obj_y = [x, y]
+    obj2 = LinCombSquaredNorm(obj_B, obj_y)
+
+    obj = [obj1, obj2]
+
     CP = CertificationProblem(N, [xset, yset, zset], paramsets, obj, steps)
 #
 #     CP.print_cp()
@@ -135,8 +145,8 @@ def control_cert_prob(n, N=1):
 
 def main():
     # m = 4
-    n = 3
-    N = 4
+    n = 2
+    N = 5
     # control_cert_prob(n, m, N=N)
     # test_control_gen(n)
     control_cert_prob(n, N=N)
