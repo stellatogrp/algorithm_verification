@@ -32,6 +32,7 @@ class CertificationProblem(object):
             solver = GlobalSolver(self)
             solver.canonicalize(**kwargs)
             res = solver.solve(**kwargs)
+        self.solver = solver
         return res
 
     def print_cp(self):
@@ -63,3 +64,6 @@ class CertificationProblem(object):
 
     def set_algorithm_steps(self, new_steps):
         self.algorithm = new_steps
+
+    def get_param_map(self):
+        return self.solver.handler.get_param_var_map()

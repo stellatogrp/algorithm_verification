@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import scipy.sparse as spa
 from control_example import ControlExample
 
@@ -10,8 +11,8 @@ from algocert.init_set.box_set import BoxSet
 from algocert.init_set.box_stack_set import BoxStackSet
 from algocert.init_set.const_set import ConstSet
 # from algocert.init_set.control_example_set import ControlExampleSet
-# from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
+from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
@@ -50,7 +51,7 @@ def control_cert_prob(n, N=1):
     xmin = example.xmin
     xmax = example.xmax
 
-    # print(l, u)
+    print(l, u)
     l_noinit = l[n:]
     u_noinit = u[n:]
     l_mat = l_noinit.reshape((-1, 1))
@@ -102,12 +103,12 @@ def control_cert_prob(n, N=1):
 
 
 #     # step 6 for fixed point residual
-#     s = Iterate(m, name='s')
-#     s6_D = Im
-#     s6_A = spa.bmat([[Im, rho_inv * Im]])
-#     step6 = HighLevelLinearStep(s, [z, y], D=s6_D, A=s6_A, b=zeros_m, Dinv=s6_D)
+    s = Iterate(full_m, name='s')
+    s6_D = I_fm
+    s6_A = spa.bmat([[I_fm, rho_inv * I_fm]])
+    step6 = HighLevelLinearStep(s, [z, y], D=s6_D, A=s6_A, b=zeros_fm, Dinv=s6_D)
 #
-    steps = [step1, step2, step3, step4, step5]
+    steps = [step1, step2, step3, step4, step5, step6]
 #
 #     # xset = CenteredL2BallSet(x, r=r)
 #     x_l = -1 * np.ones((n, 1))
@@ -119,17 +120,17 @@ def control_cert_prob(n, N=1):
 #
 #
     # obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
-#     obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
+    obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
 #     # obj = OuterProdTrace(x)
-    obj_A = [A, -I_fm]
-    obj_x = [x, z]
-    obj1 = LinCombSquaredNorm(obj_A, obj_x)
+    # obj_A = [A, -I_fm]
+    # obj_x = [x, z]
+    # obj1 = LinCombSquaredNorm(obj_A, obj_x)
 
-    obj_B = [P, A.T]
-    obj_y = [x, y]
-    obj2 = LinCombSquaredNorm(obj_B, obj_y)
+    # obj_B = [P, A.T]
+    # obj_y = [x, y]
+    # obj2 = LinCombSquaredNorm(obj_B, obj_y)
 
-    obj = [obj1, obj2]
+    # obj = [obj1, obj2]
 
     CP = CertificationProblem(N, [xset, yset, zset], paramsets, obj, steps)
 #
@@ -141,15 +142,40 @@ def control_cert_prob(n, N=1):
 #     # print('sdp rlt', res)
     resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print('global', resg)
+    print(CP.get_param_map()[x_init].X)
+    return resg
+
+
+def run_and_save_experiments():
+    # m = 4
+    n = 2
+    # N = 1
+    # control_cert_prob(n, m, N=N)
+    # test_control_gen(n)
+    # control_cert_prob(n, N=N)
+    save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
+    fname = save_dir + 'n2_fixedresid.csv'
+
+    max_N = 6
+    iterate_rows = []
+    for N in range(1, max_N+1):
+        global_res, comp_time = control_cert_prob(n, N=N)
+        iter_row = pd.Series(
+            {
+                'num_iter': N,
+                'global_res': global_res,
+                'global_comp_time': comp_time,
+            }
+        )
+        iterate_rows.append(iter_row)
+    df = pd.DataFrame(iterate_rows)
+    print(df)
+    df.to_csv(fname, index=False)
 
 
 def main():
-    # m = 4
-    n = 2
-    N = 5
-    # control_cert_prob(n, m, N=N)
-    # test_control_gen(n)
-    control_cert_prob(n, N=N)
+    control_cert_prob(2, N=1)
+    # run_and_save_experiments()
 
 
 if __name__ == '__main__':
