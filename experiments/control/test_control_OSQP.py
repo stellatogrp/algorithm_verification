@@ -50,8 +50,11 @@ def control_cert_prob(n, N=1):
     u = example.qp_problem['u']
     xmin = example.xmin
     xmax = example.xmax
+    # print(xmin, xmax)
+    # print(np.linalg.eigvals(ATA.todense()))
+    # exit(0)
 
-    print(l, u)
+    # print(l, u)
     l_noinit = l[n:]
     u_noinit = u[n:]
     l_mat = l_noinit.reshape((-1, 1))
@@ -142,11 +145,14 @@ def control_cert_prob(n, N=1):
 #     # print('sdp rlt', res)
     resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print('global', resg)
-    print(CP.get_param_map()[x_init].X)
-    return resg
+    xinit_res = CP.get_param_map()[x_init].X
+    print('xinit val:', xinit_res)
+    # print('l val:', CP.get_param_map()[l_param].X)
+    # print('u val:', CP.get_param_map()[u_param].X)
+    return resg, xinit_res
 
 
-def run_and_save_experiments():
+def run_and_save_experiments(max_N=2):
     # m = 4
     n = 2
     # N = 1
@@ -154,12 +160,14 @@ def run_and_save_experiments():
     # test_control_gen(n)
     # control_cert_prob(n, N=N)
     save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    fname = save_dir + 'n2_fixedresid.csv'
+    res_fname = save_dir + 'test2.csv'
+    x_fname = save_dir + 'test_xinit2.csv'
 
-    max_N = 6
     iterate_rows = []
+    xinit_vals = []
+    xinit_rows = []
     for N in range(1, max_N+1):
-        global_res, comp_time = control_cert_prob(n, N=N)
+        (global_res, comp_time), xinit_res = control_cert_prob(n, N=N)
         iter_row = pd.Series(
             {
                 'num_iter': N,
@@ -168,14 +176,28 @@ def run_and_save_experiments():
             }
         )
         iterate_rows.append(iter_row)
-    df = pd.DataFrame(iterate_rows)
-    print(df)
-    df.to_csv(fname, index=False)
+        df = pd.DataFrame(iterate_rows)
+        print(df)
+        xinit_vals.append((N, tuple(np.round(xinit_res, 3))))
+        df.to_csv(res_fname, index=False)
+        xinit_row = pd.Series(
+            {
+                'num_iter': N,
+                'x_init': xinit_res,
+            }
+        )
+        xinit_rows.append(xinit_row)
+        df2 = pd.DataFrame(xinit_rows)
+        print(df2)
+        df2.to_csv(x_fname, index=False)
+        # print(xinit_res)
+    # print(xinit_vals)
 
 
 def main():
-    control_cert_prob(2, N=1)
-    # run_and_save_experiments()
+    # control_cert_prob(2, N=6)
+    max_N = 10
+    run_and_save_experiments(max_N=max_N)
 
 
 if __name__ == '__main__':

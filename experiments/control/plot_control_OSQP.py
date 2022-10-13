@@ -28,7 +28,21 @@ def plot_resids(df):
 
 
 def plot_times(df):
-    pass
+    print('plotting times')
+    N_vals = df['num_iter'].to_numpy()
+    resid_vals = df['global_comp_time'].to_numpy()
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    ax.plot(N_vals, resid_vals, label='QCQP', color='red')
+
+    plt.title('Convergence residuals, control example')
+    plt.xlabel('$N$')
+    plt.ylabel('computation time')
+    plt.yscale('log')
+    #
+    plt.legend()
+    # plt.show()
+    plt.savefig('images/n2_fixedpoint_times.pdf')
 
 
 def main():
@@ -42,6 +56,7 @@ def main():
     # plot_times(df)
     print(df)
     plot_resids(df)
+    plot_times(df)
 
 
 if __name__ == '__main__':
