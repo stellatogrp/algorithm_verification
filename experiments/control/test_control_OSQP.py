@@ -43,8 +43,13 @@ def test_control_gen(n, N=1, t=.05, T=5):
     # print(A)
 
 
-def control_cert_prob(n, N=1):
+def control_cert_prob_non_ws(n, N=1):
     example = generate_problem_data(n)
+    return control_cert_prob(n, example, N=N)
+
+
+def control_cert_prob(n, example, N=1):
+    # example = generate_problem_data(n)
     rho = 1
     rho_inv = 1 / rho
     sigma = 1
@@ -174,14 +179,14 @@ def run_and_save_experiments(max_N=2):
     # test_control_gen(n)
     # control_cert_prob(n, N=N)
     save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    res_fname = save_dir + 'testn2N10.csv'
-    x_fname = save_dir + 'test_xinitn2N10.csv'
+    res_fname = save_dir + 'test.csv'
+    x_fname = save_dir + 'test_xinit.csv'
 
     iterate_rows = []
     xinit_vals = []
     xinit_rows = []
     for N in range(1, max_N+1):
-        (global_res, comp_time), xinit_res = control_cert_prob(n, N=N)
+        (global_res, comp_time), xinit_res = control_cert_prob_non_ws(n, N=N)
         iter_row = pd.Series(
             {
                 'num_iter': N,
@@ -211,7 +216,7 @@ def run_and_save_experiments(max_N=2):
 def main():
     # max_N = 4
     # control_cert_prob(2, N=max_N)
-    max_N = 10
+    max_N = 3
     run_and_save_experiments(max_N=max_N)
 
 
