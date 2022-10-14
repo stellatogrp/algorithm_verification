@@ -67,3 +67,6 @@ class CertificationProblem(object):
 
     def get_param_map(self):
         return self.solver.handler.get_param_var_map()
+
+    def get_iterate_map(self):
+        return self.solver.handler.get_iterate_var_map()

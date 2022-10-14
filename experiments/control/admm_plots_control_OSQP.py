@@ -60,8 +60,12 @@ def run_admm(P, A, l, u, N):
         x_resid = np.linalg.norm(x_iterates[i] - x_iterates[i-1]) ** 2
         s_resid = np.linalg.norm(s_iterates[i] - s_iterates[i-1]) ** 2
         fixed_point_resids.append(x_resid + s_resid)
+    # print('tested for:', np.round(l, 3))
     print(np.round(fixed_point_resids, 3))
-    return None
+    # print('direct admm x:', np.round(x_iterates, 4))
+    # print('direct admm y:', np.round(y_iterates, 3))
+    # print('direct admm z:', np.round(z_iterates, 3))
+    return fixed_point_resids
 
 
 def x_init_str_to_np_array(x):
@@ -87,6 +91,7 @@ def make_admm_plots(df, n):
     print(df)
     N_vals = df['num_iter'].to_numpy()
     max_N = max(N_vals)
+    # max_N = 2
     x_init_vals = df['x_init'].to_numpy()
     val_N_dict = {}
     for i, val in enumerate(x_init_vals):
@@ -101,12 +106,13 @@ def make_admm_plots(df, n):
         u_test[:n] = key
         # print('l, u:', l_test, u_test)
         out = run_admm(P, A, l_test, u_test, max_N)
+        # break
         print(out)
 
 
 def main():
     data_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    fname = data_dir + 'test_xinit.csv'
+    fname = data_dir + 'test_xinitn2N10.csv'
     df = pd.read_csv(fname)
     n = 2
     make_admm_plots(df, n)

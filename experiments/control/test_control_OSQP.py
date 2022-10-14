@@ -21,6 +21,12 @@ def generate_problem_data(n):
     return ControlExample(n)
 
 
+def get_xinit_set(n, x_init, xmin, xmax):
+    return BoxSet(x_init, xmin.reshape((-1, 1)), xmax.reshape((-1, 1)))
+    # test = np.array([1.43069857, 1.93912779])
+    # return BoxSet(x_init, test.reshape((-1, 1)), test.reshape((-1, 1)))
+
+
 def test_control_gen(n, N=1, t=.05, T=5):
     example = generate_problem_data(n)
     # q = example.qp_problem['q']
@@ -60,7 +66,8 @@ def control_cert_prob(n, N=1):
     l_mat = l_noinit.reshape((-1, 1))
     u_mat = u_noinit.reshape((-1, 1))
     x_init = Parameter(n, name='x_init')
-    x_initset = BoxSet(x_init, xmin.reshape((-1, 1)), xmax.reshape((-1, 1)))
+    # x_initset = BoxSet(x_init, xmin.reshape((-1, 1)), xmax.reshape((-1, 1)))
+    x_initset = get_xinit_set(n, x_init, xmin, xmax)
 
     l_param = Parameter(full_m, name='l_param')
     l_paramset = BoxStackSet(l_param, [x_initset, [l_mat, l_mat]])
@@ -90,7 +97,7 @@ def control_cert_prob(n, N=1):
 
     # step 2
     s2_D = I_fm
-    s2_A = spa.bmat([[I_fm, rho * A, rho * I_fm]])
+    s2_A = spa.bmat([[I_fm, rho * A, -rho * I_fm]])
     step2 = HighLevelLinearStep(y, [y, x, z], D=s2_D, A=s2_A, b=zeros_fm, Dinv=s2_D)
 
     # step 3
@@ -145,10 +152,17 @@ def control_cert_prob(n, N=1):
 #     # print('sdp rlt', res)
     resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print('global', resg)
-    xinit_res = CP.get_param_map()[x_init].X
+    param_map = CP.get_param_map()
+    xinit_res = param_map[x_init].X
     print('xinit val:', xinit_res)
+    # print('testing l:', np.round(param_map[l_param].X, 3))
     # print('l val:', CP.get_param_map()[l_param].X)
     # print('u val:', CP.get_param_map()[u_param].X)
+
+    # iter_map = CP.get_iterate_map()
+    # print('test file x:', np.round(iter_map[x].X, 4))
+    # print('test file y:', np.round(iter_map[y].X, 3))
+    # print('test file z:', np.round(iter_map[z].X, 3))
     return resg, xinit_res
 
 
@@ -160,8 +174,8 @@ def run_and_save_experiments(max_N=2):
     # test_control_gen(n)
     # control_cert_prob(n, N=N)
     save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    res_fname = save_dir + 'test2.csv'
-    x_fname = save_dir + 'test_xinit2.csv'
+    res_fname = save_dir + 'testn2N10.csv'
+    x_fname = save_dir + 'test_xinitn2N10.csv'
 
     iterate_rows = []
     xinit_vals = []
@@ -195,7 +209,8 @@ def run_and_save_experiments(max_N=2):
 
 
 def main():
-    # control_cert_prob(2, N=6)
+    # max_N = 4
+    # control_cert_prob(2, N=max_N)
     max_N = 10
     run_and_save_experiments(max_N=max_N)
 

@@ -47,7 +47,7 @@ def plot_times(df):
 
 def main():
     data_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    fname = data_dir + 'n2_fixedresid.csv'
+    fname = data_dir + 'testn2N10.csv'
     df = pd.read_csv(fname)
     #  df_pep = pd.read_csv(pep_fname)
     #  df_avg = pd.read_csv(avg_fname)
