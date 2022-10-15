@@ -114,6 +114,8 @@ def run_admm(P, A, l, u, x0=None, z0=None, N=300):
 
 
 def run_avg_exp():
+    save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
+    avg_fname = save_dir + 'avg_N9.csv'
     n = 2
     max_N = 9
     example = generate_problem_data(n)
@@ -163,6 +165,7 @@ def run_avg_exp():
         csv_rows.append(row)
     df = pd.DataFrame(csv_rows)
     print(df)
+    df.to_csv(avg_fname, index=False)
 
 
 def test_admm_pep(L, mu, alpha, theta, r=1, N=1):
@@ -183,13 +186,20 @@ def test_admm_pep(L, mu, alpha, theta, r=1, N=1):
     # Then define the starting point x0 of the algorithm and its function value f0
     x0 = problem.set_initial_point()
 
-    # Compute n steps of the Douglas-Rachford splitting starting from x0
-    x = [x0 for _ in range(N)]
-    w = [x0 for _ in range(N + 1)]
+    # # Compute n steps of the Douglas-Rachford splitting starting from x0
+    x = x0
+    y = x0
+    z = x0
+    # w = [x0 for _ in range(N + 1)]
+    # for i in range(N):
+    #     x[i], _, _ = proximal_step(w[i], func2, alpha)
+    #     y, _, fy = proximal_step(2 * x[i] - w[i], func1, alpha)
+    #     w[i + 1] = w[i] + theta * (y - x[i])
+
     for i in range(N):
-        x[i], _, _ = proximal_step(w[i], func2, alpha)
-        y, _, fy = proximal_step(2 * x[i] - w[i], func1, alpha)
-        w[i + 1] = w[i] + theta * (y - x[i])
+        x, _, _ = proximal_step(x, func1, alpha)
+        y = y + theta * (x - z)
+        z, _, _ = proximal_step(z, func2, theta)
 
     # Set the initial constraint that is the distance between x0 and xs = x_*
     problem.set_initial_condition((x[0] - xs) ** 2 <= r ** 2)
@@ -222,8 +232,8 @@ def test_pep():
 
 
 def main():
-    # run_avg_exp()
-    test_pep()
+    run_avg_exp()
+    # test_pep()
 
 
 if __name__ == '__main__':

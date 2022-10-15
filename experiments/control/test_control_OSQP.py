@@ -51,11 +51,11 @@ def control_cert_prob_non_ws(n, N=1):
 
     def iterate_set_func(x, y, z):
         zeros_fn = np.zeros((full_n, 1))
-        # ones_fn = np.ones((full_n, 1))
+        ones_fn = np.ones((full_n, 1))
         zeros_fm = np.zeros((full_m, 1))
         # z_val = A @ zeros_fn
-        xset = ConstSet(x, zeros_fn)
-        # xset = BoxSet(x, zeros_fn, ones_fn)
+        # xset = ConstSet(x, zeros_fn)
+        xset = BoxSet(x, zeros_fn, ones_fn)
         yset = ConstSet(y, zeros_fm)
         zset = ConstSet(z, zeros_fm)
         # zset = ConstSet(z, z_val.reshape(-1, 1))
@@ -301,8 +301,8 @@ def run_and_save_experiments(max_N=2):
     # test_control_gen(n)
     # control_cert_prob(n, N=N)
     save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    res_fname = save_dir + 'testN9.csv'
-    x_fname = save_dir + 'test_xinitN9.csv'
+    res_fname = save_dir + 'testN9_x0box.csv'
+    x_fname = save_dir + 'test_xinitN9_x0box.csv'
 
     iterate_rows = []
     xinit_vals = []
@@ -372,7 +372,7 @@ def run_and_save_ws_experiments(max_N=2):
 def main():
     # max_N = 4
     # control_cert_prob(2, N=max_N)
-    max_N = 9
+    max_N = 3
     run_and_save_experiments(max_N=max_N)
     # run_and_save_ws_experiments(max_N=max_N)
 
