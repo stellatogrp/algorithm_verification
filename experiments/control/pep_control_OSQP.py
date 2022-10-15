@@ -92,6 +92,7 @@ def test_admm_pep(L, mu, alpha, theta, N=1):
 
 def main():
     # test_PEPit_val(10, 1, 1, 1, 1, N=2)
+    # example =
     p = test_admm_pep(10, 2, 1, 1, N=9)
     print(p)
 

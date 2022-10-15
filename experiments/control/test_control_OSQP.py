@@ -1,3 +1,4 @@
+import cvxpy as cp
 import numpy as np
 import pandas as pd
 import scipy.sparse as spa
@@ -45,10 +46,130 @@ def test_control_gen(n, N=1, t=.05, T=5):
 
 def control_cert_prob_non_ws(n, N=1):
     example = generate_problem_data(n)
-    return control_cert_prob(n, example, N=N)
+    A = example.qp_problem['A']
+    full_m, full_n = A.shape
+
+    def iterate_set_func(x, y, z):
+        zeros_fn = np.zeros((full_n, 1))
+        # ones_fn = np.ones((full_n, 1))
+        zeros_fm = np.zeros((full_m, 1))
+        # z_val = A @ zeros_fn
+        xset = ConstSet(x, zeros_fn)
+        # xset = BoxSet(x, zeros_fn, ones_fn)
+        yset = ConstSet(y, zeros_fm)
+        zset = ConstSet(z, zeros_fm)
+        # zset = ConstSet(z, z_val.reshape(-1, 1))
+        return xset, yset, zset
+
+    return control_cert_prob(n, example, iter_set_func=iterate_set_func, N=N)
 
 
-def control_cert_prob(n, example, N=1):
+def sample_xinit(xmin, xmax):
+    np.random.seed(2)
+    return np.random.uniform(xmin, xmax)
+
+
+def run_admm(P, A, l, u, N=300):
+    rho = 1
+    rho_inv = 1 / rho
+    sigma = 1
+    m, n = A.shape
+    ATA = A.T @ A
+    In = np.eye(n)
+    # Im = np.eye(m)
+
+    def Pi(x):
+        return np.minimum(u, np.maximum(x, l))
+
+    xk = np.zeros(n)
+    yk = np.zeros(m)
+    zk = np.zeros(m)
+    sk = zk + rho_inv * yk
+    x_iterates = [xk]
+    y_iterates = [yk]
+    z_iterates = [zk]
+    s_iterates = [sk]
+
+    lhs = P + sigma * In + rho * ATA
+    for _ in range(N):
+        rhs = sigma * xk + A.T @ (rho * zk - yk)
+        xkplus1 = np.linalg.solve(lhs, rhs)
+        ykplus1 = yk + rho * (A @ xkplus1 - zk)
+        zkplus1 = Pi(A @ xkplus1 + rho_inv * ykplus1)
+        skplus1 = zkplus1 + rho_inv * ykplus1
+
+        x_iterates.append(xkplus1)
+        y_iterates.append(ykplus1)
+        z_iterates.append(zkplus1)
+        s_iterates.append(skplus1)
+
+        xk = xkplus1
+        yk = ykplus1
+        zk = zkplus1
+        sk = skplus1
+    fixed_point_resids = []
+    for i in range(1, N+1):
+        x_resid = np.linalg.norm(x_iterates[i] - x_iterates[i-1]) ** 2
+        s_resid = np.linalg.norm(s_iterates[i] - s_iterates[i-1]) ** 2
+        fixed_point_resids.append(x_resid + s_resid)
+    # print('tested for:', np.round(l, 3))
+    # print(np.round(fixed_point_resids, 3))
+    # print('direct admm x:', np.round(x_iterates, 4))
+    # print('direct admm y:', np.round(y_iterates, 3))
+    # print('direct admm z:', np.round(z_iterates, 3))
+    return x_iterates, y_iterates, z_iterates, fixed_point_resids
+
+
+def control_cert_prob_ws(n, N=1):
+    example = generate_problem_data(n)
+    A = example.qp_problem['A']
+    full_m, full_n = A.shape
+    P = example.qp_problem['P']
+    l_ex = example.qp_problem['l']
+    u_ex = example.qp_problem['u']
+    # xmin = example.xmin
+    # xmax = example.xmax
+    # xinit_test = sample_xinit(xmin, xmax)
+    # # print(xinit_test)
+    # l = l_ex.copy()
+    # u = u_ex.copy()
+    # # # print(l, u, xmin, xmax)
+    # l[:n] = -xinit_test
+    # u[:n] = -xinit_test
+    l = l_ex
+    u = u_ex
+
+    # solve problem optimally with cvxpy
+    x_var = cp.Variable(full_n)
+    obj = .5 * cp.quad_form(x_var, P)
+    constraints = [l <= A @ x_var, A @ x_var <= u]
+    problem = cp.Problem(cp.Minimize(obj), constraints)
+    res = problem.solve()
+    print('cvxpy result:', res)
+    x_val = x_var.value
+    z_val = A @ x_val
+
+    xs, ys, zs, fixed_pt_resids = run_admm(P, A, l, u, N=1000)
+    print(fixed_pt_resids[-1])
+    x_last = xs[-1]
+    print('admm result:', .5 * x_last.T @ P @ x_last)
+    print('last y:', np.round(ys[-1], 4))
+    # exit(0)
+    # y_val = ys[-1]
+
+    def iterate_set_func(x, y, z):
+        zeros_fm = np.zeros((full_m, 1))
+        xset = ConstSet(x, x_val.reshape(-1, 1))
+        # yset = ConstSet(y, y_val.reshape(-1, 1))
+        yset = ConstSet(y, zeros_fm)
+        zset = ConstSet(z, z_val.reshape(-1, 1))
+        # zset = ConstSet(z, zeros_fm)
+        return xset, yset, zset
+
+    return control_cert_prob(n, example, iter_set_func=iterate_set_func, N=N)
+
+
+def control_cert_prob(n, example, iter_set_func=None, N=1):
     # example = generate_problem_data(n)
     rho = 1
     rho_inv = 1 / rho
@@ -72,7 +193,8 @@ def control_cert_prob(n, example, N=1):
     u_mat = u_noinit.reshape((-1, 1))
     x_init = Parameter(n, name='x_init')
     # x_initset = BoxSet(x_init, xmin.reshape((-1, 1)), xmax.reshape((-1, 1)))
-    x_initset = get_xinit_set(n, x_init, xmin, xmax)
+    # x_initset = get_xinit_set(n, x_init, xmin, xmax)
+    x_initset = get_xinit_set(n, x_init, -xmax, -xmin)
 
     l_param = Parameter(full_m, name='l_param')
     l_paramset = BoxStackSet(l_param, [x_initset, [l_mat, l_mat]])
@@ -129,11 +251,11 @@ def control_cert_prob(n, example, N=1):
 #     x_l = -1 * np.ones((n, 1))
 #     x_u = np.ones((n, 1))
 #     xset = BoxSet(x, x_l, x_u)
-    xset = ConstSet(x, zeros_fn)
-    yset = ConstSet(y, zeros_fm)
-    zset = ConstSet(z, zeros_fm)
-#
-#
+    # xset = ConstSet(x, zeros_fn)
+    # yset = ConstSet(y, zeros_fm)
+    # zset = ConstSet(z, zeros_fm)
+    xset, yset, zset = iter_set_func(x, y, z)
+
     # obj = [ConvergenceResidual(x), ConvergenceResidual(y), ConvergenceResidual(z)]
     obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
 #     # obj = OuterProdTrace(x)
@@ -179,8 +301,8 @@ def run_and_save_experiments(max_N=2):
     # test_control_gen(n)
     # control_cert_prob(n, N=N)
     save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    res_fname = save_dir + 'test.csv'
-    x_fname = save_dir + 'test_xinit.csv'
+    res_fname = save_dir + 'testN9.csv'
+    x_fname = save_dir + 'test_xinitN9.csv'
 
     iterate_rows = []
     xinit_vals = []
@@ -213,11 +335,46 @@ def run_and_save_experiments(max_N=2):
     # print(xinit_vals)
 
 
+def run_and_save_ws_experiments(max_N=2):
+    n = 2
+    save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
+    res_fname = save_dir + 'testWSN9.csv'
+    x_fname = save_dir + 'testWSxinitN9.csv'
+
+    ws_iter_rows = []
+    ws_xinit_rows = []
+    for N in range(1, max_N+1):
+        (global_res, comp_time), xinit_res = control_cert_prob_ws(n, N=N)
+        iter_row = pd.Series(
+            {
+                'num_iter': N,
+                'global_res': global_res,
+                'global_comp_time': comp_time,
+            }
+        )
+        ws_iter_rows.append(iter_row)
+        df = pd.DataFrame(ws_iter_rows)
+        print(df)
+        df.to_csv(res_fname, index=False)
+        # ws_xinit_rows.append((N, tuple(np.round(xinit_res, 3))))
+        xinit_row = pd.Series(
+            {
+                'num_iter': N,
+                'x_init': xinit_res,
+            }
+        )
+        ws_xinit_rows.append(xinit_row)
+        df2 = pd.DataFrame(ws_xinit_rows)
+        print(df2)
+        df2.to_csv(x_fname, index=False)
+
+
 def main():
     # max_N = 4
     # control_cert_prob(2, N=max_N)
-    max_N = 3
+    max_N = 9
     run_and_save_experiments(max_N=max_N)
+    # run_and_save_ws_experiments(max_N=max_N)
 
 
 if __name__ == '__main__':
