@@ -2,14 +2,14 @@
 #SBATCH --job-name=test_NNLS_gurobi
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=20
+#SBATCH --cpus-per-task=10
 #SBATCH --mem-per-cpu=4G
-#SBATCH --time=01:01:00
-#SBATCH -o /home/vranjan/experiments/control/data/test_control_OSQP_%A.txt
+#SBATCH --time=01:02:00
+#SBATCH -o /home/vranjan/algorithm-certification/experiments/control/data/test_control_OSQP_n2_multstep%A.txt
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
 #SBATCH --mail-user=vranjan@princeton.edu
 
-export PYTHONPATH='/home/vranjan'
+export PYTHONPATH='/home/vranjan/algorithm-certification/'
 
 module purge
 module load gurobi/9.0.1

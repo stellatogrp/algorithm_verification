@@ -179,3 +179,9 @@ class GlobalHandler(object):
         # x = self.iterate_list[-1]
         # print(self.iterate_to_gp_var_map[x].X)
         return self.model.objVal, self.model.Runtime
+
+    def get_iterate_var_map(self):
+        return self.iterate_to_gp_var_map
+
+    def get_param_var_map(self):
+        return self.param_to_gp_var_map

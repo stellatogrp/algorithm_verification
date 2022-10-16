@@ -68,3 +68,9 @@ class CertificationProblem(object):
 
     def set_algorithm_steps(self, new_steps):
         self.algorithm = new_steps
+
+    def get_param_map(self):
+        return self.solver.handler.get_param_var_map()
+
+    def get_iterate_map(self):
+        return self.solver.handler.get_iterate_var_map()
