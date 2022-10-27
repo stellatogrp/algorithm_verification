@@ -13,18 +13,18 @@ def plot_resids(df, df_ws, df_avg, df_pep):
     print('plotting residuals')
     N_vals = df['num_iter'].to_numpy()
     resid_vals = df['global_res'].to_numpy()
-    ws_resid_vals = df_ws['global_res'].to_numpy()
-    avg_resid_vals = df_avg['cs_resid_avg'].to_numpy()
-    avg_ws_resid_vals = df_avg['ws_resid_avg'].to_numpy()
-    pep_N_vals = df_pep['num_iter'].to_numpy()
-    pep_vals = df_pep['pep_val'].to_numpy()
+    # ws_resid_vals = df_ws['global_res'].to_numpy()
+    # avg_resid_vals = df_avg['cs_resid_avg'].to_numpy()
+    # avg_ws_resid_vals = df_avg['ws_resid_avg'].to_numpy()
+    # pep_N_vals = df_pep['num_iter'].to_numpy()
+    # pep_vals = df_pep['pep_val'].to_numpy()
 
     fig, ax = plt.subplots(figsize=(6, 4))
     ax.plot(N_vals, resid_vals, label='QCQP', color='red')
-    ax.plot(N_vals, ws_resid_vals, label=' Warm Start QCQP', color='blue')
-    ax.plot(N_vals, avg_resid_vals, label='Sample avg', color='purple', linestyle='--')
-    ax.plot(N_vals, avg_ws_resid_vals, label='Warm started sample avg', color='orange', linestyle='--')
-    ax.plot(pep_N_vals, pep_vals, label='Theoretical bound', color='green')
+    # ax.plot(N_vals, ws_resid_vals, label=' Warm Start QCQP', color='blue')
+    # ax.plot(N_vals, avg_resid_vals, label='Sample avg', color='purple', linestyle='--')
+    # ax.plot(N_vals, avg_ws_resid_vals, label='Warm started sample avg', color='orange', linestyle='--')
+    # ax.plot(pep_N_vals, pep_vals, label='Theoretical bound', color='green')
 
     plt.title('Fixed point residiuals, control example')
     plt.xlabel('$N$')
@@ -57,15 +57,17 @@ def plot_times(df, df_ws):
 
 
 def main():
-    data_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
+    # data_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
+    data_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/control/data/'
     fname = data_dir + 'testN9.csv'
-    ws_fname = data_dir + 'testWSN9.csv'
-    avg_fname = data_dir + 'avg_N9.csv'
-    pep_fname = data_dir + 'pep_N9.csv'
+    fname = data_dir + 'testn2N10.csv'
+    # ws_fname = data_dir + 'testWSN9.csv'
+    # avg_fname = data_dir + 'avg_N9.csv'
+    # pep_fname = data_dir + 'pep_N9.csv'
     df = pd.read_csv(fname)
-    df_ws = pd.read_csv(ws_fname)
-    df_avg = pd.read_csv(avg_fname)
-    df_pep = pd.read_csv(pep_fname)
+    df_ws = pd.read_csv(fname)
+    df_avg = pd.read_csv(fname)
+    df_pep = pd.read_csv(fname)
     # plot_times(df)
     print(df)
     plot_resids(df, df_ws, df_avg, df_pep)

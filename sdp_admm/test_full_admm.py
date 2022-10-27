@@ -2,46 +2,56 @@ import cvxpy as cp
 import numpy as np
 import scipy.sparse as spa
 
+# def vec_to_mat(x, n):
+#     sqrt_2 = np.sqrt(2)
+#     try:
+#         assert x.shape[0] == n * (n + 1) / 2
+#     except AssertionError as e:
+#         print(x.shape, n * (n + 1) / 2)
+#         raise e
+#     curr = 0
+#     output_mat = np.zeros((n, n))
+#     for j in range(n):
+#         for i in range(0, j+1):
+#             val = x[curr]
+#             if i == j:
+#                 output_mat[i, j] = val
+#             else:
+#                 output_mat[i, j] = val / sqrt_2
+#                 output_mat[j, i] = val / sqrt_2
+#             curr += 1
+#     return output_mat
 
-def vec_to_mat(x, n):
-    sqrt_2 = np.sqrt(2)
-    try:
-        assert x.shape[0] == n * (n + 1) / 2
-    except AssertionError as e:
-        print(x.shape, n * (n + 1) / 2)
-        raise e
-    curr = 0
-    output_mat = np.zeros((n, n))
-    for j in range(n):
-        for i in range(0, j+1):
-            val = x[curr]
-            if i == j:
-                output_mat[i, j] = val
-            else:
-                output_mat[i, j] = val / sqrt_2
-                output_mat[j, i] = val / sqrt_2
-            curr += 1
-    return output_mat
 
+# def mat_to_vec(X, n):
+#     # extract the upper triangle
+#     sqrt_2 = np.sqrt(2)
+#     output_vec = []
+#     for j in range(n):
+#         for i in range(0, j+1):
+#             if i == j:
+#                 output_vec.append(X[i, j])
+#             else:
+#                 output_vec.append(X[i, j] * sqrt_2)
+#     return np.array(output_vec)
 
-def mat_to_vec(X, n):
-    # extract the upper triangle
-    sqrt_2 = np.sqrt(2)
-    output_vec = []
-    for j in range(n):
-        for i in range(0, j+1):
-            if i == j:
-                output_vec.append(X[i, j])
-            else:
-                output_vec.append(X[i, j] * sqrt_2)
-    return np.array(output_vec)
+def generate_symm_mats(n):
+    ret = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            mat = np.zeros((n, n))
+            mat[i, j] = 1
+            mat[j, i] = -1
+            # ret.append(spa.csc_matrix(mat))
+            ret.append(mat)
+    return ret
 
 
 def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2):
     print('--------solving problem via admm--------')
     n = C.shape[0]
-    # C_vec = C.flatten('F')
-    C_vec = mat_to_vec(C, n)
+    C_vec = C.flatten('F')
+    # C_vec = mat_to_vec(C, n)
     # num_eq_cons = len(A_eq_vals)
     # num_slack_vars = len(A_ineq_vals)
     # Is = spa.eye(num_slack_vars)
@@ -51,10 +61,18 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
     for i in range(len(A_eq_vals)):
         Aeq_i = A_eq_vals[i]
         beq_i = b_eq_vals[i]
-        # Aeq_i_vec = Aeq_i.flatten('F').reshape((1, -1))  # 'F' -> column major (Fortan-style)
-        Aeq_i_vec = mat_to_vec(Aeq_i, n).reshape((1, -1))
+        Aeq_i_vec = Aeq_i.flatten('F').reshape((1, -1))  # 'F' -> column major (Fortan-style)
+        # Aeq_i_vec = mat_to_vec(Aeq_i, n).reshape((1, -1))
         Aeq_blocks.append(Aeq_i_vec)
         b_vals.append(beq_i)
+
+    symm_mats = generate_symm_mats(n)
+    for mat in symm_mats:
+        # mat_vec = mat.flatten('F').reshape((1, -1))
+        mat_vec = mat.reshape((1, -1), order='F')
+        Aeq_blocks.append(mat_vec)
+        b_vals.append(0)
+
     Aeq = np.vstack(Aeq_blocks)
     # print(Aeq.shape)
 
@@ -62,8 +80,8 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
     for j in range(len(A_ineq_vals)):
         Aineq_j = A_ineq_vals[j]
         bineq_j = b_ineq_vals[j]
-        # Aineq_j_vec = Aineq_j.flatten('F').reshape((1, -1))
-        Aineq_j_vec = mat_to_vec(Aineq_j, n).reshape((1, -1))
+        Aineq_j_vec = Aineq_j.flatten('F').reshape((1, -1))
+        # Aineq_j_vec = mat_to_vec(Aineq_j, n).reshape((1, -1))
         Aineq_blocks.append(Aineq_j_vec)
         b_vals.append(bineq_j)
     Aineq = np.vstack(Aineq_blocks)
@@ -76,14 +94,15 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
     for k in range(n - psd_size + 1):
         Ek = build_Ej(In, range(k, k + psd_size))
         Mk = spa.kron(Ek, Ek)
-        Mk_trunc = truncate_Mj(Mk, n, psd_size)
+        # Mk_trunc = truncate_Mj(Mk, n)
         # print(Mk.shape)
-        # M_blocks.append(Mk)
-        M_blocks.append(Mk_trunc)
+        M_blocks.append(Mk)
+        # M_blocks.append(Mk_trunc)
     M = spa.vstack(M_blocks)
-    print(M.shape)
+    # print(M.shape)
 
     Q = spa.vstack([A, -M])
+
     print(Q.shape)
 
     pad_amount = Q.shape[0] - len(b_vals)
@@ -93,27 +112,33 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
 
     def Pi_K(x):
         out = x.copy()
-        eq_n = len(A_eq_vals)
-        ineq_n = len(A_ineq_vals)
+        # eq_n = len(A_eq_vals)
+        eq_n = Aeq.shape[0]
+        # ineq_n = len(A_ineq_vals)
+        ineq_n = Aineq.shape[0]
         out[:eq_n] = 0
         out[eq_n: eq_n + ineq_n] = np.maximum(out[eq_n: eq_n + ineq_n], 0)
         psd_start = eq_n + ineq_n
-        # psd_sq = psd_size ** 2
-        psd_sq = int(psd_size * (psd_size + 1) / 2)
+        psd_sq = psd_size ** 2
+        # psd_sq = int(psd_size * (psd_size + 1) / 2)
         # print(psd_sq)
         for k in range(len(M_blocks)):
             # print('---')
             zk_start = psd_start + k * psd_sq
             zk_end = psd_start + (k + 1) * psd_sq
             zk = x[zk_start: zk_end]
-            Zk_mat = vec_to_mat(zk, psd_size)
-            projected_mat = psd_proj(Zk_mat)
-            out[zk_start: zk_end] = mat_to_vec(projected_mat, psd_size)
+            # Zk_mat = vec_to_mat(zk, psd_size)
+            Zk_mat = zk.reshape((psd_size, psd_size), order='F')
+            Zk_symm = (Zk_mat + Zk_mat.T) / 2
+            # projected_mat = psd_proj(Zk_mat)
+            projected_mat = psd_proj(Zk_symm)
+            # out[zk_start: zk_end] = mat_to_vec(projected_mat, psd_size)
+            out[zk_start: zk_end] = projected_mat.flatten('F')
 
         return out
 
     print(b_vals)
-    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=10)
+    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=5000)
 
 
 def psd_proj(X):
@@ -133,7 +158,7 @@ def admm_alg(c, Q, q, Pi_K, max_iter=1000):
     In = spa.eye(n)
     Im = spa.eye(m)
     lhs_mat = spa.bmat([
-        [In, Q.T],
+        [sigma * In, Q.T],
         [Q, -rho_inv * Im]
     ])
 
@@ -147,7 +172,9 @@ def admm_alg(c, Q, q, Pi_K, max_iter=1000):
     for i in range(max_iter):
         print(i, 'obj:', c.T @ xk)
         print(i, 'dual obj:', -q.T @ yk)
-        print('primal residual:', np.linalg.norm(Q @ xk + wk - q))
+        print('duality gap:', np.abs(c.T @ xk - q.T @ yk))
+        print('primal residual:', np.linalg.norm(Q @ xk + wk - q, np.inf))
+        print('dual residual:', np.linalg.norm(c - Q.T @ yk, np.inf))
         rhs = np.concatenate([sigma * xk - c, q - wk + rho_inv * yk])
         kkt_sol = np.linalg.solve(lhs_mat, rhs)
         xtilde_kplus1 = kkt_sol[:n]
@@ -212,7 +239,7 @@ def build_Ej(In, indices):
     return spa.csc_matrix(Ej)
 
 
-def truncate_Mj(Mj, n, psd_size):
+def truncate_Mj(Mj, n):
     # the original Mj matrix is meant for the full vec(X), but with only the upper triangle,
     # need to slice out the relevant columns
     # M_j has n^2 columns, and since we use the upper triangle of X, we partition into n equal groups
@@ -224,33 +251,9 @@ def truncate_Mj(Mj, n, psd_size):
         block = Mj[:, j * n: j * n + j + 1]
         # print('test shape:', test.shape)
         blocks.append(block)
-    out = spa.hstack(blocks).tocsr()
+    out = spa.hstack(blocks)
     # TODO: need to extract the rows as well to return upper triangle of Zj
-    rows = []
-    for i in range(psd_size):
-        block = out[i * psd_size: i * psd_size + i + 1, :]
-        rows.append(block)
-        print(block.shape)
-    out = spa.vstack(rows).tocsc()
     return out
-
-
-def test_mat_vec():
-    np.random.seed(0)
-    n = 4
-    X = np.random.randn(n, n)
-    X = (X + X.T) / 2
-    X_vec = mat_to_vec(X, n)
-    # X_mat = vec_to_mat(X_vec, n)
-    A = np.random.randn(n, n)
-    A = (A + A.T) / 2
-    A_vec = mat_to_vec(A, n)
-
-    X_vec_flat = X.flatten('F')
-    A_vec_flat = A.flatten('F')
-
-    print('inner prod default:', A_vec_flat @ X_vec_flat)
-    print('inner prod after vec:', A_vec @ X_vec)
 
 
 def main():
@@ -277,7 +280,7 @@ def main():
         new_A_half = np.random.randn(n, n)
         new_A = new_A_half + new_A_half.T / 2
         A_ineq_vals.append(new_A)
-        b_ineq_vals.append(np.trace(new_A @ X_test) + 1)
+        b_ineq_vals.append(np.trace(new_A @ X_test) + .5)
     # print(b_vals)
     # for i in range(n-1):
     #     print(X_test[i, i+1], X_test[i+1, i])
