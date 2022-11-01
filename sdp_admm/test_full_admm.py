@@ -137,8 +137,9 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
 
         return out
 
-    print(b_vals)
-    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=5000)
+    # print('Q:', Q.todense())
+    print('b:', b_vals)
+    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=1000)
 
 
 def psd_proj(X):
@@ -262,6 +263,9 @@ def main():
     n = 10
     eq_k = 50
     ineq_k = 10
+    # n = 3
+    # eq_k = 5
+    # ineq_k = 1
     C = np.random.randn(n, n)
     C = (C + C.T) / 2
     A_eq_vals = []
@@ -273,14 +277,15 @@ def main():
     for _ in range(eq_k):
         new_A_half = np.random.randn(n, n)
         # new_A = new_A_half @ new_A_half.T
-        new_A = new_A_half + new_A_half.T / 2
+        new_A = (new_A_half + new_A_half.T) / 2
+        # print('A:', new_A)
         A_eq_vals.append(new_A)
         b_eq_vals.append(np.trace(new_A @ X_test))
     for _ in range(ineq_k):
         new_A_half = np.random.randn(n, n)
-        new_A = new_A_half + new_A_half.T / 2
+        new_A = (new_A_half + new_A_half.T) / 2
         A_ineq_vals.append(new_A)
-        b_ineq_vals.append(np.trace(new_A @ X_test) + .5)
+        b_ineq_vals.append(np.trace(new_A @ X_test) + 1)
     # print(b_vals)
     # for i in range(n-1):
     #     print(X_test[i, i+1], X_test[i+1, i])

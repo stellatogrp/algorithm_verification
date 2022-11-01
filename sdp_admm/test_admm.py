@@ -113,7 +113,7 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
         return out
 
     print(b_vals)
-    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=10)
+    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=1000)
 
 
 def psd_proj(X):
@@ -145,9 +145,14 @@ def admm_alg(c, Q, q, Pi_K, max_iter=1000):
     yk = np.zeros(m)
     lhs_mat = lhs_mat.todense()  # TODO: replace with sparse computations
     for i in range(max_iter):
+        # print(i, 'obj:', c.T @ xk)
+        # print(i, 'dual obj:', -q.T @ yk)
+        # print('primal residual:', np.linalg.norm(Q @ xk + wk - q))
         print(i, 'obj:', c.T @ xk)
         print(i, 'dual obj:', -q.T @ yk)
-        print('primal residual:', np.linalg.norm(Q @ xk + wk - q))
+        print('duality gap:', np.abs(c.T @ xk - q.T @ yk))
+        print('primal residual:', np.linalg.norm(Q @ xk + wk - q, np.inf))
+        print('dual residual:', np.linalg.norm(c - Q.T @ yk, np.inf))
         rhs = np.concatenate([sigma * xk - c, q - wk + rho_inv * yk])
         kkt_sol = np.linalg.solve(lhs_mat, rhs)
         xtilde_kplus1 = kkt_sol[:n]
@@ -225,7 +230,6 @@ def truncate_Mj(Mj, n, psd_size):
         # print('test shape:', test.shape)
         blocks.append(block)
     out = spa.hstack(blocks).tocsr()
-    # TODO: need to extract the rows as well to return upper triangle of Zj
     rows = []
     for i in range(psd_size):
         block = out[i * psd_size: i * psd_size + i + 1, :]
@@ -259,6 +263,9 @@ def main():
     n = 10
     eq_k = 50
     ineq_k = 10
+    # n = 3
+    # eq_k = 5
+    # ineq_k = 1
     C = np.random.randn(n, n)
     C = (C + C.T) / 2
     A_eq_vals = []
@@ -270,12 +277,12 @@ def main():
     for _ in range(eq_k):
         new_A_half = np.random.randn(n, n)
         # new_A = new_A_half @ new_A_half.T
-        new_A = new_A_half + new_A_half.T / 2
+        new_A = (new_A_half + new_A_half.T) / 2
         A_eq_vals.append(new_A)
         b_eq_vals.append(np.trace(new_A @ X_test))
     for _ in range(ineq_k):
         new_A_half = np.random.randn(n, n)
-        new_A = new_A_half + new_A_half.T / 2
+        new_A = (new_A_half + new_A_half.T) / 2
         A_ineq_vals.append(new_A)
         b_ineq_vals.append(np.trace(new_A @ X_test) + 1)
     # print(b_vals)
