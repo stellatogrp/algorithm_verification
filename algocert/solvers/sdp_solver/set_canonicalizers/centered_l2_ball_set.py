@@ -7,9 +7,11 @@ def centered_l2_ball_canon(init_set, handler):
     r = init_set.r
     x_var = handler.iterate_vars[x].get_cp_var()
     xxT_var = handler.iterate_outerproduct_vars[x]
-    return [cp.sum_squares(x_var) <= r ** 2, cp.trace(xxT_var) <= r ** 2,
-            cp.bmat([
-                    [xxT_var, x_var],
-                    [x_var.T, np.array([[1]])]
-                    ]) >> 0,
-            ]
+    return [
+        #     cp.sum_squares(x_var) <= r ** 2,
+        cp.trace(xxT_var) <= r ** 2,
+        cp.bmat([
+            [xxT_var, x_var],
+            [x_var.T, np.array([[1]])]
+        ]) >> 0,
+    ]

@@ -5,3 +5,6 @@ extend-ignore =
     # Ambiguous variable names (such as l, v, x) are
     # often used in math contexts
     E741
+    # invalid escape sequences can show up in f-strings
+    # with latex
+    W605

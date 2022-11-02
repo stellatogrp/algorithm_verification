@@ -1,6 +1,8 @@
 import cvxpy as cp
+import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
+from tqdm import trange
 
 
 def vec_to_mat(x, n):
@@ -113,7 +115,7 @@ def solve_via_admm(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2
         return out
 
     print(b_vals)
-    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=1000)
+    admm_alg(C_vec, Q, b_vals, Pi_K, max_iter=3000)
 
 
 def psd_proj(X):
@@ -125,10 +127,12 @@ def psd_proj(X):
 def admm_alg(c, Q, q, Pi_K, max_iter=1000):
     print('--starting admm--')
     alpha = 1
+    eps = 1e-5
     rho = 1
     rho_inv = 1 / rho
     sigma = 1
     (m, n) = Q.shape
+    first_iter = 0
 
     In = spa.eye(n)
     Im = spa.eye(m)
@@ -144,15 +148,26 @@ def admm_alg(c, Q, q, Pi_K, max_iter=1000):
     wk = np.zeros(m)
     yk = np.zeros(m)
     lhs_mat = lhs_mat.todense()  # TODO: replace with sparse computations
-    for i in range(max_iter):
+    abs_dual_gaps = []
+    primal_res = []
+    dual_res = []
+    for i in trange(max_iter):
         # print(i, 'obj:', c.T @ xk)
         # print(i, 'dual obj:', -q.T @ yk)
-        # print('primal residual:', np.linalg.norm(Q @ xk + wk - q))
-        print(i, 'obj:', c.T @ xk)
-        print(i, 'dual obj:', -q.T @ yk)
-        print('duality gap:', np.abs(c.T @ xk - q.T @ yk))
-        print('primal residual:', np.linalg.norm(Q @ xk + wk - q, np.inf))
-        print('dual residual:', np.linalg.norm(c - Q.T @ yk, np.inf))
+        # print('duality gap:', np.abs(c.T @ xk - q.T @ yk))
+        # print('primal residual:', np.linalg.norm(Q @ xk + wk - q, np.inf))
+        # print('dual residual:', np.linalg.norm(c - Q.T @ yk, np.inf))
+        gap = np.abs(c.T @ xk - q.T @ yk)
+        primal = np.linalg.norm(Q @ xk + wk - q, np.inf)
+        dual = np.linalg.norm(c - Q.T @ yk, np.inf)
+
+        abs_dual_gaps.append(gap)
+        primal_res.append(primal)
+        dual_res.append(dual)
+
+        if first_iter == 0 and gap <= eps and primal <= eps and dual <= eps:
+            first_iter = i
+
         rhs = np.concatenate([sigma * xk - c, q - wk + rho_inv * yk])
         kkt_sol = np.linalg.solve(lhs_mat, rhs)
         xtilde_kplus1 = kkt_sol[:n]
@@ -175,6 +190,26 @@ def admm_alg(c, Q, q, Pi_K, max_iter=1000):
         # xk = x_kplus1
         # wk = w_kplus1
         # yk = y_kplus1
+
+    print('primal obj at end:', c.T @ xk)
+    print('first iter val:', first_iter)
+    skip = 20
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    N_vals = range(max_iter)[::skip]
+    ax.plot(N_vals, abs_dual_gaps[::skip], label='abs duality gap', color='red')
+    ax.plot(N_vals, primal_res[::skip], label='primal res', color='purple')
+    ax.plot(N_vals, dual_res[::skip], label='dual_res', color='green')
+    # ax.plot(N_vals, eps * np.ones(len(N_vals)), color='black', linestyle='dashed')
+    ax.axhline(eps, color='black', linestyle='dashed')
+    ax.axvline(first_iter, color='black')
+
+    plt.title(f'ADMM progress, every {skip} iterations, $\\rho=${rho}, $\sigma=${sigma}, $\\alpha={alpha}$')
+    plt.xlabel('$N$')
+    plt.ylabel('$\ell_\infty$-norm')
+    plt.yscale('log')
+    plt.legend()
+    plt.show()
 
 
 def solve_via_cvxpy(C, A_eq_vals, b_eq_vals, A_ineq_vals, b_ineq_vals, psd_size=2):
