@@ -279,9 +279,10 @@ def control_cert_prob(n, example, iter_set_func=None, N=1):
 #     # print('sdp rlt', res)
     resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print('global', resg)
-    param_map = CP.get_param_map()
-    xinit_res = param_map[x_init].X
-    print('xinit val:', xinit_res)
+    xinit_res = None
+    # param_map = CP.get_param_map()
+    # xinit_res = param_map[x_init].X
+    # print('xinit val:', xinit_res)
     # print('testing l:', np.round(param_map[l_param].X, 3))
     # print('l val:', CP.get_param_map()[l_param].X)
     # print('u val:', CP.get_param_map()[u_param].X)
@@ -370,9 +371,11 @@ def run_and_save_ws_experiments(max_N=2):
 
 
 def main():
-    # max_N = 4
-    # control_cert_prob(2, N=max_N)
-    max_N = 3
+    # n = 2
+    # example = generate_problem_data(n)
+    # max_N = 1
+    # control_cert_prob(n, example, N=max_N)
+    max_N = 1
     run_and_save_experiments(max_N=max_N)
     # run_and_save_ws_experiments(max_N=max_N)
 
