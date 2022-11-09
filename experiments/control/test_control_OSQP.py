@@ -22,10 +22,18 @@ def generate_problem_data(n):
     return ControlExample(n)
 
 
-def get_xinit_set(n, x_init, xmin, xmax):
+def get_xinit_set(n, x_init, xmin, xmax, **kwargs):
     return BoxSet(x_init, xmin.reshape((-1, 1)), xmax.reshape((-1, 1)))
     # test = np.array([1.43069857, 1.93912779])
     # return BoxSet(x_init, test.reshape((-1, 1)), test.reshape((-1, 1)))
+
+
+def robust_param_set(n, x_init, xmin, xmax, **kwargs):
+    num_samples = kwargs['num_samples']
+    samples = np.random.uniform(low=xmin, high=xmax, size=(num_samples, n))
+    sample_xmax = np.max(samples, axis=0)
+    sample_xmin = np.min(samples, axis=0)
+    return BoxSet(x_init, sample_xmin.reshape((-1, 1)), sample_xmax.reshape((-1, 1)))
 
 
 def test_control_gen(n, N=1, t=.05, T=5):
@@ -44,8 +52,8 @@ def test_control_gen(n, N=1, t=.05, T=5):
     # print(A)
 
 
-def control_cert_prob_non_ws(n, N=1):
-    example = generate_problem_data(n)
+def control_cert_prob_non_ws(n, example, N=1):
+    # example = generate_problem_data(n)
     A = example.qp_problem['A']
     full_m, full_n = A.shape
 
@@ -61,7 +69,7 @@ def control_cert_prob_non_ws(n, N=1):
         # zset = ConstSet(z, z_val.reshape(-1, 1))
         return xset, yset, zset
 
-    return control_cert_prob(n, example, iter_set_func=iterate_set_func, N=N)
+    return control_cert_prob(n, example, iter_set_func=iterate_set_func, xinit_set_func=get_xinit_set, N=N)
 
 
 def sample_xinit(xmin, xmax):
@@ -169,7 +177,27 @@ def control_cert_prob_ws(n, N=1):
     return control_cert_prob(n, example, iter_set_func=iterate_set_func, N=N)
 
 
-def control_cert_prob(n, example, iter_set_func=None, N=1):
+def control_cert_prob_robust_param(n, example, num_samples, N=1):
+    A = example.qp_problem['A']
+    full_m, full_n = A.shape
+
+    def iterate_set_func(x, y, z):
+        zeros_fn = np.zeros((full_n, 1))
+        ones_fn = np.ones((full_n, 1))
+        zeros_fm = np.zeros((full_m, 1))
+        # z_val = A @ zeros_fn
+        # xset = ConstSet(x, zeros_fn)
+        xset = BoxSet(x, zeros_fn, ones_fn)
+        yset = ConstSet(y, zeros_fm)
+        zset = ConstSet(z, zeros_fm)
+        # zset = ConstSet(z, z_val.reshape(-1, 1))
+        return xset, yset, zset
+
+    return control_cert_prob(n, example, iter_set_func=iterate_set_func, xinit_set_func=robust_param_set,
+                             N=N, num_samples=num_samples)
+
+
+def control_cert_prob(n, example, iter_set_func=None, xinit_set_func=None, N=1, num_samples=None):
     # example = generate_problem_data(n)
     rho = 1
     rho_inv = 1 / rho
@@ -194,7 +222,8 @@ def control_cert_prob(n, example, iter_set_func=None, N=1):
     x_init = Parameter(n, name='x_init')
     # x_initset = BoxSet(x_init, xmin.reshape((-1, 1)), xmax.reshape((-1, 1)))
     # x_initset = get_xinit_set(n, x_init, xmin, xmax)
-    x_initset = get_xinit_set(n, x_init, -xmax, -xmin)
+    # x_initset = get_xinit_set(n, x_init, -xmax, -xmin)
+    x_initset = xinit_set_func(n, x_init, xmin, xmax, num_samples=num_samples)
 
     l_param = Parameter(full_m, name='l_param')
     l_paramset = BoxStackSet(l_param, [x_initset, [l_mat, l_mat]])
@@ -297,6 +326,7 @@ def control_cert_prob(n, example, iter_set_func=None, N=1):
 def run_and_save_experiments(max_N=2):
     # m = 4
     n = 2
+    example = generate_problem_data(n)
     # N = 1
     # control_cert_prob(n, m, N=N)
     # test_control_gen(n)
@@ -309,7 +339,7 @@ def run_and_save_experiments(max_N=2):
     xinit_vals = []
     xinit_rows = []
     for N in range(1, max_N+1):
-        (global_res, comp_time), xinit_res = control_cert_prob_non_ws(n, N=N)
+        (global_res, comp_time), xinit_res = control_cert_prob_non_ws(n, example, N=N)
         iter_row = pd.Series(
             {
                 'num_iter': N,
@@ -370,14 +400,55 @@ def run_and_save_ws_experiments(max_N=2):
         df2.to_csv(x_fname, index=False)
 
 
+def run_and_save_robust_experiments(max_N=1):
+    n = 2
+    example = generate_problem_data(n)
+    # save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
+    save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/control/data'
+    res_fname = save_dir + 'testrobust.csv'
+    num_sample_vals = [1, 5]
+
+    rows = []
+    for N in range(1, max_N+1):
+        (global_res, comp_time), _ = control_cert_prob_non_ws(n, example, N=N)
+        iter_row = pd.Series(
+            {
+                'num_iter': N,
+                'num_samples': -1,
+                'global_res': global_res,
+                'global_comp_time': comp_time,
+            }
+        )
+        rows.append(iter_row)
+        for num_samples in num_sample_vals:
+            (global_res, comp_time), _ = control_cert_prob_robust_param(n, example, num_samples=num_samples, N=N)
+            iter_row = pd.Series(
+                {
+                    'num_iter': N,
+                    'num_samples': num_samples,
+                    'global_res': global_res,
+                    'global_comp_time': comp_time,
+                }
+            )
+            rows.append(iter_row)
+    df = pd.DataFrame(rows)
+    print(df)
+    df.to_csv(res_fname, index=False)
+
+
 def main():
-    # n = 2
-    # example = generate_problem_data(n)
+    n = 2
+    example = generate_problem_data(n)
+    print(example.x0, example.xmin, example.xmax)
+    print(example.qp_problem['l'])
+    # control_cert_prob_robust_param(n, example, 10, xinit_set_func=get_xinit_set)
+    max_N = 3
+    # control_cert_prob_non_ws(n, example, N=max_N)
+    # control_cert_prob_robust_param(n, example, num_samples=5, N=max_N)
     # max_N = 1
-    # control_cert_prob(n, example, N=max_N)
-    max_N = 1
-    run_and_save_experiments(max_N=max_N)
+    # run_and_save_experiments(max_N=max_N)
     # run_and_save_ws_experiments(max_N=max_N)
+    run_and_save_robust_experiments(max_N=max_N)
 
 
 if __name__ == '__main__':
