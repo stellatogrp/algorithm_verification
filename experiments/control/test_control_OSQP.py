@@ -404,7 +404,7 @@ def run_and_save_robust_experiments(max_N=1):
     n = 2
     example = generate_problem_data(n)
     # save_dir = '/home/vranjan/algorithm-certification/experiments/control/data/'
-    save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/control/data'
+    save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/control/data/'
     res_fname = save_dir + 'testrobust.csv'
     num_sample_vals = [1, 5]
 
