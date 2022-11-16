@@ -431,9 +431,9 @@ def run_and_save_robust_experiments(max_N=1):
                 }
             )
             rows.append(iter_row)
-    df = pd.DataFrame(rows)
-    print(df)
-    df.to_csv(res_fname, index=False)
+            df = pd.DataFrame(rows)
+            print(df)
+            df.to_csv(res_fname, index=False)
 
 
 def main():
@@ -442,13 +442,13 @@ def main():
     print(example.x0, example.xmin, example.xmax)
     print(example.qp_problem['l'])
     # control_cert_prob_robust_param(n, example, 10, xinit_set_func=get_xinit_set)
-    max_N = 3
-    # control_cert_prob_non_ws(n, example, N=max_N)
+    max_N = 1
+    control_cert_prob_non_ws(n, example, N=max_N)
     # control_cert_prob_robust_param(n, example, num_samples=5, N=max_N)
     # max_N = 1
     # run_and_save_experiments(max_N=max_N)
     # run_and_save_ws_experiments(max_N=max_N)
-    run_and_save_robust_experiments(max_N=max_N)
+    # run_and_save_robust_experiments(max_N=max_N)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,7 @@
 import gurobipy as gp
 import numpy as np
 
+from algocert.init_set.mult_trajectory import MultTrajectorySets
 from algocert.solvers.global_solver import (BOUND_SET_CANON_METHODS,
                                             BOUND_STEP_CANON_METHODS,
                                             OBJ_CANON_METHODS,
@@ -16,6 +17,7 @@ class GlobalHandler(object):
         self.model = None
         self.iterate_list = []
         self.param_list = []
+        self.mult_traj_param_list = []
         self.iterate_to_id_map = {}
         self.id_to_iterate_map = {}
         self.iterate_to_lower_bound_map = {}
@@ -25,6 +27,7 @@ class GlobalHandler(object):
         self.param_to_lower_bound_map = {}
         self.param_to_upper_bound_map = {}
         self.param_to_gp_var_map = {}
+        self.param_to_mult_traj_map = {}  # True or False based on how many trajectories
         if 'add_bounds' in kwargs:
             self.add_bounds = kwargs['add_bounds']
         else:
@@ -55,30 +58,60 @@ class GlobalHandler(object):
     def create_param_list(self):
         parameters = self.CP.get_parameter_sets()
         for param in parameters:
-            param_var = param.get_iterate()
+            if type(param) == MultTrajectorySets:  # only need to extract once
+                param_var = param.sets[0].get_iterate()
+                self.param_to_mult_traj_map[param_var] = param
+                self.mult_traj_param_list.append(param_var)
+            else:
+                param_var = param.get_iterate()
+                self.param_to_mult_traj_map[param_var] = False
             self.param_list.append(param_var)
 
     def create_iterate_bound_map(self):
         N = self.CP.N
         for init_set in self.CP.get_init_sets():
-            # exit(0)
-            iterate = init_set.get_iterate()
-            n = iterate.get_dim()
-            lb = np.zeros((N + 1, n))
-            ub = np.zeros((N + 1, n))
-            canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
-            l, u = canon_method(init_set)
-            lb[0] = l
-            ub[0] = u
-            self.iterate_to_lower_bound_map[iterate] = lb
-            self.iterate_to_upper_bound_map[iterate] = ub
+            if len(self.mult_traj_param_list) > 0:
+                iterate = init_set.get_iterate()
+                n = iterate.get_dim()
+                for param_var in self.mult_traj_param_list:
+                    traj_sets = self.param_to_mult_traj_map[param_var]
+                    for i, single_traj in enumerate(traj_sets):
+                        lb = np.zeros((N + 1, n))
+                        ub = np.zeros((N + 1, n))
+                        canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
+                        l, u = canon_method(init_set)
+                        lb[0] = l
+                        ub[0] = u
+                        self.iterate_to_lower_bound_map[(iterate, param_var, i)] = lb
+                        self.iterate_to_upper_bound_map[(iterate, param_var, i)] = ub
+            else:
+                iterate = init_set.get_iterate()
+                n = iterate.get_dim()
+                lb = np.zeros((N + 1, n))
+                ub = np.zeros((N + 1, n))
+                canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
+                l, u = canon_method(init_set)
+                lb[0] = l
+                ub[0] = u
+                self.iterate_to_lower_bound_map[iterate] = lb
+                self.iterate_to_upper_bound_map[iterate] = ub
 
         for iterate in self.iterate_list:
             if iterate not in self.iterate_to_lower_bound_map:
+                n = iterate.get_dim()
                 lb = np.zeros((N + 1, n))
                 ub = np.zeros((N + 1, n))
                 self.iterate_to_lower_bound_map[iterate] = lb
                 self.iterate_to_upper_bound_map[iterate] = ub
+            if len(self.mult_traj_param_list) > 0:
+                for param_var in self.mult_traj_param_list:
+                    if (iterate, param_var, 0) not in self.iterate_to_lower_bound_map:
+                        traj_sets = self.param_to_mult_traj_map[param_var]
+                        for i, single_traj in enumerate(traj_sets):
+                            lb = np.zeros((N + 1, n))
+                            ub = np.zeros((N + 1, n))
+                            self.iterate_to_lower_bound_map[(iterate, param_var, i)] = lb
+                            self.iterate_to_upper_bound_map[(iterate, param_var, i)] = ub
 
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.N + 1):
@@ -89,12 +122,21 @@ class GlobalHandler(object):
                              self.param_to_lower_bound_map, self.param_to_upper_bound_map)
 
     def create_param_bound_map(self):
-        for param_set in self.CP.get_parameter_sets():
-            param = param_set.get_iterate()
-            canon_method = BOUND_SET_CANON_METHODS[type(param_set)]
-            l, u = canon_method(param_set)
-            self.param_to_lower_bound_map[param] = l
-            self.param_to_upper_bound_map[param] = u
+        parameters = self.CP.get_parameter_sets()
+        for param_set in parameters:
+            if type(param_set) == MultTrajectorySets:
+                for i, single_param_set in enumerate(param_set):
+                    param = single_param_set.get_iterate()
+                    canon_method = BOUND_SET_CANON_METHODS[type(single_param_set)]
+                    l, u = canon_method(single_param_set)
+                    self.param_to_lower_bound_map[(param, i)] = l
+                    self.param_to_upper_bound_map[(param, i)] = u
+            else:
+                param = param_set.get_iterate()
+                canon_method = BOUND_SET_CANON_METHODS[type(param_set)]
+                l, u = canon_method(param_set)
+                self.param_to_lower_bound_map[param] = l
+                self.param_to_upper_bound_map[param] = u
 
     def create_iterate_gp_var_map(self):
         N = self.CP.N
@@ -162,8 +204,8 @@ class GlobalHandler(object):
 
     def canonicalize(self, **kwargs):
         self.create_gp_model()
-        self.create_iterate_id_maps()
         self.create_param_list()
+        self.create_iterate_id_maps()
         if self.add_bounds:
             self.create_param_bound_map()
             self.create_iterate_bound_map()
