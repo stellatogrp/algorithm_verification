@@ -60,8 +60,8 @@ class ControlExample(object):
         self.umax = -self.umin
         self.xmin = -1.0 - np.random.rand(self.nx)
         self.xmax = -self.xmin
-        # self.xmin = -1 * np.ones(n)
-        # self.xmax = 10 * np.ones(n)
+        self.xmin = -.1 * np.ones(n)
+        self.xmax = .1 * np.ones(n)
 
         # Initial state (constrain to be within lower and upper bound)
         self.x0 = np.random.rand(self.nx)

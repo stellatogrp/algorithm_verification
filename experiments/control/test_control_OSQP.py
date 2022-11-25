@@ -18,8 +18,8 @@ from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
 
-def generate_problem_data(n):
-    return ControlExample(n)
+def generate_problem_data(n, T=5):
+    return ControlExample(n, T=T)
 
 
 def get_xinit_set(n, x_init, xmin, xmax, **kwargs):
@@ -59,11 +59,11 @@ def control_cert_prob_non_ws(n, example, N=1):
 
     def iterate_set_func(x, y, z):
         zeros_fn = np.zeros((full_n, 1))
-        ones_fn = np.ones((full_n, 1))
+        # ones_fn = np.ones((full_n, 1))
         zeros_fm = np.zeros((full_m, 1))
         # z_val = A @ zeros_fn
-        # xset = ConstSet(x, zeros_fn)
-        xset = BoxSet(x, zeros_fn, ones_fn)
+        xset = ConstSet(x, zeros_fn)
+        # xset = BoxSet(x, zeros_fn, ones_fn)
         yset = ConstSet(y, zeros_fm)
         zset = ConstSet(z, zeros_fm)
         # zset = ConstSet(z, z_val.reshape(-1, 1))
@@ -437,12 +437,13 @@ def run_and_save_robust_experiments(max_N=1):
 
 
 def main():
-    n = 2
-    example = generate_problem_data(n)
+    n = 6
+    T = 5
+    example = generate_problem_data(n, T=T)
     print(example.x0, example.xmin, example.xmax)
     print(example.qp_problem['l'])
     # control_cert_prob_robust_param(n, example, 10, xinit_set_func=get_xinit_set)
-    max_N = 1
+    max_N = 3
     control_cert_prob_non_ws(n, example, N=max_N)
     # control_cert_prob_robust_param(n, example, num_samples=5, N=max_N)
     # max_N = 1

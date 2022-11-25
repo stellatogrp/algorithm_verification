@@ -14,7 +14,10 @@ class GlobalHandler(object):
     def __init__(self, CP, **kwargs):
         self.CP = CP
         self.N = self.CP.N
-        self.model = None
+        if 'model' in kwargs:
+            self.model = kwargs['model']
+        else:
+            self.model = None
         self.iterate_list = []
         self.param_list = []
         self.mult_traj_param_list = []
@@ -28,6 +31,7 @@ class GlobalHandler(object):
         self.param_to_upper_bound_map = {}
         self.param_to_gp_var_map = {}
         self.param_to_mult_traj_map = {}  # True or False based on how many trajectories
+        self.objective = 0
         if 'add_bounds' in kwargs:
             self.add_bounds = kwargs['add_bounds']
         else:
@@ -38,12 +42,14 @@ class GlobalHandler(object):
             self.TimeLimit = -1  # a 'default' value to flag that we don't want to set it
 
     def create_gp_model(self):
-        self.model = gp.Model()
+        # self.model = gp.Model()
+        if self.model is None:
+            self.model = gp.Model()
         self.model.setParam('NonConvex', 2)
         # self.model.setParam('MIPFocus', 3)
         # self.model.setParam('OptimalityTol', 1e-4)
         # self.model.setParam('FeasibilityTol', 1e-3)
-        self.model.setParam('MIPGap', .01)
+        self.model.setParam('MIPGap', .1)
         if self.TimeLimit > 0:
             self.model.setParam('TimeLimit', self.TimeLimit)
 
@@ -200,6 +206,7 @@ class GlobalHandler(object):
         for obj in obj_list:
             obj_canon = OBJ_CANON_METHODS[type(obj)]
             gp_obj += obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+        self.objective += gp_obj
         self.model.setObjective(gp_obj, gp.GRB.MAXIMIZE)
 
     def canonicalize(self, **kwargs):
