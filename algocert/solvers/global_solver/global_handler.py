@@ -45,13 +45,13 @@ class GlobalHandler(object):
         # self.model = gp.Model()
         if self.model is None:
             self.model = gp.Model()
-        self.model.setParam('NonConvex', 2)
-        # self.model.setParam('MIPFocus', 3)
-        # self.model.setParam('OptimalityTol', 1e-4)
-        # self.model.setParam('FeasibilityTol', 1e-3)
-        self.model.setParam('MIPGap', .1)
-        if self.TimeLimit > 0:
-            self.model.setParam('TimeLimit', self.TimeLimit)
+            self.model.setParam('NonConvex', 2)
+            # self.model.setParam('MIPFocus', 3)
+            # self.model.setParam('OptimalityTol', 1e-4)
+            # self.model.setParam('FeasibilityTol', 1e-3)
+            self.model.setParam('MIPGap', .1)
+            if self.TimeLimit > 0:
+                self.model.setParam('TimeLimit', self.TimeLimit)
 
     def create_iterate_id_maps(self):
         steps = self.CP.get_algorithm_steps()

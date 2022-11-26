@@ -1,0 +1,3 @@
+
+class MultTrajectorySets(object):
+    pass
