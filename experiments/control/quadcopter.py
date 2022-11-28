@@ -44,8 +44,8 @@ class QuadCopter(object):
 
         # Control penalty
         self.R = .1 * spa.eye(self.nu)
-        ind07 = np.random.rand(self.nx) < 0.7   # Random 30% data
-        # Choose only 70% of nonzero elements
+        ind07 = np.random.rand(self.nx) < 1.0   # Random 30% data
+        # Choose only 30% of nonzero elements
         diagQ = np.multiply(np.random.rand(self.nx), ind07)
         self.Q = spa.diags(diagQ)
         QN = sla.solve_discrete_are(self.A.todense(), self.B.todense(),
@@ -80,7 +80,7 @@ class QuadCopter(object):
         self.xmin = -1.0 - np.random.rand(self.nx)
         self.xmax = -self.xmin
         self.xmin = -.1 * np.ones(n)
-        self.xmin = -.11 * np.ones(n)
+        self.xmin = -.1 * np.ones(n)
         self.xmax = .1 * np.ones(n)
 
         # Initial state (constrain to be within lower and upper bound)

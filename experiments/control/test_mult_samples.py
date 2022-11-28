@@ -75,15 +75,15 @@ def experiment(example, max_N=1, N_samples=10):
     print(model.Runtime)
 
 
-def experiment_cvar(example, max_N=1, N_samples=10):
-    timelimit = 3600
+def experiment_cvar(example, max_N=1, N_samples=10, xinit_eps=.01):
+    timelimit = 10800
     eps = .05
     samples = get_samples(example, N_samples=N_samples)
     model = make_gurobi_model(timelimit=timelimit)
     summation = 0
-    alpha = model.addVar(ub=0, lb=-10)
+    alpha = model.addVar(ub=0, lb=-5)
     for i in range(N_samples):
-        obj = form_CP(example, samples[i], model, N=max_N)
+        obj = form_CP(example, samples[i], model, N=max_N, xinit_eps=xinit_eps)
         zi = model.addVar(ub=gp.GRB.INFINITY, lb=0)
         val = model.addVar(ub=gp.GRB.INFINITY, lb=-gp.GRB.INFINITY)
         model.addConstr(val == (-obj - alpha))
@@ -104,11 +104,11 @@ def make_gurobi_model(timelimit=3600):
     return m
 
 
-def form_CP(quadcopter, xprev, gp_model, N=2):
+def form_CP(quadcopter, xprev, gp_model, N=2, xinit_eps=.01):
     nx = 6
     # nu = 3
 
-    xinit_eps = .2
+    # xinit_eps = .01
     # x_eps = .05
     rho = 1
     rho_inv = 1 / rho
@@ -217,10 +217,11 @@ def form_CP(quadcopter, xprev, gp_model, N=2):
 def main():
     np.random.seed(0)
     N_samples = 10
-    max_N = 3
+    max_N = 5
+    xinit_eps = .5
     example = generate_problem_data()
     # experiment(example, N_samples=N_samples)
-    experiment_cvar(example, max_N=max_N, N_samples=N_samples)
+    experiment_cvar(example, max_N=max_N, N_samples=N_samples, xinit_eps=xinit_eps)
 
 
 if __name__ == '__main__':
