@@ -216,9 +216,12 @@ def form_CP(quadcopter, xprev, gp_model, N=2, xinit_eps=.01):
 
 def main():
     np.random.seed(0)
-    N_samples = 10
-    max_N = 5
-    xinit_eps = .5
+    N_samples = 1
+    max_N = 1
+    xinit_eps = .01
+    print('N_samples=', N_samples)
+    print('max_N=', max_N)
+    print('xinit_eps=', xinit_eps)
     example = generate_problem_data()
     # experiment(example, N_samples=N_samples)
     experiment_cvar(example, max_N=max_N, N_samples=N_samples, xinit_eps=xinit_eps)
