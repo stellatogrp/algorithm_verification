@@ -216,9 +216,9 @@ def form_CP(quadcopter, xprev, gp_model, N=2, xinit_eps=.01):
 
 def main():
     np.random.seed(0)
-    N_samples = 1
-    max_N = 1
-    xinit_eps = .01
+    N_samples = 10
+    max_N = 4
+    xinit_eps = .02
     print('N_samples=', N_samples)
     print('max_N=', max_N)
     print('xinit_eps=', xinit_eps)
