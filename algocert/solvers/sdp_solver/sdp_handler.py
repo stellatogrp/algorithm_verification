@@ -196,6 +196,9 @@ class SDPHandler(object):
         # print(res)
         return res, prob.solver_stats.solve_time
 
+    def get_iteration_handler(self, k):
+        return self.iteration_handlers[k]
+
 
 class SingleIterationHandler(object):
 

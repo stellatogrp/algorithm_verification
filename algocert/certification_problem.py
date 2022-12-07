@@ -43,6 +43,9 @@ class CertificationProblem(object):
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
             solver.canonicalize(**kwargs)
+        if solver_type == s.SDP:
+            solver = SDPSolver(self)
+            solver.canonicalize(**kwargs)
         return solver
 
     def print_cp(self):

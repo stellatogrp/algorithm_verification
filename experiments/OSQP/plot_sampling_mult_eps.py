@@ -14,7 +14,7 @@ def plot_resids(df_srlt, df_g):
     # fig, ax = plt.subplots(figsize=(6, 4))
 
     eps_vals = df_srlt['eps_b'].unique()
-    eps_vals = [.01, .1, .5]
+    # eps_vals = [.01, .1, .5]
     # N_vals = range(2, 7)
     colors = ['g', 'r', 'b', 'r', 'orange', 'y']
 
@@ -38,8 +38,8 @@ def plot_resids(df_srlt, df_g):
 
     plt.title('solid = SDP_RLT, dashed = global')
     plt.legend()
-    # plt.show()
-    plt.savefig('data/mult_eps_test/images/simpleOSQP.pdf')
+    plt.show()
+    # plt.savefig('data/mult_eps_test/images/simpleOSQP.pdf')
 
 
 def main():
