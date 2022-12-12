@@ -37,7 +37,11 @@ def min_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_
 
     model.addConstr(z == y_var - x_var)
     model.addConstr(w == y_var - u_vec)
-    model.addConstr(w @ z == 0)
+    # model.addConstr(w @ z == 0)
+
+    n = x_var.shape[0]
+    for i in range(n):
+        model.addConstr(z[i] * w[i] == 0)
 
 
 def min_vec_bound_canon(step, k, iter_to_id_map,
