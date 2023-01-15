@@ -21,20 +21,20 @@ def conv_resid_canon(obj, handlers, add_RLT):
     ret_obj = cp.trace(xNxNT - 2 * xcross + xNminus1xNminus1T)
     # ret_obj = cp.trace(xNxNT - xNminus1xNminus1T)
 
-    # constraints = [
-    #     cp.bmat([
-    #         [xNxNT, xcross, xN],
-    #         [xcross.T, xNminus1xNminus1T, xNminus1],
-    #         [xN.T, xNminus1.T, np.array([[1]])]
-    #     ]) >> 0,
-    # ]
+    constraints = [
+        cp.bmat([
+            [xNxNT, xcross, xN],
+            [xcross.T, xNminus1xNminus1T, xNminus1],
+            [xN.T, xNminus1.T, np.array([[1]])]
+        ]) >> 0,
+    ]
 
-    if add_RLT:
-        lower_xN = handlerN.iterate_vars[x].get_lower_bound()
-        upper_xN = handlerN.iterate_vars[x].get_upper_bound()
-        lower_xNminus1 = handlerNminus1.iterate_vars[x].get_lower_bound()
-        upper_xNminus1 = handlerNminus1.iterate_vars[x].get_upper_bound()
-        constraints += RLT_constraints(xcross, xN, lower_xN, upper_xN, xNminus1, lower_xNminus1, upper_xNminus1)
+    # if add_RLT:
+    #     lower_xN = handlerN.iterate_vars[x].get_lower_bound()
+    #     upper_xN = handlerN.iterate_vars[x].get_upper_bound()
+    #     lower_xNminus1 = handlerNminus1.iterate_vars[x].get_lower_bound()
+    #     upper_xNminus1 = handlerNminus1.iterate_vars[x].get_upper_bound()
+    #     constraints += RLT_constraints(xcross, xN, lower_xN, upper_xN, xNminus1, lower_xNminus1, upper_xNminus1)
 
     test_x = False
     if test_x:

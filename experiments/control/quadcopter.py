@@ -4,12 +4,12 @@ import scipy.linalg as sla
 import scipy.sparse as spa
 
 
-class ControlExample(object):
+class QuadCopter(object):
     '''
     Control QP example
     '''
 
-    def __init__(self, n, T=5, seed=1):
+    def __init__(self, n=6, T=5, seed=1):
         '''
         Generate problem in QP format and CVXPY format
         '''
@@ -44,13 +44,32 @@ class ControlExample(object):
 
         # Control penalty
         self.R = .1 * spa.eye(self.nu)
-        ind07 = np.random.rand(self.nx) < 0.7   # Random 30% data
-        # Choose only 70% of nonzero elements
+        ind07 = np.random.rand(self.nx) < 1.0   # Random 30% data
+        # Choose only 30% of nonzero elements
         diagQ = np.multiply(np.random.rand(self.nx), ind07)
         self.Q = spa.diags(diagQ)
         QN = sla.solve_discrete_are(self.A.todense(), self.B.todense(),
                                     self.Q.todense(), self.R.todense())
         self.QN = spa.csc_matrix(QN.dot(QN.T))
+
+        # Control diff penalty (used to penalize u_{k+1} - u_k)
+        self.CR = 2 * spa.eye(self.nu)
+
+        # Constants for angle penalty:
+        self.m = 1
+        self.g = 9.8
+        self.mg = self.m * self.g
+        self.gamma = 1
+        self.gamma_mg = self.gamma * self.mg
+        self.N_hs = 4
+        self.gmg_ones = np.tile(self.gamma_mg, self.N_hs)
+        self.c_arr = []
+        for j in range(self.N_hs):
+            c = np.array([np.cos(j*2*np.pi/self.N_hs), np.sin(j*2*np.pi/self.N_hs), -self.gamma])
+            self.c_arr.append(c)
+        self.C_hs = np.vstack(self.c_arr)
+        # print(self.C_hs, self.gmg_ones)
+        # exit(0)
 
         # self.QN = spa.csc_matrix(QN.dot(QN))  # Ensure symmetric PSD
         # self.QN = 10 * self.Q
@@ -61,7 +80,7 @@ class ControlExample(object):
         self.xmin = -1.0 - np.random.rand(self.nx)
         self.xmax = -self.xmin
         self.xmin = -.1 * np.ones(n)
-        self.xmin = np.zeros(n)
+        self.xmin = -.1 * np.ones(n)
         self.xmax = .1 * np.ones(n)
 
         # Initial state (constrain to be within lower and upper bound)
@@ -93,7 +112,10 @@ class ControlExample(object):
 
         # Objective
         Px = spa.kron(spa.eye(self.T), self.Q)
-        Pu = spa.kron(spa.eye(self.T), self.R)
+        Pu = spa.kron(spa.eye(self.T), self.R + 2 * self.CR)
+        off_diags = spa.eye(self.T, k=1) + spa.eye(self.T, k=-1)
+        CR_reg = spa.kron(off_diags, -self.CR)
+        Pu = Pu + CR_reg
         P = 2. * spa.block_diag([Px, self.QN, Pu]).tocsc()
         q = np.zeros((self.T + 1) * nx + self.T * nu)
 
@@ -136,6 +158,28 @@ class ControlExample(object):
                         ]).tocsc()
         lx = np.append(lx, np.tile(self.umin, self.T))
         ux = np.append(ux, np.tile(self.umax, self.T))
+
+        # Angle constraints
+        I = spa.eye(self.T)
+        temp = spa.kron(I, self.C_hs)
+
+        Z = spa.csc_matrix(np.zeros((temp.shape[0], (self.T + 1) * nx)))
+        # print(Z.shape, temp.shape)
+        # print(A.shape)
+        self.ang_cons = spa.hstack([Z, temp])
+        # print(self.ang_cons.todense())
+        # lx = np.append(lx, )
+        # print(self.N_hs * self.T)
+        A = spa.vstack([A, self.ang_cons])
+
+        # lx = np.append(lx, )
+        u = np.append(u, np.tile(self.gmg_ones, self.T))
+        # print(ux.shape)
+        l = np.append(l, -1000 * np.ones(self.N_hs * self.T))
+        # lx = np.append(lx, np.tile(self.gmg_ones, self.T))
+        # print(A.shape, u.shape, l.shape)
+
+        # exit(0)
 
         # Get index of bounds (all variables)
         bounds_idx = np.arange(A.shape[1])
@@ -185,7 +229,7 @@ class ControlExample(object):
         # Dynamics
         dynamics = [x[:, 0] == x0]
         for i in range(T):
-            dynamics += [x[:, i+1] == self.A * x[:, i] + self.B * u[:, i]]
+            dynamics += [x[:, i+1] == self.A @ x[:, i] + self.B @ u[:, i]]
 
         # State constraints
         state_constraints = []

@@ -120,6 +120,16 @@ class SDPHandler(object):
         self.initialize_init_set_bounds()
         self.initialize_param_set_bounds()
         self.propagate_iterate_bounds()
+        # for i in self.param_list:
+        #     print('param', i)
+        #     print(self.sdp_param_vars[i].get_lower_bound())
+        # for i, handler in enumerate(self.iteration_handlers):
+        #     print('handler', i)
+        #     for iterate in self.iterate_list:
+        #         # print(handler.iterate_vars[iterate])
+        #         print(iterate)
+        #         print(handler.iterate_vars[iterate].get_lower_bound())
+        # exit(0)
 
     def initialize_init_set_bounds(self):
         for init_set in self.CP.get_init_sets():
@@ -155,8 +165,8 @@ class SDPHandler(object):
 
     def canonicalize(self):
         self.convert_hl_to_basic_steps()
-        print('----BASIC STEP SDP----')
-        self.CP.print_cp()
+        # print('----BASIC STEP SDP----')
+        # self.CP.print_cp()
 
         self.create_iterate_id_maps()
         self.compute_sdp_param_vars()
@@ -185,6 +195,9 @@ class SDPHandler(object):
         res = prob.solve(solver=solver, verbose=verbose)
         # print(res)
         return res, prob.solver_stats.solve_time
+
+    def get_iteration_handler(self, k):
+        return self.iteration_handlers[k]
 
 
 class SingleIterationHandler(object):

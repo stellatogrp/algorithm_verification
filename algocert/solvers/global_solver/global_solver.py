@@ -7,7 +7,7 @@ class GlobalSolver(Solver):
     """Docstring for GlobalSolver. """
 
     def __init__(self, CP):
-        CP.print_cp()
+        # CP.print_cp()
         self.CP = CP
         self.handler = None
 
