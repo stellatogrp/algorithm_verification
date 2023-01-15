@@ -1,20 +1,243 @@
-# from algocert.solvers.sdp_admm_solver import HL_TO_BASIC_STEP_METHODS
+import cvxpy as cp
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.sparse as spa
+
+from algocert.solvers.sdp_admm_solver import (OBJ_CANON_METHODS,
+                                              SET_CANON_METHODS,
+                                              STEP_CANON_METHODS)
 
 
 class SDPADMMHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP
-        self.N = CP.N
+        self.K = CP.N  # number of steps to certify, TODO: change CP.N to CP.K
+        self.num_samples = CP.num_samples
         self.alg_steps = CP.get_algorithm_steps()
         self.iterate_list = []
         self.param_list = []
+        self.iterate_to_id_map = {}
+        self.id_to_iterate_map = {}
+        self.init_iter_range_map = {}
+        self.sample_iter_bound_map = {}
+        self.range_marker = 0
+        self.problem_dim = 0
+        self.A_matrices = []
+        self.b_lowerbounds = []
+        self.b_upperbounds = []
+        self.C_matrix = None
 
     def convert_hl_to_basic_steps(self):
         pass
 
+    def create_iterate_id_maps(self):
+        steps = self.CP.get_algorithm_steps()
+        for i, step in enumerate(steps):
+            iterate = step.get_output_var()
+            self.iterate_to_id_map[iterate] = i
+            self.id_to_iterate_map[i] = iterate
+            self.iterate_list.append(iterate)
+
+    def create_init_iterate_range_maps(self):
+        for init_set in self.CP.get_init_sets():
+            init_iter = init_set.get_iterate()
+            dim = init_iter.get_dim()
+            bounds = (self.range_marker, self.range_marker + dim)
+            self.range_marker += dim
+            self.init_iter_range_map[init_iter] = bounds
+
+    def create_sample_iter_bound_maps(self):
+        steps = self.CP.get_algorithm_steps()
+        for i in range(self.num_samples):
+            sample_dict = {}
+            init_dict = {}
+            for init_set in self.CP.get_init_sets():
+                init_iter = init_set.get_iterate()
+                init_dict[init_iter] = self.init_iter_range_map[init_iter]
+            sample_dict[0] = init_dict
+
+            for k in range(1, self.K + 1):
+                step_dict = {}
+                for j, step in enumerate(steps):
+                    output_var = step.get_output_var()
+                    dim = output_var.get_dim()
+                    bounds = (self.range_marker, self.range_marker + dim)
+                    self.range_marker += dim
+                    step_dict[output_var] = bounds
+                sample_dict[k] = step_dict
+
+            for param_set in self.CP.get_parameter_sets():
+                param_var = param_set.get_iterate()
+                dim = param_var.get_dim()
+                bounds = (self.range_marker, self.range_marker + dim)
+                self.range_marker += dim
+                sample_dict[param_var] = bounds
+
+            # print(sample_dict)
+            self.sample_iter_bound_map[i] = sample_dict
+
+        print(self.sample_iter_bound_map)
+
+    def set_problem_dim(self):
+        self.problem_dim = self.range_marker + 1
+
+    def create_lower_right_constraint(self):
+        A = spa.lil_matrix((self.problem_dim, self.problem_dim))
+        A[-1, -1] = 1
+        self.A_matrices.append(A.tocsr())
+        self.b_lowerbounds.append(1)
+        self.b_upperbounds.append(1)
+
+    def canonicalize_initial_sets(self):
+        for init_set in self.CP.get_init_sets():
+            canon_method = SET_CANON_METHODS[type(init_set)]
+            A, b_l, b_u = canon_method(init_set, self)
+            self.A_matrices += A
+            self.b_lowerbounds += b_l
+            self.b_upperbounds += b_u
+
+    def canonicalize_parameter_sets(self):
+        for param_set in self.CP.get_parameter_sets():
+            canon_method = SET_CANON_METHODS[type(param_set)]
+            A, b_l, b_u = canon_method(param_set, self)
+            self.A_matrices += A
+            self.b_lowerbounds += b_l
+            self.b_upperbounds += b_u
+        # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        # print(self.b_lowerbounds, self.b_upperbounds)
+        # print(self.A_matrices)
+
+    def canonicalize_steps(self):
+        steps = self.CP.get_algorithm_steps()
+        for k in range(1, self.K + 1):
+            for step in steps:
+                canon_method = STEP_CANON_METHODS[type(step)]
+                A, b_l, b_u = canon_method(step, k, self)
+                self.A_matrices += A
+                self.b_lowerbounds += b_l
+                self.b_upperbounds += b_u
+
+    def canonicalize_objective(self):
+        self.C_matrix = spa.lil_matrix((self.problem_dim, self.problem_dim))
+        if type(self.CP.objective) != list:
+            obj_list = [self.CP.objective]
+        else:
+            obj_list = self.CP.objective
+
+        for obj in obj_list:
+            obj_canon = OBJ_CANON_METHODS[type(obj)]
+            C_temp = obj_canon(obj, self)
+            # print(C_temp)
+            self.C_matrix += C_temp
+
+        # Flipping objective to make the problem a minimization
+        self.C_matrix = -self.C_matrix.tocsr()
+        # print(self.C_matrix)
+
     def canonicalize(self):
         self.convert_hl_to_basic_steps()
+        self.create_iterate_id_maps()
+        self.create_init_iterate_range_maps()
+        self.create_sample_iter_bound_maps()
+
+        # any other preprocessing here
+
+        self.set_problem_dim()
+        self.create_lower_right_constraint()
+
+        self.canonicalize_initial_sets()
+        self.canonicalize_parameter_sets()
+        self.canonicalize_steps()
+        self.canonicalize_objective()
+
+    def test_with_cvxpy(self):
+        X = cp.Variable((self.problem_dim, self.problem_dim), symmetric=True)
+        # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        obj = cp.trace(self.C_matrix @ X)
+        constraints = [X >> 0]
+        for i in range(len(self.A_matrices)):
+            Ai = self.A_matrices[i]
+            b_li = self.b_lowerbounds[i]
+            b_ui = self.b_upperbounds[i]
+            if b_ui == np.inf:
+                b_ui = 100
+            constraints += [
+                cp.trace(Ai @ X) >= b_li, cp.trace(Ai @ X) <= b_ui
+            ]
+        prob = cp.Problem(cp.Minimize(obj), constraints)
+        res = prob.solve(solver=cp.MOSEK)
+        # print('res:', res)
+        # print('trace of X:', cp.trace(X).value)
+        return res
+
+    def estimate_A_op(self):
+        X = np.random.rand(self.problem_dim, self.problem_dim)
+        X = X @ X.T
+        X = X / np.linalg.norm(X)
+        z = self.AX(X)
+        return np.linalg.norm(z)
+
+    def AX(self, X):
+        out = []
+        for A in self.A_matrices:
+            out.append(np.trace(A @ X))
+        return np.array(out)
+
+    def Astar_z(self, z):
+        # print(z)
+        outmat = spa.lil_matrix((self.problem_dim, self.problem_dim))
+        for j, A in enumerate(self.A_matrices):
+            outmat += z[j] * A
+        return outmat
+
+    def proj(self, x):
+        bl = np.array(self.b_lowerbounds)
+        bu = np.array(self.b_upperbounds)
+        return np.minimum(bu, np.maximum(x, bl))
+
+    def minimum_eigvec(self, X):
+        return spa.linalg.eigs(X, which='SM', k=1)
 
     def solve(self):
-        return None
+        # self.test_with_cvxpy()
+        # np.random.seed(0)
+        alpha = 5
+        beta = 1
+        A_op = self.estimate_A_op()
+        K = 10000
+        n = self.problem_dim
+        d = len(self.A_matrices)
+        X = np.zeros((n, n))
+        y = np.zeros(d)
+        T = 100
+        obj_vals = []
+        for t in range(T+1):
+            beta = beta * np.sqrt(t + 1)
+            eta = .2 / (t + 1)
+            w = self.proj(self.AX(X) + y / beta)
+            D = self.Astar_z(y + beta * (self.AX(X) - w))
+            # out = self.minimum_eigvec(D)
+            xi, v = self.minimum_eigvec(D)
+            xi = np.real(xi[0])
+            v = np.real(v)
+            # compute gamma
+            wbar = self.proj(self.AX(X) + y / beta)
+            rhs = (2 * alpha * A_op) ** 2 * beta / (t + 1) ** 1.5
+            gamma = rhs / np.linalg.norm(self.AX(X) - wbar) ** 2
+            gamma = .01
+            # print(gamma)
+            X = (1 - eta) * X + eta * alpha * np.outer(v, v)
+            ynew = y + gamma * (self.AX(X) - wbar)
+            if np.linalg.norm(ynew) < K:
+                y = ynew
+
+            # print()
+            obj_vals.append(np.trace(self.C_matrix @ X))
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.plot(range(T+1), obj_vals)
+        plt.title('Objectives')
+        plt.xlabel('$t$')
+        plt.yscale('symlog')
+        plt.show()
+        return 0

@@ -9,8 +9,9 @@ class CertificationProblem(object):
     """Docstring for CertificationProblem. """
 
     def __init__(self, N, init_sets, parameter_sets, objective, algorithm,
-                 qp_problem_data=None, add_RLT_constraints=False):
+                 qp_problem_data=None, add_RLT_constraints=False, num_samples=1):
         self.N = N
+        self.num_samples = num_samples
         self.init_sets = init_sets
         self.parameter_sets = parameter_sets
         self.algorithm = algorithm
