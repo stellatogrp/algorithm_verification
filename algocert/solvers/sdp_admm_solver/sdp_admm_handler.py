@@ -161,14 +161,16 @@ class SDPADMMHandler(object):
             b_li = self.b_lowerbounds[i]
             b_ui = self.b_upperbounds[i]
             if b_ui == np.inf:
-                b_ui = 100
+                b_ui = 1000
             constraints += [
-                cp.trace(Ai @ X) >= b_li, cp.trace(Ai @ X) <= b_ui
+                # cp.trace(X) <= 5,
+                cp.trace(Ai @ X) >= b_li,
+                cp.trace(Ai @ X) <= b_ui,
             ]
         prob = cp.Problem(cp.Minimize(obj), constraints)
         res = prob.solve(solver=cp.MOSEK)
         # print('res:', res)
-        # print('trace of X:', cp.trace(X).value)
+        print('trace of X:', cp.trace(X).value)
         return res
 
     def estimate_A_op(self):
@@ -200,40 +202,65 @@ class SDPADMMHandler(object):
         return spa.linalg.eigs(X, which='SM', k=1)
 
     def solve(self):
-        # self.test_with_cvxpy()
+        cp_res = self.test_with_cvxpy()
+        print(cp_res)
+        # exit(0)
         # np.random.seed(0)
         alpha = 5
-        beta = 1
+        beta_zero = 1
         A_op = self.estimate_A_op()
-        K = 10000
+        K = np.inf
         n = self.problem_dim
         d = len(self.A_matrices)
         X = np.zeros((n, n))
         y = np.zeros(d)
-        T = 100
+        T = 5000
         obj_vals = []
+        X_resids = []
+        y_resids = []
         for t in range(T+1):
-            beta = beta * np.sqrt(t + 1)
-            eta = .2 / (t + 1)
+            print(t)
+            beta = beta_zero * np.sqrt(t + 1)
+            eta = 2 / (t + 1)
             w = self.proj(self.AX(X) + y / beta)
-            D = self.Astar_z(y + beta * (self.AX(X) - w))
+            D = self.C_matrix + self.Astar_z(y + beta * (self.AX(X) - w))
+            # print(D)
+
             # out = self.minimum_eigvec(D)
             xi, v = self.minimum_eigvec(D)
             xi = np.real(xi[0])
             v = np.real(v)
             # compute gamma
             wbar = self.proj(self.AX(X) + y / beta)
-            rhs = (2 * alpha * A_op) ** 2 * beta / (t + 1) ** 1.5
+            # rhs = (2 * alpha * A_op) ** 2 * beta / (t + 1) ** 1.5
+            rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
+            # print(alpha, A_op, beta, t)
+            # print(rhs)
             gamma = rhs / np.linalg.norm(self.AX(X) - wbar) ** 2
-            gamma = .01
+            gamma = min(beta_zero, gamma)
+            # gamma = .01
             # print(gamma)
-            X = (1 - eta) * X + eta * alpha * np.outer(v, v)
+            # gamma = .01
+            Xnew = (1 - eta) * X + eta * alpha * np.outer(v, v)
+            Xresid = np.linalg.norm(X - Xnew)
+            # print('X resid:', Xresid)
+            X = Xnew
             ynew = y + gamma * (self.AX(X) - wbar)
+            yresid = np.linalg.norm(y-ynew)
+            # print('y resid:', yresid)
             if np.linalg.norm(ynew) < K:
                 y = ynew
-
-            # print()
-            obj_vals.append(np.trace(self.C_matrix @ X))
+            else:
+                print('exceed')
+            new_obj = np.trace(self.C_matrix @ X)
+            # print('obj', new_obj)
+            # obj_vals.append(np.trace(self.C_matrix @ X))
+            obj_vals.append(new_obj)
+            X_resids.append(Xresid)
+            y_resids.append(yresid)
+            pt = np.trace(self.C_matrix @ X)
+            zt = self.AX(X)
+            print(pt + y @ wbar + .5 * beta * (zt - wbar) @ (zt + wbar) - xi)
         fig, ax = plt.subplots(figsize=(6, 4))
         ax.plot(range(T+1), obj_vals)
         plt.title('Objectives')
