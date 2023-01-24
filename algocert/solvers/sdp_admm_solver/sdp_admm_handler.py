@@ -198,6 +198,20 @@ class SDPADMMHandler(object):
         bu = np.array(self.b_upperbounds)
         return np.minimum(bu, np.maximum(x, bl))
 
+    def proj_dist(self, x):
+        bl = np.array(self.b_lowerbounds)
+        bu = np.array(self.b_upperbounds)
+        dist = 0
+        for i in range(len(x)):
+            li = bl[i]
+            ui = bu[i]
+            xi = x[i]
+            if li > xi:
+                dist += li - xi
+            elif ui < xi:
+                dist += xi - ui
+        return dist
+
     def minimum_eigvec(self, X):
         return spa.linalg.eigs(X, which='SM', k=1)
 
@@ -214,10 +228,11 @@ class SDPADMMHandler(object):
         d = len(self.A_matrices)
         X = np.zeros((n, n))
         y = np.zeros(d)
-        T = 5000
+        T = 1000
         obj_vals = []
         X_resids = []
         y_resids = []
+        feas_vals = []
         for t in range(T+1):
             print(t)
             beta = beta_zero * np.sqrt(t + 1)
@@ -230,8 +245,24 @@ class SDPADMMHandler(object):
             xi, v = self.minimum_eigvec(D)
             xi = np.real(xi[0])
             v = np.real(v)
+
+            # if xi < 0:
+            #     H = alpha * np.outer(v, v)
+            # else:
+            #     H = np.zeros(X.shape)
+
+            H = alpha * np.outer(v, v)
+            # print(np.trace(H))
+
+            Xnew = (1 - eta) * X + eta * H
+            Xresid = np.linalg.norm(X - Xnew)
+            print('X resid:', Xresid)
+            X = Xnew
+
+            beta_plus = beta_zero * np.sqrt(t + 2)
+
             # compute gamma
-            wbar = self.proj(self.AX(X) + y / beta)
+            wbar = self.proj(self.AX(X) + y / beta_plus)
             # rhs = (2 * alpha * A_op) ** 2 * beta / (t + 1) ** 1.5
             rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
             # print(alpha, A_op, beta, t)
@@ -241,30 +272,38 @@ class SDPADMMHandler(object):
             # gamma = .01
             # print(gamma)
             # gamma = .01
-            Xnew = (1 - eta) * X + eta * alpha * np.outer(v, v)
-            Xresid = np.linalg.norm(X - Xnew)
-            # print('X resid:', Xresid)
-            X = Xnew
+
             ynew = y + gamma * (self.AX(X) - wbar)
             yresid = np.linalg.norm(y-ynew)
-            # print('y resid:', yresid)
+            print('y resid:', yresid)
             if np.linalg.norm(ynew) < K:
                 y = ynew
             else:
                 print('exceed')
             new_obj = np.trace(self.C_matrix @ X)
-            # print('obj', new_obj)
+            print('obj', new_obj)
             # obj_vals.append(np.trace(self.C_matrix @ X))
             obj_vals.append(new_obj)
             X_resids.append(Xresid)
             y_resids.append(yresid)
-            pt = np.trace(self.C_matrix @ X)
-            zt = self.AX(X)
-            print(pt + y @ wbar + .5 * beta * (zt - wbar) @ (zt + wbar) - xi)
+            print('feas', self.proj_dist(self.AX(X)))
+            feas_vals.append(self.proj_dist(self.AX(X)))
+            # pt = np.trace(self.C_matrix @ X)
+            # zt = self.AX(X)
+            # print(pt + y @ wbar + .5 * beta * (zt - wbar) @ (zt + wbar) - xi)
+            # print(np.linalg.norm(zt - wbar))
+        # print(X_resids, len(X_resids))
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.plot(range(T+1), obj_vals)
+        ax.plot(range(T+1), obj_vals, label='obj')
+        ax.plot(range(T+1), X_resids, label='X resid')
+        ax.plot(range(T+1), y_resids, label='y resid')
+        ax.plot(range(T+1), feas_vals, label='dist onto K')
+        ax.axhline(y=cp_res, linestyle='--', color='black')
+        ax.axhline(y=0, color='black')
         plt.title('Objectives')
         plt.xlabel('$t$')
         plt.yscale('symlog')
-        plt.show()
+        plt.legend()
+        # plt.show()
+        plt.savefig('test.pdf')
         return 0
