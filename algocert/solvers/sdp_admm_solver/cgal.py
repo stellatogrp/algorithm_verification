@@ -20,6 +20,7 @@ class CGALTester(object):
         self.generate_problem()
         self.generate_Aop_lowerbound()
         self.alpha = 10
+        self.model_alpha = 5
 
     def generate_problem(self):
         n, d = self.n, self.d
@@ -44,26 +45,61 @@ class CGALTester(object):
         z = self.AX(X)
         self.Aop_lb = np.linalg.norm(z)
 
-    def solve_with_cvxpy(self):
-        print('----solving with cvxpy----')
+    def solve_model_cvxpy(self):
+        print('----solving model problem with cvxpy----')
+        print('uses tr(AX) = b constraints instead of intervals')
         n, d = self.n, self.d
         X = cp.Variable((n, n), symmetric=True)
         obj = cp.trace(self.C @ X)
-        constraints = [X >> 0, cp.trace(X) <= self.alpha]
+        constraints = [X >> 0, cp.trace(X) == self.model_alpha]
         for i in range(d):
             Ai = self.A_matrices[i]
-            bl = self.bl_values[i]
-            bu = self.bu_values[i]
+            bi = self.bu_values[i]
             constraints += [
-                cp.trace(Ai @ X) >= bl,
-                cp.trace(Ai @ X) <= bu,
-                # cp.trace(Ai @ X) == bu,
+                cp.trace(Ai @ X) == bi,
             ]
         prob = cp.Problem(cp.Minimize(obj), constraints)
         res = prob.solve()
         print('obj result:', res)
         print('Xopt trace:', np.trace(X.value))
-        self.cp_obj = res
+        return res
+
+    def cgal_model(self, T=1000):
+        print('----sovling model problem with cgal----')
+        n, d, alpha = self.n, self.d, self.model_alpha
+        C = self.C
+        b = np.array(self.bu_values)
+        Aop_lb = self.Aop_lb
+        beta_0 = 1
+        # K = np.inf
+        X = np.zeros((n, n))
+        y = np.zeros(d)
+        X_vals = [X]
+        y_vals = [y]
+        for t in trange(1, T+1):
+            beta = beta_0 * np.sqrt(t + 1)
+            eta = 2 / (t + 1)
+            D = C + self.Astar(y + beta * (self.AX(X) - b))
+            lambd, v = self.min_eigvec(D)
+            X = (1 - eta) * X + eta * alpha * (v @ v.T)
+            gamma_rhs = 4 * (alpha ** 2) * beta_0 * (Aop_lb) ** 2 / (t + 1) ** 1.5
+            w = self.AX(X) - b
+            gamma = gamma_rhs / np.linalg.norm(w) ** 2
+            gamma = min(gamma, beta_0)
+            y = y + gamma * w
+            X_vals.append(X)
+            y_vals.append(y)
+        # print(np.trace(C @ X))
+        return X_vals, y_vals
+
+    def plot_model_resids(self, X_vals, y_vals, cp_obj):
+        T = len(X_vals) - 1
+        b = self.bu_values
+        X_resids = [np.linalg.norm(X_vals[i+1] - X_vals[i]) for i in range(T)]
+        y_resids = [np.linalg.norm(y_vals[i+1] - y_vals[i]) for i in range(T)]
+        obj_vals = [np.trace(self.C @ X) for X in X_vals]
+        feas_dists = [np.linalg.norm(self.AX(X)-b) for X in X_vals]
+        self.plot_resids(X_resids, y_resids, obj_vals, feas_dists, T, cp_obj)
 
     def AX(self, X):
         out = [np.trace(Ai @ X) for Ai in self.A_matrices]
@@ -128,21 +164,44 @@ class CGALTester(object):
             y_vals.append(y)
         return X_vals, y_vals
 
-    def plot_resids(self, X_vals, y_vals):
-        print(len(X_vals), len(y_vals))
+    def solve_with_cvxpy(self):
+        print('----solving with cvxpy----')
+        n, d = self.n, self.d
+        X = cp.Variable((n, n), symmetric=True)
+        obj = cp.trace(self.C @ X)
+        constraints = [X >> 0, cp.trace(X) <= self.alpha]
+        for i in range(d):
+            Ai = self.A_matrices[i]
+            bl = self.bl_values[i]
+            bu = self.bu_values[i]
+            constraints += [
+                cp.trace(Ai @ X) >= bl,
+                cp.trace(Ai @ X) <= bu,
+                # cp.trace(Ai @ X) == bu,
+            ]
+        prob = cp.Problem(cp.Minimize(obj), constraints)
+        res = prob.solve()
+        print('obj result:', res)
+        print('Xopt trace:', np.trace(X.value))
+        self.cp_obj = res
+        return res
+
+    def plot_interval_resids(self, X_vals, y_vals, cp_obj):
         T = len(X_vals) - 1
         X_resids = [np.linalg.norm(X_vals[i+1] - X_vals[i]) for i in range(T)]
         y_resids = [np.linalg.norm(y_vals[i+1] - y_vals[i]) for i in range(T)]
         obj_vals = [np.trace(self.C @ X) for X in X_vals]
         feas_dists = [self.proj_Kdist(self.AX(X)) for X in X_vals]
+        self.plot_resids(X_resids, y_resids, obj_vals, feas_dists, T, cp_obj)
 
+    def plot_resids(self, X_resids, y_resids, obj_vals, feas_dists, T, cp_obj):
         fig, ax = plt.subplots(figsize=(6, 4))
         # ax.plot(range(1, T+1), obj_vals, label='obj')
         ax.plot(range(1, T+1), X_resids, label='X resids')
         ax.plot(range(1, T+1), y_resids, label='y resids')
         ax.plot(range(T+1), obj_vals, label='obj vals')
         ax.plot(range(T+1), feas_dists, label='feas dists')
-        ax.axhline(y=self.cp_obj, linestyle='--', color='black', label='cvxpy obj')
+        ax.axhline(y=cp_obj, linestyle='--', color='black', label='cvxpy obj')
         ax.axhline(y=0, color='black')
 
         plt.xlabel('$t$')
@@ -150,19 +209,26 @@ class CGALTester(object):
         plt.legend()
         plt.show()
 
+    def feas_dist(self, X_vals):
+        z_values = [self.AX(X) for X in X_vals]
+        z_last = np.array(z_values[-1])
+        # print(self.bu_values - last)
+        # print(last - self.bl_values)
+        print(z_last - self.bu_values)
+
 
 def main():
     n = 10
     d = 35
     test = CGALTester(n, d=d)
     # print(test.bl_values, test.bu_values)
-    test.solve_with_cvxpy()
-    lambd, v = test.min_eigvec(test.C)
-    lambd = lambd[0]
-    # print(lambd, v)
-    # print(test.Aop_lb)
-    X_vals, y_vals = test.cgal(T=1000)
-    test.plot_resids(X_vals, y_vals)
+
+    # res = test.solve_with_cvxpy()
+    # X_vals, y_vals = test.cgal(T=1000)
+    # test.plot_interval_resids(X_vals, y_vals, res)
+    res = test.solve_model_cvxpy()
+    X_vals, y_vals = test.cgal_model(T=2000)
+    test.plot_model_resids(X_vals, y_vals, res)
 
 
 if __name__ == '__main__':
