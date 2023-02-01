@@ -199,18 +199,20 @@ class SDPADMMHandler(object):
         return np.minimum(bu, np.maximum(x, bl))
 
     def proj_dist(self, x):
-        bl = np.array(self.b_lowerbounds)
-        bu = np.array(self.b_upperbounds)
-        dist = 0
-        for i in range(len(x)):
-            li = bl[i]
-            ui = bu[i]
-            xi = x[i]
-            if li > xi:
-                dist += li - xi
-            elif ui < xi:
-                dist += xi - ui
-        return dist
+        # bl = np.array(self.b_lowerbounds)
+        # bu = np.array(self.b_upperbounds)
+        # dist = 0
+        # for i in range(len(x)):
+        #     li = bl[i]
+        #     ui = bu[i]
+        #     xi = x[i]
+        #     if li > xi:
+        #         dist += li - xi
+        #     elif ui < xi:
+        #         dist += xi - ui
+        # return dist
+        proj_x = self.proj(x)
+        return np.linalg.norm(x - proj_x)
 
     def minimum_eigvec(self, X):
         return spa.linalg.eigs(X, which='SM', k=1)
@@ -233,7 +235,7 @@ class SDPADMMHandler(object):
         X_resids = []
         y_resids = []
         feas_vals = []
-        for t in range(T+1):
+        for t in range(1, T+1):
             print(t)
             beta = beta_zero * np.sqrt(t + 1)
             eta = 2 / (t + 1)
@@ -246,7 +248,7 @@ class SDPADMMHandler(object):
             xi = np.real(xi[0])
             v = np.real(v)
 
-            # if xi < 0:
+            # if xi > 0:
             #     H = alpha * np.outer(v, v)
             # else:
             #     H = np.zeros(X.shape)
@@ -294,16 +296,16 @@ class SDPADMMHandler(object):
             # print(np.linalg.norm(zt - wbar))
         # print(X_resids, len(X_resids))
         fig, ax = plt.subplots(figsize=(6, 4))
-        ax.plot(range(T+1), obj_vals, label='obj')
-        ax.plot(range(T+1), X_resids, label='X resid')
-        ax.plot(range(T+1), y_resids, label='y resid')
-        ax.plot(range(T+1), feas_vals, label='dist onto K')
+        ax.plot(range(1, T+1), obj_vals, label='obj')
+        ax.plot(range(1, T+1), X_resids, label='X resid')
+        ax.plot(range(1, T+1), y_resids, label='y resid')
+        ax.plot(range(1, T+1), feas_vals, label='dist onto K')
         ax.axhline(y=cp_res, linestyle='--', color='black')
         ax.axhline(y=0, color='black')
         plt.title('Objectives')
         plt.xlabel('$t$')
         plt.yscale('symlog')
         plt.legend()
-        # plt.show()
-        plt.savefig('test.pdf')
+        plt.show()
+        # plt.savefig('test.pdf')
         return 0
