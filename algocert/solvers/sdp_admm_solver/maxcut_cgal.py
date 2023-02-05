@@ -71,7 +71,7 @@ class CGALMaxCutTester(object):
 
     def min_eigvec(self, M):
         # in the actual algorithm use lanczos, placeholder for now
-        return [np.real(x) for x in spa.linalg.eigs(M, which='SM', k=1)]
+        return [np.real(x) for x in spa.linalg.eigs(M, which='SR', k=1)]
 
     def cgal(self, T=1000):
         print('----solving maxcut with cgal----')
@@ -110,7 +110,7 @@ class CGALMaxCutTester(object):
             y_vals.append(y)
             # print(np.trace(self.obj_C @ X))
         print(np.trace(self.obj_C @ X))
-        # print(X)
+        print(X)
         # print(self.A(X))
         return X_vals, y_vals
 
@@ -141,14 +141,24 @@ class CGALMaxCutTester(object):
         plt.legend()
         plt.show()
 
+    def eig_test(self):
+        n = 10
+        A = np.random.randn(n, n)
+        A = (A + A.T) / 2
+        lambd, v = self.min_eigvec(A)
+        np_lambd, np_v = np.linalg.eigh(A)
+        print('spa', lambd)
+        print('np:', np_lambd)
+
 
 def main():
     n = 10
-    test = CGALMaxCutTester(n, scale=False)
+    test = CGALMaxCutTester(n, scale=True)
     cp_obj = test.solve_maxcut_cvxpy()
     # print(test.scale_C)
-    X_vals, y_vals = test.cgal(T=1000)
+    X_vals, y_vals = test.cgal(T=200)
     test.process_plot_resids(X_vals, y_vals, cp_obj)
+    # test.eig_test()
 
 
 if __name__ == '__main__':

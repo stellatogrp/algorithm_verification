@@ -126,7 +126,7 @@ class CGALTester(object):
 
     def min_eigvec(self, M):
         # in the actual algorithm use lanczos, placeholder for now
-        return [np.real(x) for x in spa.linalg.eigs(M, which='SM', k=1)]
+        return [np.real(x) for x in spa.linalg.eigs(M, which='SR', k=1)]
 
     def cgal_interval(self, T=1000):
         print('----solving with cgal----')
@@ -219,13 +219,13 @@ class CGALTester(object):
 
 def test_and_plot_model_problem(test_prob):
     res = test_prob.solve_model_cvxpy()
-    X_vals, y_vals = test_prob.cgal_model(T=1000)
+    X_vals, y_vals = test_prob.cgal_model(T=5000)
     test_prob.plot_model_resids(X_vals, y_vals, res)
 
 
 def test_and_plot_interval_problem(test_prob):
     res = test_prob.solve_interval_cvxpy()
-    X_vals, y_vals = test_prob.cgal_interval(T=1000)
+    X_vals, y_vals = test_prob.cgal_interval(T=10000)
     test_prob.plot_interval_resids(X_vals, y_vals, res)
 
 
