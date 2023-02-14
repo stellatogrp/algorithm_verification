@@ -49,7 +49,7 @@ class GlobalHandler(object):
             # self.model.setParam('MIPFocus', 3)
             # self.model.setParam('OptimalityTol', 1e-4)
             # self.model.setParam('FeasibilityTol', 1e-3)
-            self.model.setParam('MIPGap', .1)
+            self.model.setParam('MIPGap', .01)
             if self.TimeLimit > 0:
                 self.model.setParam('TimeLimit', self.TimeLimit)
 

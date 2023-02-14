@@ -36,8 +36,8 @@ def approx_min_eigvec(M, q, tol=1e-6):
     # print(len(v_vals), len(rho_vals), len(omega_vals))
     # print(rho_vals)
     # print(omega_vals)
-    omega = omega_vals[1: i]
-    rho = rho_vals[1: i-1]
+    omega = omega_vals[0: i]
+    rho = rho_vals[0: i-1]
     lambd, u = eigh_tridiagonal(omega, rho)
     min_eigval = np.min(lambd)
     scalars = u[0]

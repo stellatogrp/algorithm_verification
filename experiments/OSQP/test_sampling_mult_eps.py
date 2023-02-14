@@ -29,6 +29,13 @@ def OSQP_CP_noboxstack(n, m, N=1, eps_b=.1, solver_type='SDP', add_RLT=True, ver
     ATA = A.T @ A
     Phalf = np.random.randn(n, n)
     P = Phalf.T @ Phalf
+    # all_eigs = np.linalg.eigvals(P)
+    # min_eig = np.min(all_eigs)
+    # max_eig = np.max(all_eigs)
+    # print(min_eig, max_eig)
+    # opt_sigma = 1/np.sqrt(min_eig * max_eig)
+    # print(opt_sigma)
+    # exit(0)
     # print(A)
 
     # b_const = spa.csc_matrix(np.zeros((n, 1)))
@@ -38,6 +45,8 @@ def OSQP_CP_noboxstack(n, m, N=1, eps_b=.1, solver_type='SDP', add_RLT=True, ver
     u = 4 * np.ones((m, 1))
     sigma = 1
     rho = 1
+    sigma = 3
+    # rho = opt_sigma
     rho_inv = 1 / rho
 
     x = Iterate(n, name='x')
@@ -119,8 +128,8 @@ def test_single_type(n, m, eps_vals, save_fname, N_vals, verbose=False):
 
 
 def test_multiple_eps(n, m, save_dir, max_N=2, verbose=False):
-    epsb_vals = [.01, .02, .05, .1, .2, .5]
-    # epsb_vals = [.01, .02]
+    # epsb_vals = [.01, .02, .05, .1, .2, .5]
+    epsb_vals = [.01, .02]
     N_vals = range(2, max_N+1)
     # N_vals = [4]
     # res_s_rows = []
@@ -162,9 +171,14 @@ def test_multiple_eps(n, m, save_dir, max_N=2, verbose=False):
                 }
             )
             res_g_rows.append(res_g_row)
+
     # df_s = pd.DataFrame(res_s_rows)
     df_srlt = pd.DataFrame(res_srlt_rows)
     df_g = pd.DataFrame(res_g_rows)
+
+    print(df_srlt)
+    print(df_g)
+    exit(0)
 
     # s_fname = save_dir + 'sdp.csv'
     srlt_fname = save_dir + 'sdp_rlt.csv'

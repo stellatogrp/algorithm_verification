@@ -90,10 +90,10 @@ def OSQP_CP_noboxstack(n, m, N=1, eps_b=.1, b_sample=None, solver_type='SDP', ad
 
     zset = ConstSet(z, np.zeros((m, 1)))
 
-    # b_l = - eps_b * np.ones((n, 1))
-    # b_u = eps_b * np.ones((n, 1))
-    b_l = b_sample - eps_b
-    b_u = b_sample + eps_b
+    b_l = - eps_b * np.ones((n, 1))
+    b_u = eps_b * np.ones((n, 1))
+    # b_l = b_sample - eps_b
+    # b_u = b_sample + eps_b
     bset = BoxSet(b, b_l, b_u)
     # bset = BoxSet
     # bset = ConstSet(b, 0.5 * np.ones((n, 1)))
@@ -142,8 +142,8 @@ def mult_sample_expectation(n, m, N=10, eps_b=.01, solver_type='SDP'):
 
 
 def test_multiple_eps(n, m, save_dir, max_N=2, verbose=False):
-    epsb_vals = [.01, .02, .05, .1, .2, .5]
-    # epsb_vals = [.01, .02]
+    # epsb_vals = [.01, .02, .05, .1, .2, .5]
+    epsb_vals = [.01, .02]
     N_vals = range(2, max_N+1)
     # N_vals = [4]
     # res_s_rows = []
@@ -210,10 +210,10 @@ def main():
     # solver_type = 'SDP'
     # solver_type = 'GLOBAL'
     # print(OSQP_CP_noboxstack(n, m, N=4, eps_b=.01, solver_type=solver_type, add_RLT=True, verbose=True))
-    # save_dir = \
-    #     '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/OSQP/data/mult_eps_test/'
-    # test_multiple_eps(n, m, save_dir, max_N=max_N, verbose=True)
-    mult_sample_expectation(n, m, N=3)
+    save_dir = \
+        '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/OSQP/data/mult_eps_test/'
+    test_multiple_eps(n, m, save_dir, max_N=2, verbose=True)
+    # mult_sample_expectation(n, m, N=3)
 
 
 if __name__ == '__main__':
