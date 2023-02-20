@@ -9,13 +9,13 @@ from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.solvers.sdp_admm_solver.obj_canonicalizers.convergence_residual import \
+from algocert.solvers.sdp_cgal_solver.obj_canonicalizers.convergence_residual import \
     conv_resid_canon
-from algocert.solvers.sdp_admm_solver.set_canonicalizers.centered_l2_ball_set import \
+from algocert.solvers.sdp_cgal_solver.set_canonicalizers.centered_l2_ball_set import \
     centered_l2_ball_canon
-from algocert.solvers.sdp_admm_solver.step_canonicalizers.hl_linear_step import \
+from algocert.solvers.sdp_cgal_solver.step_canonicalizers.hl_linear_step import \
     hl_linear_step_canon
-from algocert.solvers.sdp_admm_solver.step_canonicalizers.nonneg_orthant_proj_step import \
+from algocert.solvers.sdp_cgal_solver.step_canonicalizers.nonneg_orthant_proj_step import \
     nonneg_orthant_proj_canon
 
 HL_TO_BASIC_STEP_METHODS = {

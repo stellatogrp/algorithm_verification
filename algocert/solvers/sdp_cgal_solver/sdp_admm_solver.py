@@ -1,4 +1,4 @@
-from algocert.solvers.sdp_admm_solver.sdp_admm_handler import SDPADMMHandler
+from algocert.solvers.sdp_cgal_solver.sdp_admm_handler import SDPADMMHandler
 from algocert.solvers.solver import Solver
 
 
