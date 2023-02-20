@@ -8,7 +8,7 @@ from algocert.solvers.sdp_cgal_solver import (OBJ_CANON_METHODS,
                                               STEP_CANON_METHODS)
 
 
-class SDPADMMHandler(object):
+class SDPCGALHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP

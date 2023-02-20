@@ -1,8 +1,8 @@
-from algocert.solvers.sdp_cgal_solver.sdp_admm_handler import SDPADMMHandler
+from algocert.solvers.sdp_cgal_solver.sdp_cgal_handler import SDPCGALHandler
 from algocert.solvers.solver import Solver
 
 
-class SDPADMMSolver(Solver):
+class SDPCGALSolver(Solver):
 
     def __init__(self, CP):
         CP.print_cp()
@@ -16,6 +16,6 @@ class SDPADMMSolver(Solver):
 
     def canonicalize(self, **kwargs):
         # Iterate through steps and canonicalize them
-        handler = SDPADMMHandler(self.CP, **kwargs)
+        handler = SDPCGALHandler(self.CP, **kwargs)
         self.handler = handler
         handler.canonicalize()
