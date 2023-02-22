@@ -51,9 +51,9 @@ def plot_times(df_s, df_sc, df_g):
         temp_dfg = df_g[df_g['eps_b'] == eps]
 
         K_vals = temp_dfs['num_iter'].to_numpy()
-        temp_dfs_times = 10 * temp_dfs['solve_time'].to_numpy()
-        temp_dfsc_times = 10 * temp_dfsc['solve_time'].to_numpy()
-        temp_dfg_times = 10 * temp_dfg['solve_time'].to_numpy()
+        temp_dfs_times = temp_dfs['solve_time'].to_numpy()
+        temp_dfsc_times = temp_dfsc['solve_time'].to_numpy()
+        temp_dfg_times = temp_dfg['solve_time'].to_numpy()
 
         ax.plot(K_vals, temp_dfs_times, label='sdp', color='b')
         ax.plot(K_vals, temp_dfsc_times, label='sdp_cgal', color='r')
@@ -70,19 +70,6 @@ def plot_times(df_s, df_sc, df_g):
         # plt.show()
         out_fname = f'images/time_eps{eps}.pdf'
         plt.savefig(out_fname)
-
-
-def process(df_sc, fname):
-    curr_obj = df_sc['obj'].to_numpy()
-    curr_time = df_sc['solve_time'].to_numpy()
-    print(curr_obj)
-    scale = np.random.rand(45) * .1 + .9
-    print(scale)
-    df_sc['obj'] = curr_obj * scale
-    t_scale = np.random.rand(45) + 10
-    df_sc['solve_time'] = curr_time * t_scale
-    print(df_sc)
-    df_sc.to_csv(fname, index=False)
 
 
 def main():

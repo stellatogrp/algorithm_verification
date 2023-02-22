@@ -34,6 +34,12 @@ def conv_resid_canon(obj, handlers, add_RLT):
     #     upper_xN = handlerN.iterate_vars[x].get_upper_bound()
     #     lower_xNminus1 = handlerNminus1.iterate_vars[x].get_lower_bound()
     #     upper_xNminus1 = handlerNminus1.iterate_vars[x].get_upper_bound()
+    #     # print(x)
+    #     # print(lower_xN, upper_xN, lower_xNminus1, upper_xNminus1)
+    #     if lower_xNminus1 is None:
+    #         n = x.get_dim()
+    #         lower_xNminus1 = np.zeros((n, 1))
+    #         upper_xNminus1 = np.zeros((n, 1))
     #     constraints += RLT_constraints(xcross, xN, lower_xN, upper_xN, xNminus1, lower_xNminus1, upper_xNminus1)
 
     test_x = False

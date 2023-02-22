@@ -32,14 +32,21 @@ class GlobalHandler(object):
         self.param_to_gp_var_map = {}
         self.param_to_mult_traj_map = {}  # True or False based on how many trajectories
         self.objective = 0
+
         if 'add_bounds' in kwargs:
             self.add_bounds = kwargs['add_bounds']
         else:
             self.add_bounds = False
+
         if 'TimeLimit' in kwargs:
             self.TimeLimit = kwargs['TimeLimit']
         else:
             self.TimeLimit = -1  # a 'default' value to flag that we don't want to set it
+
+        if 'minimize' in kwargs:
+            self.minimize = kwargs['minimize']
+        else:
+            self.minimize = False
 
     def create_gp_model(self):
         # self.model = gp.Model()
@@ -207,7 +214,11 @@ class GlobalHandler(object):
             obj_canon = OBJ_CANON_METHODS[type(obj)]
             gp_obj += obj_canon(obj, self.model, self.iterate_to_gp_var_map)
         self.objective += gp_obj
-        self.model.setObjective(gp_obj, gp.GRB.MAXIMIZE)
+
+        if self.minimize:
+            self.model.setObjective(gp_obj, gp.GRB.MINIMIZE)
+        else:
+            self.model.setObjective(gp_obj, gp.GRB.MAXIMIZE)
 
     def canonicalize(self, **kwargs):
         self.create_gp_model()

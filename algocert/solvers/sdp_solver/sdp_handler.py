@@ -23,10 +23,16 @@ class SDPHandler(object):
         self.iteration_handlers = []
         self.sdp_constraints = []
         self.sdp_obj = 0
+
         if 'add_RLT' in kwargs:
             self.add_RLT = kwargs['add_RLT']
         else:
             self.add_RLT = False
+
+        if 'minimize' in kwargs:
+            self.minimize = kwargs['minimize']
+        else:
+            self.minimize = False
 
     def convert_hl_to_basic_steps(self):
         all_steps_canonicalizeable = True
@@ -183,7 +189,13 @@ class SDPHandler(object):
         # print(len(self.sdp_constraints))
 
     def solve(self, **kwargs):
-        prob = cp.Problem(cp.Maximize(self.sdp_obj), self.sdp_constraints)
+
+        if self.minimize:
+            obj = cp.Minimize(self.sdp_obj)
+        else:
+            obj = cp.Maximize(self.sdp_obj)
+
+        prob = cp.Problem(obj, self.sdp_constraints)
         if 'solver' in kwargs:
             solver = kwargs['solver']
         else:

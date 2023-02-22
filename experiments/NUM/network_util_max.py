@@ -2,6 +2,7 @@ import cvxpy as cp
 import numpy as np
 import pandas as pd
 import scipy.sparse as spa
+
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
@@ -12,19 +13,20 @@ from algocert.init_set.const_set import ConstSet
 # from algocert.init_set.control_example_set import ControlExampleSet
 # from algocert.init_set.init_set import InitSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algocert.utils.plotter import plot_results
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
-from algocert.utils.plotter import plot_results
 
 
 class NetworkUtilMax(object):
-    def __init__(self, m_orig, n, seed=42):
+    def __init__(self, m_orig, n, K=1, seed=42, minimize=False):
         """
         min w^T f
             s.t. Rf <= c(theta)
                  0 <= f <= t
         R \in R^{m, n}
         """
+        self.minimize = minimize
         np.random.seed(seed)
 
         # generate the problem data
@@ -87,7 +89,6 @@ class NetworkUtilMax(object):
         self.qset = BoxSet(q, lower, upper)
         self.obj = [ConvergenceResidual(z)]
 
-
     def canonicalize(self):
         I = np.eye(self.n)
 
@@ -105,12 +106,14 @@ class NetworkUtilMax(object):
         # form the box set for q
         l = np.zeros((self.z_size, 1))
         u = np.zeros((self.z_size, 1))
+        # u = 5 * np.ones((self.z_size, 1))
 
         # update l, u
         l[:self.n, 0] = self.w_sample
         u[:self.n, 0] = self.w_sample
 
-        u[self.n:self.n + self.m_orig, 0] = 1
+        # this is for the parameters c(theta)
+        u[self.n:self.n + self.m_orig, 0] = 0.5
 
         l[self.n + self.m_orig: 2 * self.n + self.m_orig, 0] = self.t_sample
         u[self.n + self.m_orig: 2 * self.n + self.m_orig, 0] = self.t_sample
@@ -123,55 +126,100 @@ class NetworkUtilMax(object):
             add_RLT = solver_args.get('add_RLT', True)
             solver = solver_args.get('solver', cp.MOSEK)
             res = CP.solve(solver_type='SDP',
-                                solver=solver,
-                                add_RLT=add_RLT,
-                                verbose=verbose)
-        elif solve_type == 'global':
+                           solver=solver,
+                           add_RLT=add_RLT,
+                           verbose=verbose,
+                           minimize=self.minimize,
+                           )
+        elif solve_type == 'GLOBAL':
             time_limit = solver_args.get('time_limit', 3600)
             add_bounds = solver_args.get('add_bounds', True)
-            res = CP.solve(solver_type='GLOBAL', add_bounds=add_bounds, TimeLimit=time_limit, verbose=verbose)
+            res = CP.solve(solver_type='GLOBAL', add_bounds=add_bounds,
+                           TimeLimit=time_limit, verbose=verbose, minimize=self.minimize)
+        else:
+            print('check solver type')
         return res
 
 
 def experiment():
-    m_orig, n = 4, 4
+    # save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NUM/data/'
+    # fname = save_dir + 'only5.csv'
+    m, n = 2, 4
     np.random.seed(0)
 
-    K_vals = range(1, 5)
-    res_srlt_rows = []
-    res_g_rows = []
-    network_util_max = NetworkUtilMax(m_orig, n)
+    K_vals = [1, 2, 3, 4, 5]
+    K_vals = [5]
+
+    res_rows = []
     for K in K_vals:
         print('K:', K)
-        
-        res_sdp = network_util_max.solve(K, 'SDP')
+        NUM = NetworkUtilMax(m, n, K=K)
+        res_g = NUM.solve(K, 'GLOBAL')
 
-        res_srlt_row = pd.Series(
+        NUM = NetworkUtilMax(m, n, K=K)
+        res_sdp = NUM.solve(K, 'SDP')
+        res_row = pd.Series(
             {
-                'num_iter': K,
-                'obj': res_sdp[0],
-                'solve_time': res_sdp[1],
+                'K': K,
+                'g_obj': res_g[0],
+                'g_solve_time': res_g[1],
+                'sdp_obj': res_sdp[0],
+                'sdp_solve_time': res_sdp[1],
+                'min_max': 'max',
             }
         )
-        res_srlt_rows.append(res_srlt_row)
+        res_rows.append(res_row)
 
-        res_global = network_util_max.solve(K, 'global')
-        res_g_row = pd.Series(
+        NUM = NetworkUtilMax(m, n, K=K, minimize=True)
+        res_g = NUM.solve(K, 'GLOBAL')
+
+        NUM = NetworkUtilMax(m, n, K=K, minimize=True)
+        # res_sdp = NUM.solve('SDP')
+        res_sdp = [-1, -1]
+        res_row = pd.Series(
             {
-                'num_iter': K,
-                'obj': res_global[0],
-                'solve_time': res_global[1],
+                'K': K,
+                'g_obj': res_g[0],
+                'g_solve_time': res_g[1],
+                'sdp_obj': res_sdp[0],
+                'sdp_solve_time': res_sdp[1],
+                'min_max': 'min',
             }
         )
-        res_g_rows.append(res_g_row)
+        res_rows.append(res_row)
 
-    df_srlt = pd.DataFrame(res_srlt_rows)
-    df_g = pd.DataFrame(res_g_rows)
+        df = pd.DataFrame(res_rows)
+        # df.to_csv(fname, index=False)
+    print(df)
+    # for K in K_vals:
+    #     print('K:', K)
+    #     newtork_util_max = NetworkUtilMax(m, n, K=K)
+    #     res_sdp = newtork_util_max.solve('SDP')
 
-    print(df_srlt)
-    print(df_g)
+    #     res_srlt_row = pd.Series(
+    #         {
+    #             'num_iter': K,
+    #             'obj': res_sdp[0],
+    #             'solve_time': res_sdp[1],
+    #         }
+    #     )
+    #     res_srlt_rows.append(res_srlt_row)
 
-    plot_results(df_srlt, df_g, 'NUM_results')
+    #     res_global = newtork_util_max.solve('global')
+    #     res_g_row = pd.Series(
+    #         {
+    #             'num_iter': K,
+    #             'obj': res_global[0],
+    #             'solve_time': res_global[1],
+    #         }
+    #     )
+    #     res_g_rows.append(res_g_row)
+
+    # df_srlt = pd.DataFrame(res_srlt_rows)
+    # df_g = pd.DataFrame(res_g_rows)
+
+    # print(df_srlt)
+    # print(df_g)
 
     # srlt_fname = save_dir + 'sdp_rlt.csv'
     # g_fname = save_dir + 'global.csv'
@@ -182,8 +230,8 @@ def experiment():
 
 def main():
     experiment()
-    # NUM = NetworkUtilMax(4, 4, K=1)
-    # NUM.solve('global')
+    # NUM = NetworkUtilMax(2, 4, K=5)
+    # NUM.solve('GLOBAL')
     # NUM.solve('SDP')
 
 

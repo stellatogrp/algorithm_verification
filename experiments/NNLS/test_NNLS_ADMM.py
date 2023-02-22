@@ -63,7 +63,7 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, xset=None, bset=None):
 
     # CP.problem_data = qp_problem_data
     # CP.print_cp()
-    res = CP.solve(solver_type='SDP_ADMM')
+    res = CP.solve(solver_type='SDP_CGAL')
     # res = CP.solve(solver_type='SDP')
     print(res)
 

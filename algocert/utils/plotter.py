@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-import pandas as pd
+
+# import pandas as pd
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -7,6 +8,7 @@ plt.rcParams.update({
     "font.sans-serif": ["Helvetica Neue"],   # This is needed only in the slides
     "font.size": 12,   # In the paper you can put 11 or 12
 })
+
 
 def plot_results(sdp_df, global_df, filename):
     """
