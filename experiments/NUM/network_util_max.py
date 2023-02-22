@@ -1,8 +1,7 @@
-# import cvxpy as cp
+import cvxpy as cp
 import numpy as np
 import pandas as pd
 import scipy.sparse as spa
-
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
@@ -15,10 +14,11 @@ from algocert.init_set.const_set import ConstSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
+from algocert.utils.plotter import plot_results
 
 
 class NetworkUtilMax(object):
-    def __init__(self, m_orig, n, K, seed=42):
+    def __init__(self, m_orig, n, seed=42):
         """
         min w^T f
             s.t. Rf <= c(theta)
@@ -82,15 +82,11 @@ class NetworkUtilMax(object):
         s4A = spa.bmat([[spI, -I, I]])
         step4 = HighLevelLinearStep(z, [z, u, u_tilde], D=s4D, A=s4A, b=zeros, Dinv=spI)
 
-        steps = [step1, step2, step3, step4]
+        self.steps = [step1, step2, step3, step4]
+        self.zset = ConstSet(z, np.zeros((z_size, 1)))
+        self.qset = BoxSet(q, lower, upper)
+        self.obj = [ConvergenceResidual(z)]
 
-        zset = ConstSet(z, np.zeros((z_size, 1)))
-
-        qset = BoxSet(q, lower, upper)
-
-        obj = [ConvergenceResidual(z)]
-
-        self.CP = CertificationProblem(K, [zset], [qset], obj, steps)
 
     def canonicalize(self):
         I = np.eye(self.n)
@@ -121,32 +117,34 @@ class NetworkUtilMax(object):
 
         return M, l, u
 
-    def solve(self, solve_type, solver_args={}, verbose=True):
+    def solve(self, K, solve_type, solver_args={}, verbose=True):
+        CP = CertificationProblem(K, [self.zset], [self.qset], self.obj, self.steps)
         if solve_type == 'SDP':
             add_RLT = solver_args.get('add_RLT', True)
-            res = self.CP.solve(solver_type='SDP',
-                                # solver=cp.SCS,
+            solver = solver_args.get('solver', cp.MOSEK)
+            res = CP.solve(solver_type='SDP',
+                                solver=solver,
                                 add_RLT=add_RLT,
                                 verbose=verbose)
         elif solve_type == 'global':
             time_limit = solver_args.get('time_limit', 3600)
             add_bounds = solver_args.get('add_bounds', True)
-            res = self.CP.solve(solver_type='GLOBAL', add_bounds=add_bounds, TimeLimit=time_limit, verbose=verbose)
+            res = CP.solve(solver_type='GLOBAL', add_bounds=add_bounds, TimeLimit=time_limit, verbose=verbose)
         return res
 
 
 def experiment():
-    save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/UQP/data/'
-    m, n = 4, 4
+    m_orig, n = 4, 4
     np.random.seed(0)
 
-    K_vals = range(1, 4)
+    K_vals = range(1, 5)
     res_srlt_rows = []
     res_g_rows = []
+    network_util_max = NetworkUtilMax(m_orig, n)
     for K in K_vals:
         print('K:', K)
-        newtork_util_max = NetworkUtilMax(m, n, K=K)
-        res_sdp = newtork_util_max.solve('SDP')
+        
+        res_sdp = network_util_max.solve(K, 'SDP')
 
         res_srlt_row = pd.Series(
             {
@@ -157,7 +155,7 @@ def experiment():
         )
         res_srlt_rows.append(res_srlt_row)
 
-        res_global = newtork_util_max.solve('global')
+        res_global = network_util_max.solve(K, 'global')
         res_g_row = pd.Series(
             {
                 'num_iter': K,
@@ -173,17 +171,19 @@ def experiment():
     print(df_srlt)
     print(df_g)
 
-    srlt_fname = save_dir + 'sdp_rlt.csv'
-    g_fname = save_dir + 'global.csv'
+    plot_results(df_srlt, df_g, 'NUM_results')
 
-    df_srlt.to_csv(srlt_fname, index=False)
-    df_g.to_csv(g_fname, index=False)
+    # srlt_fname = save_dir + 'sdp_rlt.csv'
+    # g_fname = save_dir + 'global.csv'
+
+    # df_srlt.to_csv(srlt_fname, index=False)
+    # df_g.to_csv(g_fname, index=False)
 
 
 def main():
-    # experiment()
-    NUM = NetworkUtilMax(4, 4, K=1)
-    NUM.solve('global')
+    experiment()
+    # NUM = NetworkUtilMax(4, 4, K=1)
+    # NUM.solve('global')
     # NUM.solve('SDP')
 
 
