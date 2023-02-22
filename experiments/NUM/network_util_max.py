@@ -50,16 +50,24 @@ class NetworkUtilMax(object):
         M, lower, upper = self.canonicalize()
 
         # setup constants
-        zeros = np.zeros(z_size)
+        zeros = np.zeros((z_size, 1))
         I = np.eye(z_size)
         spI = spa.csc_matrix(I)
 
         # step 1 (M + I)u = z - q
+        # This step encodes u = (M + I)^{-1} (z-q)
         s1D = spI
-        s1A = spa.bmat([[spI, -I]])
+        s1A_temp = spa.bmat([[spI, -I]])
         MIinv = spa.csc_matrix(np.linalg.inv(M + np.eye(z_size)))
-        s1Dinv = MIinv
-        step1 = HighLevelLinearStep(u, [z, q], D=s1D, A=s1A, b=zeros, Dinv=s1Dinv)
+        s1A = MIinv @ s1A_temp
+        step1 = HighLevelLinearStep(u, [z, q], D=s1D, A=s1A, b=zeros, Dinv=s1D)
+
+        # # alt step 1 (THIS ALSO WORKS)
+        # This encodes (M + I)u = (z-q)
+        # s1D = spa.csc_matrix(M + np.eye(z_size))
+        # s1Dinv = spa.csc_matrix(np.linalg.inv(M + np.eye(z_size)))
+        # s1A = spa.bmat([[spI, -I]])
+        # step1 = HighLevelLinearStep(u, [z, q], D=s1D, A=s1A, b=zeros, Dinv=s1Dinv)
 
         # step 2 (v = 2u - z)
         s2D = spI
@@ -115,7 +123,7 @@ class NetworkUtilMax(object):
 
     def solve(self, solve_type, solver_args={}, verbose=True):
         if solve_type == 'SDP':
-            add_RLT = solver_args.get('add_RLT', False)
+            add_RLT = solver_args.get('add_RLT', True)
             res = self.CP.solve(solver_type='SDP',
                                 # solver=cp.SCS,
                                 add_RLT=add_RLT,
@@ -173,7 +181,10 @@ def experiment():
 
 
 def main():
-    experiment()
+    # experiment()
+    NUM = NetworkUtilMax(4, 4, K=1)
+    NUM.solve('global')
+    # NUM.solve('SDP')
 
 
 if __name__ == '__main__':
