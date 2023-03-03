@@ -212,8 +212,13 @@ class GlobalHandler(object):
         gp_obj = 0
         for obj in obj_list:
             obj_canon = OBJ_CANON_METHODS[type(obj)]
-            gp_obj += obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+            # new_obj, t, y, z = obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+            new_obj = obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+            gp_obj += new_obj
         self.objective += gp_obj
+        # self.t = t
+        # self.y = y
+        # self.z = z
 
         if self.minimize:
             self.model.setObjective(gp_obj, gp.GRB.MINIMIZE)
@@ -238,6 +243,13 @@ class GlobalHandler(object):
         self.model.optimize()
         # x = self.iterate_list[-1]
         # print(self.iterate_to_gp_var_map[x].X)
+        # print(self.t.getValue())
+        # print('pos', self.y.X)
+        # print('neg', self.z.X)
+        # print('w', (self.y + self.z).getValue())
+        # w = (self.y + self.z).getValue()
+        # t = self.t.getValue()
+        # print(np.round(w - np.abs(t), 4))
         return self.model.objVal, self.model.Runtime
 
     def get_iterate_var_map(self):

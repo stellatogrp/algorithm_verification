@@ -121,7 +121,7 @@ def OSQP_cert_prob(P, A, c, rho, q_l, q_u, K=1, solver="GLOBAL", minimize=False)
 
     steps = [step1, step2, step3, step4, step5]
 
-    initsets = [ConstSet(x, zeros_n), ConstSet(mu, zeros_m), ConstSet(z, zeros_m)]
+    initsets = [ConstSet(x, zeros_n), ConstSet(mu, zeros_m), ConstSet(z, zeros_m), ConstSet(s, zeros_m)]
     # paramsets = [BoxSet(q, zeros_n, 2 * ones_n)]
     paramsets = [BoxSet(q, q_l, q_u)]
 
@@ -196,14 +196,16 @@ def main():
     np.random.seed(4)
     n = 2
     P, A, c = generate_problem(n)
-    # rho = generate_rho_opt(P, A)
+    rho = generate_rho_opt(P, A)
     # rho = 10
     test_with_cvxpy(P, A, c)
 
-    # OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 2 * np.ones((n, 1)), K=5, solver="GLOBAL", minimize=True)
-    # OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 2 * np.ones((n, 1)), K=5, solver="SDP", minimize=True)
+    res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="GLOBAL", minimize=False)
+    # res_s = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="SDP", minimize=False)
+    print('g:', res_g)
+    # print('sdp:', res_s)
 
-    experiment_g()
+    # experiment_g()
 
 
 if __name__ == '__main__':

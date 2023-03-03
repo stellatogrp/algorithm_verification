@@ -12,7 +12,8 @@ from algocert.init_set.box_set import BoxSet
 from algocert.init_set.const_set import ConstSet
 # from algocert.init_set.control_example_set import ControlExampleSet
 # from algocert.init_set.init_set import InitSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.objectives.l1_conv_resid import L1ConvResid
 # from algocert.utils.plotter import plot_results
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
@@ -87,7 +88,8 @@ class NetworkUtilMax(object):
         self.steps = [step1, step2, step3, step4]
         self.zset = ConstSet(z, np.zeros((z_size, 1)))
         self.qset = BoxSet(q, lower, upper)
-        self.obj = [ConvergenceResidual(z)]
+        # self.obj = [ConvergenceResidual(z)]
+        self.obj = L1ConvResid(z)
 
     def canonicalize(self):
         I = np.eye(self.n)
@@ -229,10 +231,13 @@ def experiment():
 
 
 def main():
-    experiment()
-    # NUM = NetworkUtilMax(2, 4, K=5)
-    # NUM.solve('GLOBAL')
-    # NUM.solve('SDP')
+    # experiment()
+    NUM = NetworkUtilMax(1, 2, seed=1, minimize=False)
+    K = 2
+    res_g = NUM.solve(K, 'GLOBAL')
+    res_s = NUM.solve(K, 'SDP')
+    print('res_g:', res_g)
+    print('res_s:', res_s)
 
 
 if __name__ == '__main__':
