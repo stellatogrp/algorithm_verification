@@ -10,6 +10,20 @@ class CertificationProblem(object):
 
     def __init__(self, N, init_sets, parameter_sets, objective, algorithm,
                  qp_problem_data=None, add_RLT_constraints=False, num_samples=1):
+        """
+        N: the number of iterations
+        init_sets: 
+        parameter_sets: 
+        objective: 
+        algorithm: a list of steps
+
+        i.e. something like
+        steps = [step1, step2, step3, step4]
+        zset = ConstSet(z, np.zeros((z_size, 1)))
+        qset = BoxSet(q, lower, upper)
+        self.obj = [ConvergenceResidual(z)]
+        CP = CertificationProblem(N, [zset], [qset], obj, self.steps)
+        """
         self.N = N
         self.num_samples = num_samples
         self.init_sets = init_sets
