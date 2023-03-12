@@ -20,7 +20,7 @@ from algocert.variables.parameter import Parameter
 
 
 class NetworkUtilMax(object):
-    def __init__(self, m_orig, n, K=1, seed=42, minimize=False):
+    def __init__(self, m_orig, n, seed=42, minimize=False):
         """
         min w^T f
             s.t. Rf <= c(theta)
@@ -144,22 +144,23 @@ class NetworkUtilMax(object):
 
 
 def experiment():
-    # save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NUM/data/'
-    # fname = save_dir + 'only5.csv'
-    m, n = 2, 4
+    save_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NUM/data/'
+    fname = save_dir + 'l1_first_test.csv'
+    m, n = 1, 2
     np.random.seed(0)
+    seed = 1
 
     K_vals = [1, 2, 3, 4, 5]
-    K_vals = [5]
+    K_vals = [1, 2, 3, 4, 5]
 
     res_rows = []
     for K in K_vals:
         print('K:', K)
-        NUM = NetworkUtilMax(m, n, K=K)
+        NUM = NetworkUtilMax(m, n, seed=seed, minimize=False)
         res_g = NUM.solve(K, 'GLOBAL')
-
-        NUM = NetworkUtilMax(m, n, K=K)
+        NUM = NetworkUtilMax(m, n, seed=seed, minimize=False)
         res_sdp = NUM.solve(K, 'SDP')
+        # res_sdp = (0, 0)
         res_row = pd.Series(
             {
                 'K': K,
@@ -172,12 +173,12 @@ def experiment():
         )
         res_rows.append(res_row)
 
-        NUM = NetworkUtilMax(m, n, K=K, minimize=True)
+        NUM = NetworkUtilMax(m, n, seed=seed, minimize=True)
         res_g = NUM.solve(K, 'GLOBAL')
 
-        NUM = NetworkUtilMax(m, n, K=K, minimize=True)
-        # res_sdp = NUM.solve('SDP')
-        res_sdp = [-1, -1]
+        NUM = NetworkUtilMax(m, n, seed=seed, minimize=True)
+        res_sdp = NUM.solve(K, 'SDP')
+        # res_sdp = [-1, -1]
         res_row = pd.Series(
             {
                 'K': K,
@@ -191,7 +192,7 @@ def experiment():
         res_rows.append(res_row)
 
         df = pd.DataFrame(res_rows)
-        # df.to_csv(fname, index=False)
+        df.to_csv(fname, index=False)
     print(df)
     # for K in K_vals:
     #     print('K:', K)
@@ -231,13 +232,13 @@ def experiment():
 
 
 def main():
-    # experiment()
-    NUM = NetworkUtilMax(1, 2, seed=1, minimize=False)
-    K = 2
-    res_g = NUM.solve(K, 'GLOBAL')
-    res_s = NUM.solve(K, 'SDP')
-    print('res_g:', res_g)
-    print('res_s:', res_s)
+    experiment()
+    # NUM = NetworkUtilMax(1, 2, seed=1, minimize=False)
+    # K = 1
+    # res_g = NUM.solve(K, 'GLOBAL')
+    # res_s = NUM.solve(K, 'SDP')
+    # print('res_g:', res_g)
+    # print('res_s:', res_s)
 
 
 if __name__ == '__main__':

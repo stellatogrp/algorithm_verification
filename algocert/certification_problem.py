@@ -26,16 +26,19 @@ class CertificationProblem(object):
         # Define and solve the problem
         if solver_type == s.SDP:
             solver = SDPSolver(self)
+            self.solver = solver
             solver.canonicalize(**kwargs)
             # TODO break this out and add a way to specify the variable
             # solver.handler.add_convexity_constraints(self.qp_problem_data['A'])
             res = solver.solve(**kwargs)
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
+            self.solver = solver
             solver.canonicalize(**kwargs)
             res = solver.solve(**kwargs)
         if solver_type == s.SDP_CGAL:
             solver = SDPCGALSolver(self)
+            self.solver = solver
             solver.canonicalize(**kwargs)
             res = solver.solve(**kwargs)
         return res
@@ -43,9 +46,11 @@ class CertificationProblem(object):
     def canonicalize(self, solver_type=s.DEFAULT, **kwargs):
         if solver_type == s.GLOBAL:
             solver = GlobalSolver(self)
+            self.solver = solver
             solver.canonicalize(**kwargs)
         if solver_type == s.SDP:
             solver = SDPSolver(self)
+            self.solver = solver
             solver.canonicalize(**kwargs)
         return solver
 
