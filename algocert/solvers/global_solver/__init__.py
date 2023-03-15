@@ -3,6 +3,7 @@ from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
     NonNegProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
 from algocert.init_set.affine_vec_set import AffineVecSet
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.box_stack_set import BoxStackSet
@@ -54,8 +55,10 @@ from algocert.solvers.global_solver.step_canonicalizers.max_with_vec_step import
     max_vec_bound_canon, max_vec_canon)
 from algocert.solvers.global_solver.step_canonicalizers.min_with_vec_step import (
     min_vec_bound_canon, min_vec_canon)
-from algocert.solvers.global_solver.step_canonicalizers.nonneg_orthant_proj_step import \
-    nonneg_orthant_proj_canon
+from algocert.solvers.global_solver.step_canonicalizers.nonneg_lin_step import (
+    nonneg_lin_bound_canon, nonneg_lin_canon)
+from algocert.solvers.global_solver.step_canonicalizers.nonneg_orthant_proj_step import (
+    nonneg_orthant_proj_bound_canon, nonneg_orthant_proj_canon)
 
 SET_CANON_METHODS = {
     CenteredL2BallSet: centered_l2_ball_canon,
@@ -79,15 +82,18 @@ BOUND_SET_CANON_METHODS = {
 
 STEP_CANON_METHODS = {
     HighLevelLinearStep: hl_linear_step_canon,
-    NonNegProjStep: nonneg_orthant_proj_canon,
     MaxWithVecStep: max_vec_canon,
     MinWithVecStep: min_vec_canon,
+    NonNegLinStep: nonneg_lin_canon,
+    NonNegProjStep: nonneg_orthant_proj_canon,
 }
 
 BOUND_STEP_CANON_METHODS = {
     HighLevelLinearStep: hl_lin_step_bound_canon,
     MaxWithVecStep: max_vec_bound_canon,
     MinWithVecStep: min_vec_bound_canon,
+    NonNegLinStep: nonneg_lin_bound_canon,
+    NonNegProjStep: nonneg_orthant_proj_bound_canon,
 }
 
 OBJ_CANON_METHODS = {
