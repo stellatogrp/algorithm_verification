@@ -35,43 +35,14 @@ def approx_min_eigvec(M, q, tol=1e-6):
 
         Q[:, i+1] = Q[:, i+1] / beta[i]
 
-    # print(Q)
-    # print(i)
-
     alpha_trunc = alpha[:i+1]
     beta_trunc = beta[:i]
-    # test = np.diag(alpha_trunc) + np.diag(beta_trunc, k=1) + np.diag(beta_trunc, k=-1)
-    # test = spa.diags([alpha_trunc, beta_trunc, beta_trunc], offsets=[0, 1, -1])
-    # l_test, v_test = scipy_mineigval(test)
-    # print('all eigs:', np.linalg.eigvals(test.todense()))
 
-    # print('l_test:', l_test)
-    # lambd, u = eigh_tridiagonal(alpha_trunc, beta_trunc, select='i', select_range=[0, 0])
-    # lambd, all_u = eigh_tridiagonal(alpha_trunc, beta_trunc)
-    # print(lambd, v_test.shape, u.shape)
-
-    l_test, v_test = eigh_tridiagonal(alpha_trunc, beta_trunc, select='i', select_range=[0, 0])
-
-    # diffs = v_test - all_u
-    # print(diffs)
-    # print('norms of diff:', np.linalg.norm(diffs[0]), np.linalg.norm(diffs[:, 0]))
-
-    # xi = lambd[0]
-    # u = all_u[:, 0]
-    # u = all_u[:, 0].reshape(-1, 1)
-    # print(v_test.shape, u.shape, (v_test-u).shape)
-    # print('v_test - u norm:', np.linalg.norm(v_test - u))
-    # v = Q[:, :i+1] @ u
+    l_test, v_test = eigh_tridiagonal(alpha_trunc, beta_trunc, select='i', select_range=[0, 0], tol=tol)
 
     xi = l_test[0]
-    # print([np.linalg.norm(Q[:, i]) for i in range(i)])
     v = Q[:, :i+1] @ v_test
     v = v / np.linalg.norm(v)
-
-    # print(v_test - u)
-
-    # print('v_test - u norm:', np.linalg.norm(v_test - u))
-    # print('result v calcs:', v.T @ M @ v, 'v norm:', np.linalg.norm(v))
 
     return xi, v
 

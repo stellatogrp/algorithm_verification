@@ -6,7 +6,7 @@ from scipy.stats import ortho_group
 
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 # from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-# NonNegProjStep
+#     NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
@@ -104,7 +104,7 @@ def OSQP_cert_prob(P, A, c, rho, q_l, q_u, K=1, solver="GLOBAL", minimize=False)
 
     # step 3
     # step3 = NonNegProjStep(z, w)
-    step3 = MaxWithVecStep(z, w, l=zeros_m)
+    step3 = MaxWithVecStep(z, w, l=zeros_m, indiv_sdp=True)
 
     # step 4
     s4_D = Im
@@ -156,8 +156,8 @@ def experiment_g():
     res_rows = []
     for K in K_vals:
         for rho in rho_vals:
-            res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 2 * np.ones((n, 1)), K=K, solver="GLOBAL")
-            res_sdp = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 2 * np.ones((n, 1)), K=K, solver="SDP")
+            res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=K, solver="GLOBAL")
+            res_sdp = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=K, solver="SDP")
             res_row = pd.Series(
                 {
                     'K': K,
@@ -200,10 +200,10 @@ def main():
     # rho = 10
     test_with_cvxpy(P, A, c)
 
-    res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="GLOBAL", minimize=False)
-    # res_s = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="SDP", minimize=False)
+    res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=2, solver="GLOBAL", minimize=False)
+    res_s = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=2, solver="SDP", minimize=False)
     print('g:', res_g)
-    # print('sdp:', res_s)
+    print('sdp:', res_s)
 
     # experiment_g()
 

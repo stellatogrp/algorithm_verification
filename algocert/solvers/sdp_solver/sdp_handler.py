@@ -12,7 +12,7 @@ class SDPHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP
-        self.N = self.CP.N
+        self.K = self.CP.K
         self.iterate_list = []
         self.param_list = []
         self.sdp_param_vars = {}
@@ -72,7 +72,7 @@ class SDPHandler(object):
 
     def create_iteration_handlers(self):
         steps = self.CP.get_algorithm_steps()
-        for k in range(self.N + 1):
+        for k in range(self.K + 1):
             self.iteration_handlers.append(SingleIterationHandler(k, steps, self.iterate_list, self.param_list))
 
     def canonicalize_initial_sets(self):
@@ -94,7 +94,7 @@ class SDPHandler(object):
 
     def canonicalize_steps(self):
         steps = self.CP.get_algorithm_steps()
-        for k in range(1, self.N + 1):
+        for k in range(1, self.K + 1):
             curr = self.iteration_handlers[k]
             prev = self.iteration_handlers[k - 1]
             for i, step in enumerate(steps):
@@ -158,7 +158,7 @@ class SDPHandler(object):
 
     def propagate_iterate_bounds(self):
         steps = self.CP.get_algorithm_steps()
-        for k in range(1, self.N + 1):
+        for k in range(1, self.K + 1):
             curr = self.iteration_handlers[k]
             prev = self.iteration_handlers[k - 1]
             for i, step in enumerate(steps):

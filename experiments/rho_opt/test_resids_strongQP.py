@@ -15,7 +15,8 @@ from algocert.init_set.box_set import BoxSet
 from algocert.init_set.const_set import ConstSet
 # from algocert.init_set.control_example_set import ControlExampleSet
 # from algocert.init_set.init_set import InitSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.objectives.outer_prod_trace import OuterProdTrace
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
@@ -113,26 +114,39 @@ def OSQP_cert_prob(P, A, c, rho, q_l, q_u, K=1, solver="GLOBAL", minimize=False)
     step4 = HighLevelLinearStep(mu, [x, z, mu], D=s4_D, A=s4_A, b=s4_b, Dinv=s4_D)
 
     # step 5
-    s = Iterate(m, name='s')
+    prim = Iterate(m, name='primal')
     s5_D = Im
-    s5_A = spa.bmat([[Im, rho_inv * Im]])
+    s5_A = spa.bmat([[A, -Im]])
     s5_b = zeros_m
-    step5 = HighLevelLinearStep(s, [z, mu], D=s5_D, A=s5_A, b=s5_b, Dinv=s5_D)
+    step5 = HighLevelLinearStep(prim, [x, z], D=s5_D, A=s5_A, b=s5_b, Dinv=s5_D)
 
-    steps = [step1, step2, step3, step4, step5]
+    # step 6
+    dual = Iterate(n, name='dual')
+    s6_D = In
+    s6_A = spa.bmat([[P, A.T, In]])
+    s6_b = zeros_n
+    step6 = HighLevelLinearStep(dual, [x, mu, q], D=s6_D, A=s6_A, b=s6_b, Dinv=s6_D)
 
-    initsets = [ConstSet(x, zeros_n), ConstSet(mu, zeros_m), ConstSet(z, zeros_m), ConstSet(s, zeros_m)]
+    steps = [step1, step2, step3, step4, step5, step6]
+
+    initsets = [ConstSet(x, zeros_n), ConstSet(mu, zeros_m), ConstSet(
+        z, zeros_m), ConstSet(prim, zeros_m), ConstSet(dual, zeros_m)]
     # paramsets = [BoxSet(q, zeros_n, 2 * ones_n)]
     paramsets = [BoxSet(q, q_l, q_u)]
 
-    obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
+    # obj = [ConvergenceResidual(x)]
+    obj = [OuterProdTrace(prim), OuterProdTrace(dual)]
+    # obj = [OuterProdTrace(prim)]
+    # obj = [OuterProdTrace(dual)]
 
     CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    # CP.print_cp()
 
     if solver == "GLOBAL":
         resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600, minimize=minimize)
         # print('global', resg)
-        return resg
+        b_val = CP.get_param_map()
+        return resg, b_val[q]
     if solver == "SDP":
         res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True,  solver=cp.MOSEK, minimize=minimize)
         # print('sdp', res)
@@ -197,12 +211,15 @@ def main():
     n = 2
     P, A, c = generate_problem(n)
     rho = generate_rho_opt(P, A)
-    # rho = 10
+    # print('rho opt:', rho)
+    # rho = 25
     test_with_cvxpy(P, A, c)
 
-    res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="GLOBAL", minimize=False)
-    # res_s = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="SDP", minimize=False)
+    res_g, b_val = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)),
+                                  K=2, solver="GLOBAL", minimize=False)
+    # res_s = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=3, solver="SDP", minimize=False)
     print('g:', res_g)
+    print(b_val)
     # print('sdp:', res_s)
 
     # experiment_g()
