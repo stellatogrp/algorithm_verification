@@ -15,7 +15,7 @@ class SDPCGALHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP
-        self.K = CP.N  # number of steps to certify, TODO: change CP.N to CP.K
+        self.K = CP.K  # number of steps to certify, TODO: change CP.N to CP.K
         self.num_samples = CP.num_samples
         self.alg_steps = CP.get_algorithm_steps()
         self.iterate_list = []

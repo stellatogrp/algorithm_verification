@@ -36,7 +36,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     obj = [ConvergenceResidual(x)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = CertificationProblem(K, initsets, paramsets, obj, steps, num_samples=1)
     res = CP.solve(solver_type=solver_type, add_bounds=True,
                    add_RLT=False, TimeLimit=3600, minimize=False)
     # print('global', resg)
@@ -64,7 +64,8 @@ def NNLS_cert_prob_two_step(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     steps = [step1, step2]
 
-    initsets = [ConstSet(x, zeros_n)]
+    # initsets = [ConstSet(x, zeros_n)]
+    initsets = [BoxSet(x, zeros_n, zeros_n)]
     # initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
     paramsets = [BoxSet(q, zeros_m, ones_m)]
@@ -82,14 +83,15 @@ def main():
     np.random.seed(0)
     m = 5
     n = 3
-    K = 1
+    K = 2
     A = np.random.randn(m, n)
     # s = 'GLOBAL'
-    s = 'SDP'
+    # s = 'SDP'
+    s = 'SDP_SCGAL'
     res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
-    res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
+    # res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type='SDP')
     print('one step:', res1)
-    print('two steps:', res2)
+    # print('two steps:', res2)
 
 
 if __name__ == '__main__':
