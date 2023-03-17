@@ -13,7 +13,7 @@ from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
 
-def NNLS_cert_prob(n, m, A, K=1, t=.05):
+def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
     ATA = A.T @ A
     In = spa.eye(n)
     zeros_n = np.zeros((n, 1))
@@ -30,18 +30,20 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05):
     steps = [step1]
 
     initsets = [ConstSet(x, zeros_n)]
+    initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
     paramsets = [BoxSet(q, zeros_m, ones_m)]
 
     obj = [ConvergenceResidual(x)]
 
     CP = CertificationProblem(K, initsets, paramsets, obj, steps)
-    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600, minimize=False)
-    print('global', resg)
-    return resg
+    res = CP.solve(solver_type=solver_type, add_bounds=True,
+                   add_RLT=False, TimeLimit=3600, minimize=False)
+    # print('global', resg)
+    return res
 
 
-def NNLS_cert_prob_two_step(n, m, A, K=1, t=.05):
+def NNLS_cert_prob_two_step(n, m, A, K=1, t=.05, solver_type='SDP'):
     ATA = A.T @ A
     In = spa.eye(n)
     zeros_n = np.zeros((n, 1))
@@ -63,14 +65,16 @@ def NNLS_cert_prob_two_step(n, m, A, K=1, t=.05):
     steps = [step1, step2]
 
     initsets = [ConstSet(x, zeros_n)]
+    initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
     paramsets = [BoxSet(q, zeros_m, ones_m)]
 
     obj = [ConvergenceResidual(x)]
 
     CP = CertificationProblem(K, initsets, paramsets, obj, steps)
-    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600, minimize=False)
-    print('global', resg)
+    resg = CP.solve(solver_type=solver_type, add_bounds=True, add_RLT=False,
+                    TimeLimit=3600, minimize=False, verbose=True)
+    # print('global', resg)
     return resg
 
 
