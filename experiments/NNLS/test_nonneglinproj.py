@@ -30,7 +30,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
     steps = [step1]
 
     initsets = [ConstSet(x, zeros_n)]
-    initsets = [ConstSet(x, np.ones((n, 1)))]
+    # initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
     paramsets = [BoxSet(q, zeros_m, ones_m)]
 
@@ -65,7 +65,7 @@ def NNLS_cert_prob_two_step(n, m, A, K=1, t=.05, solver_type='SDP'):
     steps = [step1, step2]
 
     initsets = [ConstSet(x, zeros_n)]
-    initsets = [ConstSet(x, np.ones((n, 1)))]
+    # initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
     paramsets = [BoxSet(q, zeros_m, ones_m)]
 
@@ -84,8 +84,10 @@ def main():
     n = 3
     K = 1
     A = np.random.randn(m, n)
-    res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05)
-    res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05)
+    # s = 'GLOBAL'
+    s = 'SDP'
+    res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
+    res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
     print('one step:', res1)
     print('two steps:', res2)
 
