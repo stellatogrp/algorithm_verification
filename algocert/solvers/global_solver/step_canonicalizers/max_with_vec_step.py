@@ -30,7 +30,7 @@ def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_
     y_var = y_varmatrix[k]
 
     """
-    if x is ahead of y, then make 
+    if x is ahead of y, then make
     y^k in terms of x^{k-1}
 
     otherwise make

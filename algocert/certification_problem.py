@@ -4,13 +4,14 @@ import algocert.settings as s
 class CertificationProblem(object):
 
     """Docstring for CertificationProblem. """
+
     def __init__(self, K, init_sets, parameter_sets, objective, algorithm,
                  num_samples=1):
         """
             K: the number of iterations
-            init_sets: 
-            parameter_sets: 
-            objective: 
+            init_sets:
+            parameter_sets:
+            objective:
             algorithm: a list of steps
 
             i.e. something like

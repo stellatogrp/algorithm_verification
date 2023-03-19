@@ -80,9 +80,9 @@ class GlobalHandler(object):
         ****************************************************************
         self.iterate_list is a list of the OUTPUT iterates of the steps
         self.iterate_list = [u, v, z]
-        
+
         self.iterate_to_id_map is a mapping from index of self.iterat_list to variable
-        self.iterate_to_id_map = {0: u, 1: v, 2: z}       
+        self.iterate_to_id_map = {0: u, 1: v, 2: z}
 
         self.id_to_iterate_map is the reverse mapping
         self.iterate_to_id_map = {u: 0, v: 1, z: 2}
@@ -179,13 +179,13 @@ class GlobalHandler(object):
 
     def create_iterate_gp_var_map(self):
         """
-        creates a Gurobi variable for each iterate 
-        i.e. if we have x_1, \dots, x_N 
+        creates a Gurobi variable for each iterate
+        i.e. if we have x_1, \dots, x_N
             each x_i is a vector of length n
             x will have shape (N + 1, n)
 
         self.iterate_to_gp_var_map is a dictionary
-            
+
         self.iterate_to_gp_var_map = {u: u_var, v: v_var, z: z_var}
         """
         K = self.K
@@ -204,7 +204,7 @@ class GlobalHandler(object):
                                      name=iterate.get_name(),
                                      ub=ub,
                                      lb=lb)
-            
+
             self.iterate_to_gp_var_map[iterate] = var
 
     def create_param_gp_var_map(self):
@@ -275,7 +275,7 @@ class GlobalHandler(object):
         # create the variables for each parameter
         self.create_param_list()
 
-        # create mappings from output to iterate 
+        # create mappings from output to iterate
         self.create_iterate_id_maps()
         if self.add_bounds:
             self.create_param_bound_map()

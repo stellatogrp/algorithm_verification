@@ -3,7 +3,7 @@ from algocert.variables.variable import Variable
 
 class Iterate(Variable):
     """
-    Iterate is a subclass of algocert's Variable object 
+    Iterate is a subclass of algocert's Variable object
     """
 
     def __init__(self, n, name='-'):
