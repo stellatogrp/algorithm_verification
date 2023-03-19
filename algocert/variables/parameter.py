@@ -2,8 +2,9 @@ from algocert.variables.variable import Variable
 
 
 class Parameter(Variable):
-
-    """Docstring for Parameter. """
+    """
+    Parameter is a subclass of algocert's Variable object 
+    """
 
     def __init__(self, n, name='-'):
         super().__init__(n, name=name)

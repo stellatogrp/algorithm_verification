@@ -2,6 +2,22 @@ import numpy as np
 
 
 def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):
+    """
+    canonicalizes the iteration
+    D y = A u + b
+
+    u can be a block, so you can think of it as 
+    D y = [A_1, ..., A_j][u_1] + b
+                         ....
+                         [u_j]
+
+    We partition the A matrix into its block form 
+        based on the dimensions of u_1, ..., u_j
+
+    iter_to_gp_var_map and param_to_gp_var_map are needed to get the gurobi vars
+
+    iter_to_id_map is needed to check if we want the current or previous u_i's
+    """
     D = step.get_lhs_matrix()
     A = step.get_rhs_matrix()
     b = step.get_rhs_const_vec()
