@@ -11,6 +11,8 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
 
     y = step.get_output_var()
     x = step.get_input_var()
+    n = x.get_dim()
+    indiv_sdp = step.indiv_sdp
     l = step.get_lower_bound_vec()
 
     y_var = curr.iterate_vars[y].get_cp_var()
@@ -26,13 +28,23 @@ def max_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
                        # cp.diag(yyT_var) >= cp.diag(l @ l.T),
                        cp.diag(yyT_var - yxT_var - l_vec @ y_var.T + l_vec @ x_var.T) == 0]
 
-        constraints += [
-            cp.bmat([
-                [yyT_var, yxT_var, y_var],
-                [yxT_var.T, xxT_var, x_var],
-                [y_var.T, x_var.T, np.array([[1]])]
-            ]) >> 0,
-        ]
+        if not indiv_sdp:
+            constraints += [
+                cp.bmat([
+                    [yyT_var, yxT_var, y_var],
+                    [yxT_var.T, xxT_var, x_var],
+                    [y_var.T, x_var.T, np.array([[1]])]
+                ]) >> 0,
+            ]
+        else:
+            for j in range(n):
+                constraints += [
+                    cp.bmat([
+                        [yyT_var[j, j], yxT_var[j, j], y_var[j]],
+                        [yxT_var[j, j], xxT_var[j, j], x_var[j]],
+                        [y_var[j], x_var[j], 1]
+                    ]) >> 0,
+                ]
 
     else:
         l_var = param_vars[l].get_cp_var()

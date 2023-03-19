@@ -10,7 +10,7 @@ plt.rcParams.update({
 })
 
 
-def plot_max(df, image_dir):
+def plot_max(df, image_dir, title):
     fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
     K_vals = sorted(df['K'].unique())
 
@@ -25,7 +25,7 @@ def plot_max(df, image_dir):
     ax0.plot(K_vals, g_obj, color='b', linestyle='solid')
     ax0.plot(K_vals, sdp_obj, color='b', linestyle='dashed')
     ax0.set_yscale('log')
-    ax0.set_ylabel('maximum convergence residual')
+    ax0.set_ylabel('maximum convergence residual 1-norm')
 
     g_times = df_max['g_solve_time'].to_numpy()
     sdp_times = df_max['sdp_solve_time'].to_numpy()
@@ -36,13 +36,13 @@ def plot_max(df, image_dir):
 
     ax1.set_xlabel('K')
 
-    fig.suptitle('NUM Upper Bounds')
+    fig.suptitle('NUM Upper Bounds, ' + title)
 
     # plt.show()
-    plt.savefig('images/basicNUM_max.pdf')
+    plt.savefig('images/NUM_maxl1_0p5.pdf')
 
 
-def plot_min(df, image_dir):
+def plot_min(df, image_dir, title):
     fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
     K_vals = sorted(df['K'].unique())
 
@@ -57,7 +57,7 @@ def plot_min(df, image_dir):
     ax0.plot(K_vals, g_obj, color='g', linestyle='solid')
     ax0.plot(K_vals, sdp_obj, color='g', linestyle='dashed')
     ax0.set_yscale('log')
-    ax0.set_ylabel('minimum convergence residual')
+    ax0.set_ylabel('minimum convergence residual 1-norm')
 
     g_times = df_min['g_solve_time'].to_numpy()
     sdp_times = df_min['sdp_solve_time'].to_numpy()
@@ -68,19 +68,21 @@ def plot_min(df, image_dir):
 
     ax1.set_xlabel('K')
 
-    fig.suptitle('NUM Lower Bounds')
+    fig.suptitle('NUM Lower Bounds, ' + title)
 
     # plt.show()
-    plt.savefig('images/basicNUM_min.pdf')
+    plt.savefig('images/NUM_minl1_0p5.pdf')
 
 
 def main():
     data_dir = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/experiments/NUM/'
-    df = pd.read_csv(data_dir + 'data/basic.csv')
+    # df = pd.read_csv(data_dir + 'data/basic.csv')
+    df = pd.read_csv(data_dir + 'data/l1_first_test_0p5.csv')
     image_dir = data_dir + 'images/'
+    title = r'$c(\theta) \in [0, 1/2]^n$'
     print(df)
-    plot_max(df, image_dir)
-    plot_min(df, image_dir)
+    plot_max(df, image_dir, title)
+    plot_min(df, image_dir, title)
 
 
 if __name__ == '__main__':

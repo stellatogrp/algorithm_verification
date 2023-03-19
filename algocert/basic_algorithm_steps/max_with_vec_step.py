@@ -6,12 +6,13 @@ class MaxWithVecStep(Step):
 
     """Docstring for MaxWithVecStep. """
 
-    def __init__(self, y: Iterate, x: Iterate, l=None):
+    def __init__(self, y: Iterate, x: Iterate, l=None, indiv_sdp=False):
         """Step representing y = max(x, l) elementwise
         """
         self.x = x
         self.y = y
         self.l = l
+        self.indiv_sdp = indiv_sdp
         self._test_dims()
 
     def _test_dims(self):

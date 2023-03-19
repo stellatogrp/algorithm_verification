@@ -1,7 +1,10 @@
+import time
+
 import cvxpy as cp
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
+from tqdm import trange
 
 from algocert.solvers.sdp_cgal_solver import (OBJ_CANON_METHODS,
                                               SET_CANON_METHODS,
@@ -12,7 +15,7 @@ class SDPCGALHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP
-        self.K = CP.N  # number of steps to certify, TODO: change CP.N to CP.K
+        self.K = CP.K  # number of steps to certify, TODO: change CP.N to CP.K
         self.num_samples = CP.num_samples
         self.alg_steps = CP.get_algorithm_steps()
         self.iterate_list = []
@@ -215,7 +218,7 @@ class SDPCGALHandler(object):
         return np.linalg.norm(x - proj_x)
 
     def minimum_eigvec(self, X):
-        return spa.linalg.eigs(X, which='SM', k=1)
+        return spa.linalg.eigs(X, which='SR', k=1)
 
     def solve(self):
         cp_res = self.test_with_cvxpy()
@@ -230,13 +233,14 @@ class SDPCGALHandler(object):
         d = len(self.A_matrices)
         X = np.zeros((n, n))
         y = np.zeros(d)
-        T = 1000
+        T = 500
         obj_vals = []
         X_resids = []
         y_resids = []
         feas_vals = []
-        for t in range(1, T+1):
-            print(t)
+        start = time.time()
+        for t in trange(1, T+1):
+            # print(t)
             beta = beta_zero * np.sqrt(t + 1)
             eta = 2 / (t + 1)
             w = self.proj(self.AX(X) + y / beta)
@@ -258,7 +262,7 @@ class SDPCGALHandler(object):
 
             Xnew = (1 - eta) * X + eta * H
             Xresid = np.linalg.norm(X - Xnew)
-            print('X resid:', Xresid)
+            # print('X resid:', Xresid)
             X = Xnew
 
             beta_plus = beta_zero * np.sqrt(t + 2)
@@ -277,35 +281,41 @@ class SDPCGALHandler(object):
 
             ynew = y + gamma * (self.AX(X) - wbar)
             yresid = np.linalg.norm(y-ynew)
-            print('y resid:', yresid)
+            # print('y resid:', yresid)
             if np.linalg.norm(ynew) < K:
                 y = ynew
             else:
                 print('exceed')
             new_obj = np.trace(self.C_matrix @ X)
-            print('obj', new_obj)
+            # print('obj', new_obj)
             # obj_vals.append(np.trace(self.C_matrix @ X))
             obj_vals.append(new_obj)
             X_resids.append(Xresid)
             y_resids.append(yresid)
-            print('feas', self.proj_dist(self.AX(X)))
+            # print('feas', self.proj_dist(self.AX(X)))
             feas_vals.append(self.proj_dist(self.AX(X)))
             # pt = np.trace(self.C_matrix @ X)
             # zt = self.AX(X)
             # print(pt + y @ wbar + .5 * beta * (zt - wbar) @ (zt + wbar) - xi)
             # print(np.linalg.norm(zt - wbar))
         # print(X_resids, len(X_resids))
-        fig, ax = plt.subplots(figsize=(6, 4))
-        ax.plot(range(1, T+1), obj_vals, label='obj')
-        ax.plot(range(1, T+1), X_resids, label='X resid')
-        ax.plot(range(1, T+1), y_resids, label='y resid')
-        ax.plot(range(1, T+1), feas_vals, label='dist onto K')
-        ax.axhline(y=cp_res, linestyle='--', color='black')
-        ax.axhline(y=0, color='black')
-        plt.title('Objectives')
+        end = time.time()
+        fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
+
+        fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+        ax0.plot(range(1, T+1), X_resids, label='X resid')
+        ax0.plot(range(1, T+1), y_resids, label='y resid')
+        ax0.plot(range(1, T+1), feas_vals, label='dist onto K')
+        ax0.set_yscale('log')
+        ax0.legend()
+
+        ax1.plot(range(1, T+1), obj_vals, label='obj')
+        ax1.axhline(y=cp_res, linestyle='--', color='black')
+        # ax.axhline(y=0, color='black')
+        # plt.title('Objectives')
         plt.xlabel('$t$')
-        plt.yscale('symlog')
-        plt.legend()
+        ax1.set_yscale('symlog')
+        ax1.legend()
         plt.show()
         # plt.savefig('test.pdf')
         return 0

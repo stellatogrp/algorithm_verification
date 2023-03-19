@@ -6,6 +6,7 @@ from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
     NonNegProjStep
 from algocert.high_level_alg_steps.box_proj_step import BoxProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.const_set import ConstSet
@@ -13,9 +14,12 @@ from algocert.init_set.ellipsoidal_set import EllipsoidalSet
 from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.init_set.vec_span_set import VecSpanSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+from algocert.objectives.l1_conv_resid import L1ConvResid
 from algocert.objectives.outer_prod_trace import OuterProdTrace
 from algocert.solvers.sdp_solver.obj_canonicalizer.convergence_residual import \
     conv_resid_canon
+from algocert.solvers.sdp_solver.obj_canonicalizer.l1_conv_resid import \
+    l1_conv_resid_canon
 from algocert.solvers.sdp_solver.obj_canonicalizer.outer_prod_trace import \
     outer_prod_trace_canon
 from algocert.solvers.sdp_solver.set_canonicalizers.box_set import (
@@ -42,6 +46,8 @@ from algocert.solvers.sdp_solver.step_canonicalizers.max_with_vec_step import (
     max_vec_bound_canon, max_vec_canon)
 from algocert.solvers.sdp_solver.step_canonicalizers.min_with_vec_step import (
     min_vec_bound_canon, min_vec_canon)
+from algocert.solvers.sdp_solver.step_canonicalizers.nonneg_lin_step import \
+    nonneg_lin_canon
 from algocert.solvers.sdp_solver.step_canonicalizers.nonneg_orthant_proj_step import (
     nonneg_orthant_proj_bound_canon, nonneg_orthant_proj_canon)
 
@@ -57,6 +63,7 @@ SET_CANON_METHODS = {
 STEP_CANON_METHODS = {
     BlockStep: block_step_canon,
     LinearStep: linear_step_canon,
+    NonNegLinStep: nonneg_lin_canon,
     NonNegProjStep: nonneg_orthant_proj_canon,
     MaxWithVecStep: max_vec_canon,
     MinWithVecStep: min_vec_canon,
@@ -77,6 +84,7 @@ RLT_CANON_STEP_METHODS = {
 
 OBJ_CANON_METHODS = {
     ConvergenceResidual: conv_resid_canon,
+    L1ConvResid: l1_conv_resid_canon,
     OuterProdTrace: outer_prod_trace_canon,
 }
 

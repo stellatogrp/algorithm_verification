@@ -13,7 +13,7 @@ class GlobalHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP
-        self.N = self.CP.N
+        self.K = self.CP.K
         if 'model' in kwargs:
             self.model = kwargs['model']
         else:
@@ -107,7 +107,7 @@ class GlobalHandler(object):
             self.param_list.append(param_var)
 
     def create_iterate_bound_map(self):
-        N = self.CP.N
+        K = self.K
         for init_set in self.CP.get_init_sets():
             if len(self.mult_traj_param_list) > 0:
                 iterate = init_set.get_iterate()
@@ -115,8 +115,8 @@ class GlobalHandler(object):
                 for param_var in self.mult_traj_param_list:
                     traj_sets = self.param_to_mult_traj_map[param_var]
                     for i, single_traj in enumerate(traj_sets):
-                        lb = np.zeros((N + 1, n))
-                        ub = np.zeros((N + 1, n))
+                        lb = np.zeros((K + 1, n))
+                        ub = np.zeros((K + 1, n))
                         canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
                         l, u = canon_method(init_set)
                         lb[0] = l
@@ -126,8 +126,8 @@ class GlobalHandler(object):
             else:
                 iterate = init_set.get_iterate()
                 n = iterate.get_dim()
-                lb = np.zeros((N + 1, n))
-                ub = np.zeros((N + 1, n))
+                lb = np.zeros((K + 1, n))
+                ub = np.zeros((K + 1, n))
                 canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
                 l, u = canon_method(init_set)
                 lb[0] = l
@@ -138,8 +138,8 @@ class GlobalHandler(object):
         for iterate in self.iterate_list:
             if iterate not in self.iterate_to_lower_bound_map:
                 n = iterate.get_dim()
-                lb = np.zeros((N + 1, n))
-                ub = np.zeros((N + 1, n))
+                lb = np.zeros((K + 1, n))
+                ub = np.zeros((K + 1, n))
                 self.iterate_to_lower_bound_map[iterate] = lb
                 self.iterate_to_upper_bound_map[iterate] = ub
             if len(self.mult_traj_param_list) > 0:
@@ -147,13 +147,13 @@ class GlobalHandler(object):
                     if (iterate, param_var, 0) not in self.iterate_to_lower_bound_map:
                         traj_sets = self.param_to_mult_traj_map[param_var]
                         for i, single_traj in enumerate(traj_sets):
-                            lb = np.zeros((N + 1, n))
-                            ub = np.zeros((N + 1, n))
+                            lb = np.zeros((K + 1, n))
+                            ub = np.zeros((K + 1, n))
                             self.iterate_to_lower_bound_map[(iterate, param_var, i)] = lb
                             self.iterate_to_upper_bound_map[(iterate, param_var, i)] = ub
 
         steps = self.CP.get_algorithm_steps()
-        for k in range(1, self.N + 1):
+        for k in range(1, self.K + 1):
             for step in steps:
                 canon_method = BOUND_STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
                 canon_method(step, k, self.iterate_to_id_map,
@@ -188,8 +188,7 @@ class GlobalHandler(object):
             
         self.iterate_to_gp_var_map = {u: u_var, v: v_var, z: z_var}
         """
-
-        N = self.CP.N
+        K = self.K
         for iterate in self.iterate_list:
             n = iterate.get_dim()
 
@@ -198,11 +197,10 @@ class GlobalHandler(object):
                 lb = self.iterate_to_lower_bound_map[iterate]
                 ub = self.iterate_to_upper_bound_map[iterate]
             else:
-                lb = -gp.GRB.INFINITY * np.ones((N + 1, n))
-                ub = gp.GRB.INFINITY * np.ones((N + 1, n))
-
+                lb = -gp.GRB.INFINITY * np.ones((K + 1, n))
+                ub = gp.GRB.INFINITY * np.ones((K + 1, n))
             # creates the variable
-            var = self.model.addMVar((N + 1, n),
+            var = self.model.addMVar((K + 1, n),
                                      name=iterate.get_name(),
                                      ub=ub,
                                      lb=lb)
@@ -241,7 +239,7 @@ class GlobalHandler(object):
 
     def canonicalize_steps(self):
         steps = self.CP.get_algorithm_steps()
-        for k in range(1, self.N + 1):
+        for k in range(1, self.K + 1):
             for step in steps:
                 canon_method = STEP_CANON_METHODS[type(step)]
                 canon_method(step, self.model, k,
@@ -257,8 +255,13 @@ class GlobalHandler(object):
         gp_obj = 0
         for obj in obj_list:
             obj_canon = OBJ_CANON_METHODS[type(obj)]
-            gp_obj += obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+            # new_obj, t, y, z = obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+            new_obj = obj_canon(obj, self.model, self.iterate_to_gp_var_map)
+            gp_obj += new_obj
         self.objective += gp_obj
+        # self.t = t
+        # self.y = y
+        # self.z = z
 
         if self.minimize:
             self.model.setObjective(gp_obj, gp.GRB.MINIMIZE)
@@ -288,6 +291,13 @@ class GlobalHandler(object):
         self.model.optimize()
         # x = self.iterate_list[-1]
         # print(self.iterate_to_gp_var_map[x].X)
+        # print(self.t.getValue())
+        # print('pos', self.y.X)
+        # print('neg', self.z.X)
+        # print('w', (self.y + self.z).getValue())
+        # w = (self.y + self.z).getValue()
+        # t = self.t.getValue()
+        # print(np.round(w - np.abs(t), 4))
         return self.model.objVal, self.model.Runtime
 
     def get_iterate_var_map(self):

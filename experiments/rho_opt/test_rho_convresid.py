@@ -196,13 +196,26 @@ def main():
     np.random.seed(4)
     n = 2
     P, A, c = generate_problem(n)
-    rho = generate_rho_opt(P, A)
-    # rho = 10
+    rho_opt = generate_rho_opt(P, A)
+    K = 1
+    # print(rho)
+    # exit(0)
+    rho_vals = [1, 5, rho_opt, 10, 25]
     test_with_cvxpy(P, A, c)
+    vals = []
 
-    res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="GLOBAL", minimize=False)
+    for rho in rho_vals:
+        res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)),
+                               K=K, solver="GLOBAL", minimize=False)
+        vals.append(res_g)
+
+    for rho, res_g in zip(rho_vals, vals):
+        print('rho:', rho)
+        print('res_g:', res_g)
+
+    # res_g = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="GLOBAL", minimize=False)
     # res_s = OSQP_cert_prob(P, A, c, rho, np.zeros((n, 1)), 1 * np.ones((n, 1)), K=1, solver="SDP", minimize=False)
-    print('g:', res_g)
+    # print('g:', res_g)
     # print('sdp:', res_s)
 
     # experiment_g()

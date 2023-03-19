@@ -1,8 +1,11 @@
+import time
+
 import cvxpy as cp
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import scipy.sparse as spa
+from lanczos import approx_min_eigvec
 from tqdm import trange
 
 
@@ -52,9 +55,12 @@ class CGALMaxCutTester(object):
             # cp.trace(X) == alpha,
         ]
         prob = cp.Problem(obj, constraints)
-        res = prob.solve()
-        print('obj', res)
-        print('Xopt', np.round(X.value, 3))
+        start = time.time()
+        res = prob.solve(verbose=True, solver=cp.MOSEK)
+        end = time.time()
+        print('cvxpy time', end - start)
+        print('cvxpy obj', res)
+        # print('Xopt', np.round(X.value, 3))
         return res
 
     def C(self, x):
@@ -72,6 +78,9 @@ class CGALMaxCutTester(object):
     def min_eigvec(self, M):
         # in the actual algorithm use lanczos, placeholder for now
         return [np.real(x) for x in spa.linalg.eigs(M, which='SR', k=1)]
+
+    def lanczos(self, M, q):
+        return approx_min_eigvec(M, q)
 
     def cgal(self, T=1000):
         print('----solving maxcut with cgal----')
@@ -93,7 +102,9 @@ class CGALMaxCutTester(object):
                 # return self.C(v) + Astar_w @ v
                 return self.C(v) + self.Astar_primitive(w, v)
             D = spa.linalg.LinearOperator((n, n), matvec=mv)
-            lambd, v = self.min_eigvec(D)
+            # lambd, v = self.min_eigvec(D)
+            # lambd, v = self.lanczos(D, 100)
+            lambd, v = self.lanczos(D, int(np.ceil((t ** .25) * np.log(n))))
             X = (1 - eta) * X + eta * alpha * (v @ v.T)
             # gamma_rhs = 4 * (alpha ** 2) * beta_0 * (Aop ** 2) / (t + 1) ** 1.5
             gamma_rhs = 4 * (alpha ** 2) * beta * (eta ** 2)
@@ -109,9 +120,11 @@ class CGALMaxCutTester(object):
             X_vals.append(X)
             y_vals.append(y)
             # print(np.trace(self.obj_C @ X))
-        print(np.trace(self.obj_C @ X))
-        print(X)
+        # print(np.trace(self.obj_C @ X))
+        # print(X)
         # print(self.A(X))
+        print('final feas:', self.proj_dist(X_vals[-1]))
+        print('final obj:', np.trace(self.obj_C @ X_vals[-1]))
         return X_vals, y_vals
 
     def proj_dist(self, X):
@@ -137,6 +150,7 @@ class CGALMaxCutTester(object):
         ax.axhline(y=0, color='black')
 
         plt.xlabel('$t$')
+        # plt.ylabel('values')
         plt.yscale('symlog')
         plt.legend()
         plt.show()
@@ -152,11 +166,14 @@ class CGALMaxCutTester(object):
 
 
 def main():
-    n = 10
+    n = 100
     test = CGALMaxCutTester(n, scale=True)
     cp_obj = test.solve_maxcut_cvxpy()
     # print(test.scale_C)
-    X_vals, y_vals = test.cgal(T=200)
+    start = time.time()
+    X_vals, y_vals = test.cgal(T=1000)
+    end = time.time()
+    print('time: ', end - start)
     test.process_plot_resids(X_vals, y_vals, cp_obj)
     # test.eig_test()
 
