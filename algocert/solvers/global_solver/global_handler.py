@@ -61,6 +61,32 @@ class GlobalHandler(object):
                 self.model.setParam('TimeLimit', self.TimeLimit)
 
     def create_iterate_id_maps(self):
+        """
+        creates self.iterate_to_id_map, self.id_to_iterate_map, self.iterate_list
+
+        ****************************************************************
+        Consider DR splitting on the problem
+
+        min .5 x^T P x + c^T x
+            s.t. Ax + s = b
+                 s \in K
+
+        where K is a cartesian product of cones
+
+        i.e. u^{i+1} = (M + I)^{-1}(z^i - q)
+             v^{i+1} = Pi(2u^{i+1} - z^i)
+             z^{i+1} = z^i + v^{i+1} - u^{i+1}
+
+        ****************************************************************
+        self.iterate_list is a list of the OUTPUT iterates of the steps
+        self.iterate_list = [u, v, z]
+        
+        self.iterate_to_id_map is a mapping from index of self.iterat_list to variable
+        self.iterate_to_id_map = {0: u, 1: v, 2: z}       
+
+        self.id_to_iterate_map is the reverse mapping
+        self.iterate_to_id_map = {u: 0, v: 1, z: 2}
+        """
         steps = self.CP.get_algorithm_steps()
         for i, step in enumerate(steps):
             iterate = step.get_output_var()
@@ -152,25 +178,42 @@ class GlobalHandler(object):
                 self.param_to_upper_bound_map[param] = u
 
     def create_iterate_gp_var_map(self):
+        """
+        creates a Gurobi variable for each iterate 
+        i.e. if we have x_1, \dots, x_N 
+            each x_i is a vector of length n
+            x will have shape (N + 1, n)
+
+        self.iterate_to_gp_var_map is a dictionary
+            
+        self.iterate_to_gp_var_map = {u: u_var, v: v_var, z: z_var}
+        """
         K = self.K
         for iterate in self.iterate_list:
-            # print(iterate)
             n = iterate.get_dim()
+
+            # adds bounds to variables
             if self.add_bounds:
                 lb = self.iterate_to_lower_bound_map[iterate]
                 ub = self.iterate_to_upper_bound_map[iterate]
             else:
                 lb = -gp.GRB.INFINITY * np.ones((K + 1, n))
                 ub = gp.GRB.INFINITY * np.ones((K + 1, n))
+            # creates the variable
             var = self.model.addMVar((K + 1, n),
                                      name=iterate.get_name(),
                                      ub=ub,
                                      lb=lb)
+            
             self.iterate_to_gp_var_map[iterate] = var
 
     def create_param_gp_var_map(self):
+        """
+        param_to_gp_var_map maps parameter to variable
+
+        self.param_to_gp_var_map = {'q': q_var}
+        """
         for param in self.param_list:
-            # print(param)
             m = param.get_dim()
             if self.add_bounds:
                 lb = self.param_to_lower_bound_map[param]
@@ -226,8 +269,13 @@ class GlobalHandler(object):
             self.model.setObjective(gp_obj, gp.GRB.MAXIMIZE)
 
     def canonicalize(self, **kwargs):
+        # create the gurobipy model
         self.create_gp_model()
+
+        # create the variables for each parameter
         self.create_param_list()
+
+        # create mappings from output to iterate 
         self.create_iterate_id_maps()
         if self.add_bounds:
             self.create_param_bound_map()

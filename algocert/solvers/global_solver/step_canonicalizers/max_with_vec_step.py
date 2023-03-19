@@ -5,6 +5,22 @@ from algocert.variables.parameter import Parameter
 
 
 def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):
+    """
+    adds the constraints of y = max(x, l) to the gurobi model
+
+    step: holds the following
+        y is the output variable
+        x is the input variable
+        l is the vec -- this could be a constant or a parameter
+    model: gurobi model
+    k: the current iteratation in the algorithm
+    iter_to_gp_var_map: {u_iter: u_var, v_iter: v_var, z_iter: z_var}
+    param_to_gp_var_map: {'q': q_var}
+    iter_to_id_map: {u_iter: 0, v_iter: 1, z_iter: 2}
+
+    Notes:
+    iter_to_id_map is only needed to figure out which iterate comes first
+    """
     y = step.get_output_var()
     x = step.get_input_var()
 
@@ -12,7 +28,14 @@ def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_
     x_varmatrix = iter_to_gp_var_map[x]
 
     y_var = y_varmatrix[k]
-    # print(iter_to_id_map[y], iter_to_id_map[x])
+
+    """
+    if x is ahead of y, then make 
+    y^k in terms of x^{k-1}
+
+    otherwise make
+    y^k in terms of x^k
+    """
     if iter_to_id_map[y] <= iter_to_id_map[x]:
         x_var = x_varmatrix[k - 1]
     else:
@@ -26,7 +49,6 @@ def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_
 
     model.addConstr(y_var >= l_vec)
     model.addConstr(y_var >= x_var)
-    # print(y_var.shape)
 
     w = model.addMVar(y_var.shape,
                       ub=gp.GRB.INFINITY * np.ones(y_var.shape),
@@ -39,6 +61,9 @@ def max_vec_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_
     model.addConstr(w == y_var - l_vec)
     # model.addConstr(w @ z == 0)
     n = x_var.shape[0]
+
+    # add the cosntraint z_i * w_i == 0 for all i
+    # note: this is not y^T(y - x) == 0
     for i in range(n):
         model.addConstr(z[i] * w[i] == 0)
 

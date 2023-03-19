@@ -4,9 +4,22 @@ import algocert.settings as s
 class CertificationProblem(object):
 
     """Docstring for CertificationProblem. """
-
     def __init__(self, K, init_sets, parameter_sets, objective, algorithm,
                  num_samples=1):
+        """
+            K: the number of iterations
+            init_sets: 
+            parameter_sets: 
+            objective: 
+            algorithm: a list of steps
+
+            i.e. something like
+            steps = [step1, step2, step3, step4]
+            zset = ConstSet(z, np.zeros((z_size, 1)))
+            qset = BoxSet(q, lower, upper)
+            self.obj = [ConvergenceResidual(z)]
+            CP = CertificationProblem(N, [zset], [qset], obj, self.steps)
+        """
         self.solver = None
         self.K = K
         self.num_samples = num_samples
