@@ -54,31 +54,11 @@ def finalize_lanczos(v_mat, alpha_vec, beta_vec):
     beta_trunc = beta_vec[:-1]
     l_test, v_test = eigh_tridiagonal(alpha_vec, beta_trunc, select='i', select_range=[0, 0])
 
-    # diffs = v_test - all_u
-    # print(diffs)
-    # print('norms of diff:', np.linalg.norm(diffs[0]), np.linalg.norm(diffs[:, 0]))
-
-    # xi = lambd[0]
-    # u = all_u[:, 0]
-    # u = all_u[:, 0].reshape(-1, 1)
-    # print(v_test.shape, u.shape, (v_test-u).shape)
-    # print('v_test - u norm:', np.linalg.norm(v_test - u))
-    # v = Q[:, :i+1] @ u
-    print('alpha_vec', alpha_vec)
-    print('beta_vec', beta_vec)
-
     xi = l_test[0]
     v = v_mat.T @ v_test
     v = v / jnp.linalg.norm(v)
     min_eval, min_evec = xi, v
-    print('min_eval', min_eval)
-    print('v_test', v_test.T)
-    print('init Q used', v_mat[0, :])
-    print('second Q used', v_mat[1, :])
-    print('third Q used', v_mat[2, :])
-    print('penultimate Q used', v_mat[-2, :])
-    print('final Q used', v_mat[-1, :])
-    print('v_mat shape', v_mat.shape)
+
     return min_eval, min_evec
 
 
