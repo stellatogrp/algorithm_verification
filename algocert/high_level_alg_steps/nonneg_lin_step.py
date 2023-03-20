@@ -66,6 +66,9 @@ class NonNegLinStep(Step):
             u_name += x.get_name() + ', '
         return f'{self.y.name} = NONNEGLINSTEP({u_name})'
 
+    def __repr__(self):
+        return self.__str__()
+
     def get_output_var(self):
         return self.y
 

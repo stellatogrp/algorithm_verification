@@ -6,7 +6,7 @@ class NymstromSketch(object):
         Represents the Nymstrom Sketch of a matrix S = X @ Omega
         Omega is dimension n x R, where R is the sketch size and (usually) a small number
             (i.e. R is on the order of 100 or so)
-        Omega is
+        Omega is sampled elementwise from a standard Gaussian
     """
 
     def __init__(self, n, R, X_init=None, eps=1e-6):
@@ -23,7 +23,7 @@ class NymstromSketch(object):
     def rank_one_update(self, v, eta):
         assert len(v.shape) == 2, f'v shape: {v.shape}'
         assert v.shape[1] == 1, f'v shape: {v.shape}, needs to be n x 1'
-        self.S = (1 - eta) * self.S + eta * v * v.T @ self.Omega
+        self.S = (1 - eta) * self.S + eta * v @ v.T @ self.Omega
 
     def reconstruct(self):
         """
@@ -33,7 +33,7 @@ class NymstromSketch(object):
         eta = np.sqrt(self.n) * self.eps * np.max(np.linalg.norm(self.S, axis=0))
         S_eta = self.S + eta * self.Omega
         B = self.Omega.T @ S_eta
-        B = .5 * (B + B.T)
+        B = .5 * (B + B.T)  # this is for robustness in the cholesky factorization
 
         # source to convert the matlab code:
         #  https://stackoverflow.com/questions/1007442/mrdivide-function-in-matlab-what-is-it-doing-and-how-can-i-do-it-in-python
@@ -43,7 +43,8 @@ class NymstromSketch(object):
         U, Sigma, _ = np.linalg.svd(Y, full_matrices=False)
         # print(Sigma.shape)
         # Sigma_sq = np.diag(np.square(Sigma) - eta)
-        Delta = np.maximum(np.diag(np.square(Sigma) - eta), 0)
+        # Delta = np.maximum(np.diag(np.square(Sigma) - eta), 0)
+        Delta = np.maximum(np.square(Sigma) - eta, 0)
         return U, Delta
 
 
@@ -64,7 +65,7 @@ def main():
     S.rank_one_update(w, .25)
     U, Delta = S.reconstruct()
     print(U.shape, Delta.shape)
-    test = U @ Delta @ U.T
+    test = U @ np.diag(Delta) @ U.T
     print(np.linalg.norm(A - test))
 
 
