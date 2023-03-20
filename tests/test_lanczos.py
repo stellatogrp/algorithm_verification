@@ -1,6 +1,9 @@
-import numpy as np
-from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec, scipy_mineigval, lanczos_matrix
 import jax.numpy as jnp
+import numpy as np
+
+from algocert.solvers.sdp_cgal_solver.lanczos import (approx_min_eigvec,
+                                                      lanczos_matrix,
+                                                      scipy_mineigval)
 
 
 def test_lanczos_numpy():

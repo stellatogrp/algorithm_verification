@@ -1,11 +1,13 @@
-import numpy as np
-import scipy.sparse as spa
-from scipy.linalg import eigh_tridiagonal
+from functools import partial
+
 import jax
 import jax.numpy as jnp
+import numpy as np
+import scipy.sparse as spa
 from jax import lax
-from functools import partial
 from jax.config import config
+from scipy.linalg import eigh_tridiagonal
+
 config.update("jax_enable_x64", True)
 
 
