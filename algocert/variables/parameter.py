@@ -3,7 +3,7 @@ from algocert.variables.variable import Variable
 
 class Parameter(Variable):
     """
-    Parameter is a subclass of algocert's Variable object 
+    Parameter is a subclass of algocert's Variable object
     """
 
     def __init__(self, n, name='-'):
