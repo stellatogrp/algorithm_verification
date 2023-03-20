@@ -38,8 +38,11 @@ def lanczos(M_op, lanczos_iters, n):
         M(min_evec) = min_eval * min_evec
     """
     v_init = init_lanczos(n)
+
     v_mat, alpha_vec, beta_vec = lanczos_for_loop(M_op, v_init, lanczos_iters)
+
     min_eval, min_evec = finalize_lanczos(v_mat, alpha_vec, beta_vec)
+
     return min_eval, min_evec
 
 
@@ -52,6 +55,9 @@ def init_lanczos(n):
 def finalize_lanczos(v_mat, alpha_vec, beta_vec):
     # beta_trunc needs to take first i-1 entries, while alpha_vec takes first i entries
     beta_trunc = beta_vec[:-1]
+
+    # this line errors - todo figure out why
+    # l_test, v_test = jax.scipy.linalg.eigh_tridiagonal(alpha_vec, beta_trunc, select='i', select_range=[0, 0])
     l_test, v_test = eigh_tridiagonal(alpha_vec, beta_trunc, select='i', select_range=[0, 0])
 
     xi = l_test[0]
@@ -76,6 +82,7 @@ def lanczos_for_loop(M_op, v_init, lanczos_iters):
     """
     n = v_init.size
     lanczos_iter_partial = partial(lanczos_iter_fori_loop, M_op=M_op)
+    raw_iter_partial = partial(lanczos_iter_raw, M_op=M_op)
 
     # initialize v_mat, alpha_vec, beta_vec
     v_mat = jnp.zeros((lanczos_iters, n))
@@ -83,7 +90,7 @@ def lanczos_for_loop(M_op, v_init, lanczos_iters):
     alpha_vec, beta_vec = jnp.zeros(lanczos_iters), jnp.zeros(lanczos_iters)
 
     # unroll the first iteration since the logic is different
-    v_next, alpha, beta = lanczos_iter_raw(v_init, 0 * v_init, 0, M_op)
+    v_next, alpha, beta = raw_iter_partial(v_init, 0 * v_init, 0)
     v_mat = v_mat.at[1, :].set(v_next)
     alpha_vec = alpha_vec.at[0].set(alpha)
     beta_vec = beta_vec.at[0].set(beta)
@@ -97,7 +104,7 @@ def lanczos_for_loop(M_op, v_init, lanczos_iters):
     #   the point is to fill in the last entry of alpha_vec and beta_vec
     v_curr, v_prev = v_mat[lanczos_iters - 1, :], v_mat[lanczos_iters - 2, :]
     beta_prev = beta_vec[lanczos_iters - 2]
-    v_final, alpha_final, beta_final = lanczos_iter_raw(v_curr, v_prev, beta_prev, M_op)
+    v_final, alpha_final, beta_final = raw_iter_partial(v_curr, v_prev, beta_prev)
     alpha_vec = alpha_vec.at[-1].set(alpha_final)
     beta_vec = beta_vec.at[-1].set(beta_final)
 
@@ -126,6 +133,7 @@ def lanczos_iter_fori_loop(i, val, M_op):
     return v_mat, alpha_vec, beta_vec
 
 
+# @partial(jit, static_argnums=(3))
 def lanczos_iter_raw(v_curr, v_prev, beta_prev, M_op):
     """
     runs an iteration of the lanczos algorithm
@@ -148,6 +156,7 @@ def lanczos_iter_raw(v_curr, v_prev, beta_prev, M_op):
         zero for beta_prev and v_prev
     """
     v_tmp = M_op(v_curr)
+    # v_tmp = M_op @ v_curr
     alpha = v_curr @ v_tmp
     v_next = v_tmp - alpha * v_curr - beta_prev * v_prev
     beta = jnp.linalg.norm(v_next)
@@ -201,8 +210,8 @@ def approx_min_eigvec(M, q, tol=1e-6):
     # lambd, u = eigh_tridiagonal(alpha_trunc, beta_trunc, select='i', select_range=[0, 0])
     # lambd, all_u = eigh_tridiagonal(alpha_trunc, beta_trunc)
     # print(lambd, v_test.shape, u.shape)
-    print('alpha_trunc', alpha_trunc)
-    print('beta_trunc', beta_trunc)
+    # print('alpha_trunc', alpha_trunc)
+    # print('beta_trunc', beta_trunc)
 
     l_test, v_test = eigh_tridiagonal(alpha_trunc, beta_trunc, select='i', select_range=[0, 0])
 

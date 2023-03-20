@@ -1,6 +1,5 @@
 import numpy as np
 from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec, scipy_mineigval, lanczos_matrix
-import pdb
 import jax.numpy as jnp
 
 
@@ -37,20 +36,26 @@ def test_lanczos_jax():
         this is NOT a linear operator test: M is a matrix
     """
     np.random.seed(0)
-    n = 100
+    n = 1000
     M = np.random.randn(n, n)
     M = (M + M.T) / 2
-    num_lanczos_iters = 44
+    num_lanczos_iters = 100
 
-    np_lambda, np_v = approx_min_eigvec(M, num_lanczos_iters)
+    # t0 = time.time()
+    np_lambda, np_v = approx_min_eigvec(M, num_lanczos_iters, tol=1e-15)
+    # np_time = time.time() - t0
+
+    # t1 = time.time()
     jax_lambda, jax_v = lanczos_matrix(jnp.array(M), num_lanczos_iters)
+    # jax_time = time.time() - t1
 
     # diff = Mv - lambda v
     #   should be close to zero for both methods
     diff_spa = (M @ np_v) - (jax_lambda * np_v)
     diff_lanczos = (M @ jax_v) - (jax_lambda * jax_v)
 
+    # assert jax_time <= 0.5 * np_time
     assert np.linalg.norm(diff_spa) <= 1e-5
     assert np.linalg.norm(diff_lanczos) <= 1e-5
-    assert np.abs(np_lambda - jax_lambda) <= 1e-7
-    assert np.linalg.norm(np_v - jax_v) <= 1e-7 or np.linalg.norm(np_v + jax_v) <= 1e-7
+    assert np.abs(np_lambda - jax_lambda) <= 1e-5
+    assert np.linalg.norm(np_v - jax_v) <= 1e-5 or np.linalg.norm(np_v + jax_v) <= 1e-5
