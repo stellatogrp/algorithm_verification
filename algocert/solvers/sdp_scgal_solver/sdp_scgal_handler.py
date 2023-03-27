@@ -4,7 +4,8 @@ import scipy.sparse as spa
 from algocert.solvers.sdp_scgal_solver import (OBJ_CANON_METHODS,
                                                SET_PREPROCESS_METHODS,
                                                SET_PRIMITIVE_2_METHODS,
-                                               STEP_PREPROCESS_METHODS)
+                                               STEP_PREPROCESS_METHODS,
+                                               STEP_PRIMITIVE_2_METHODS)
 
 
 class SDPSCGALHandler(object):
@@ -152,14 +153,16 @@ class SDPSCGALHandler(object):
                 sample_dict[step] = step_dict
             self.sample_step_constraint_bounds[i] = sample_dict
         print('sample step contr bounds:', self.sample_step_constraint_bounds)
-        print(self.constr_counter)
+        print('number of constraints:', self.constr_counter)
         # print(np.vstack(self.b_lower), np.vstack(self.b_upper))
         # print(len(np.vstack(self.b_lower)), len(np.vstack(self.b_upper)))
 
     def create_primitives(self):
         self.primitive1 = self.create_primitive_1()
         self.primitive2 = self.create_primitive_2()
-        self.primitive2(np.zeros(self.problem_dim), np.zeros(self.constr_counter))
+        # test = self.primitive2(np.zeros(self.problem_dim), np.zeros(self.constr_counter))
+        test = self.primitive2(np.ones(self.problem_dim), np.ones(self.constr_counter))
+        print(test)
 
     def create_primitive_1(self):
         """
@@ -207,10 +210,34 @@ class SDPSCGALHandler(object):
             # first, initial sets:
             for init_set in self.CP.get_init_sets():
                 canon_method = SET_PRIMITIVE_2_METHODS[type(init_set)]
+                x_indices = self.init_iter_range_map[init_set.get_iterate()]
                 z_indices = self.init_set_constraint_bounds[init_set]
-                # print(z_indices)
+                print(z_indices)
                 z_vals = z[z_indices[0]: z_indices[1]]
-                out = canon_method(u, init_set, z_vals, self)
+                out += canon_method(u, init_set, x_indices, z_vals, self)
+
+            # then, parameter sets:
+            for i in range(self.num_samples):
+                # self.sample_param_constraint_bounds = {}
+                sample_param_var_bounds = self.sample_iter_bound_map[i]
+                sample_param_constr_bounds = self.sample_param_constraint_bounds[i]
+                print(sample_param_var_bounds, sample_param_constr_bounds)
+                for param_set in self.CP.get_parameter_sets():
+                    canon_method = SET_PRIMITIVE_2_METHODS[type(param_set)]
+                    x_indices = sample_param_var_bounds[param_set.get_iterate()]
+                    z_indices = sample_param_constr_bounds[param_set]
+                    print(z_indices)
+                    z_vals = z[z_indices[0]: z_indices[1]]
+                    out += canon_method(u, param_set, x_indices, z_vals, self)
+
+            # lastly, the steps:
+            for i in range(self.num_samples):
+                steps = self.alg_steps
+                for step in steps:
+                    for k in range(1, self.K + 1):
+                        canon_method = STEP_PRIMITIVE_2_METHODS[type(step)]
+
+            return out
 
         return p2
 

@@ -11,6 +11,8 @@ from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.solvers.sdp_cgal_solver.obj_canonicalizers.convergence_residual import \
     conv_resid_canon
+from algocert.solvers.sdp_cgal_solver.set_canonicalizers.box_set import \
+    box_set_canon
 from algocert.solvers.sdp_cgal_solver.set_canonicalizers.centered_l2_ball_set import \
     centered_l2_ball_canon
 from algocert.solvers.sdp_cgal_solver.step_canonicalizers.hl_linear_step import \
@@ -27,6 +29,7 @@ OBJ_CANON_METHODS = {
 }
 
 SET_CANON_METHODS = {
+    BoxSet: box_set_canon,
     CenteredL2BallSet: centered_l2_ball_canon,
 }
 

@@ -9,6 +9,8 @@ from tqdm import trange
 from algocert.solvers.sdp_cgal_solver import (OBJ_CANON_METHODS,
                                               SET_CANON_METHODS,
                                               STEP_CANON_METHODS)
+from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec
+from algocert.solvers.sdp_cgal_solver.nymstrom import NymstromSketch
 
 
 class SDPCGALHandler(object):
@@ -220,9 +222,13 @@ class SDPCGALHandler(object):
     def minimum_eigvec(self, X):
         return spa.linalg.eigs(X, which='SR', k=1)
 
+    def lanczos(self, M, q):
+        return approx_min_eigvec(M, q)
+
     def solve(self):
-        cp_res = self.test_with_cvxpy()
-        print(cp_res)
+        # cp_res = self.test_with_cvxpy()
+        # print(cp_res)
+        cp_res = 0
         # exit(0)
         # np.random.seed(0)
         alpha = 5
@@ -252,12 +258,17 @@ class SDPCGALHandler(object):
             xi = np.real(xi[0])
             v = np.real(v)
 
-            # if xi > 0:
-            #     H = alpha * np.outer(v, v)
-            # else:
-            #     H = np.zeros(X.shape)
+            # qt = int(np.ceil((t ** .25) * np.log(n)))
+            # xi, v = self.lanczos(D, qt)
+            # print(xi)
+            # exit(0)
 
-            H = alpha * np.outer(v, v)
+            if xi < 0:
+                H = alpha * np.outer(v, v)
+            else:
+                H = np.zeros(X.shape)
+
+            # H = alpha * np.outer(v, v)
             # print(np.trace(H))
 
             Xnew = (1 - eta) * X + eta * H
@@ -319,3 +330,117 @@ class SDPCGALHandler(object):
         plt.show()
         # plt.savefig('test.pdf')
         return 0
+
+    def solve_sketchy(self, R=2):
+        # cp_res = self.test_with_cvxpy()
+        # print(cp_res)
+        cp_res = 0
+        # exit(0)
+        # np.random.seed(0)
+        alpha = 5
+        beta_zero = 1
+        A_op = self.estimate_A_op()
+        K = np.inf
+        n = self.problem_dim
+        d = len(self.A_matrices)
+        z = np.zeros(d)
+        y = np.zeros(d)
+        S = NymstromSketch(n, R)
+        T = 1000
+        obj_vals = []
+        z_resids = []
+        y_resids = []
+        feas_vals = []
+        start = time.time()
+        for t in trange(1, T+1):
+            beta = beta_zero * np.sqrt(t + 1)
+            eta = 2 / (t + 1)
+            # X = np.outer(z, z)
+            w = self.proj(z + y / beta)
+            D = self.C_matrix + self.Astar_z(y + beta * (z - w))
+
+            xi, v = self.minimum_eigvec(D)
+            xi = np.real(xi[0])
+            v = np.real(v)
+
+            # qt = int(np.ceil((t ** .25) * np.log(n)))
+            # print(qt)
+            # test_xi, test_v = self.lanczos(D, qt)
+            # xi, v = self.lanczos(D, qt)
+            # print(v.shape, test_v.shape)
+            # print(xi)
+            # print(np.abs(xi - test_xi))
+            # print(np.linalg.norm(v - test_v))
+            # print(test_xi - test_v.T @ D @ test_v)
+
+            if xi < 0:
+                H = alpha * np.outer(v, v)
+                znew = (1 - eta) * z + eta * self.AX(H)
+            else:
+                # H = np.zeros((v.shape[0], v.shape[0]))
+                znew = (1 - eta) * z
+
+            # znew = (1 - eta) * z + eta * self.AX(H)
+            zresid = np.linalg.norm(z - znew)
+            z = znew
+
+            beta_plus = beta_zero * np.sqrt(t + 2)
+
+        #     # compute gamma
+            wbar = self.proj(z + y / beta_plus)
+        #     # rhs = (2 * alpha * A_op) ** 2 * beta / (t + 1) ** 1.5
+            rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
+        #     # print(alpha, A_op, beta, t)
+        #     # print(rhs)
+            gamma = rhs / np.linalg.norm(z - wbar) ** 2
+            gamma = min(beta_zero, gamma)
+        #     # gamma = .01
+        #     # print(gamma)
+        #     # gamma = .01
+
+            ynew = y + gamma * (z - wbar)
+            yresid = np.linalg.norm(y-ynew)
+        #     # print('y resid:', yresid)
+            if np.linalg.norm(ynew) < K:
+                y = ynew
+            else:
+                print('exceed')
+        #     new_obj = np.trace(self.C_matrix @ X)
+        #     # print('obj', new_obj)
+        #     # obj_vals.append(np.trace(self.C_matrix @ X))
+        #     obj_vals.append(new_obj)
+        #     X_resids.append(Xresid)
+            z_resids.append(zresid)
+            y_resids.append(yresid)
+        #     # print('feas', self.proj_dist(self.AX(X)))
+            feas_vals.append(self.proj_dist(z))
+        #     # pt = np.trace(self.C_matrix @ X)
+        #     # zt = self.AX(X)
+        #     # print(pt + y @ wbar + .5 * beta * (zt - wbar) @ (zt + wbar) - xi)
+        #     # print(np.linalg.norm(zt - wbar))
+            S.rank_one_update(np.sqrt(alpha) * v, eta)
+            U, Delta = S.reconstruct()
+            p = np.trace(self.C_matrix @ U @ np.diag(Delta) @ U.T)
+            obj_vals.append(p)
+        # # print(X_resids, len(X_resids))
+        end = time.time()
+        print(end-start)
+        fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
+
+        fig.suptitle(f'SketchyCGAL progress, $R={R}$, $K=1$, total time = {np.round(end-start, 3)} (s)')
+        ax0.plot(range(1, T+1), z_resids, label='z resid')
+        ax0.plot(range(1, T+1), y_resids, label='y resid')
+        ax0.plot(range(1, T+1), feas_vals, label='dist onto K')
+        ax0.set_yscale('log')
+        ax0.legend()
+
+        ax1.plot(range(1, T+1), obj_vals, label='obj')
+        ax1.axhline(y=cp_res, linestyle='--', color='black')
+        # ax.axhline(y=0, color='black')
+        # plt.title('Objectives')
+        plt.xlabel('$t$')
+        ax1.set_yscale('symlog')
+        ax1.legend()
+        plt.show()
+        # # plt.savefig('test.pdf')
+        # return 0

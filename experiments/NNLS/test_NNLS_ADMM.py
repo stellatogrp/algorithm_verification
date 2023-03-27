@@ -59,13 +59,17 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, xset=None, bset=None):
     # bset = BoxSet(b, b_l, b_u)
 
     obj = ConvergenceResidual(x)
-    CP = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1, add_RLT_constraints=False)
+    CP = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
 
     # CP.problem_data = qp_problem_data
     # CP.print_cp()
-    res = CP.solve(solver_type='SDP_CGAL')
+    # res = CP.solve(solver_type='SDP_CGAL')
     # res = CP.solve(solver_type='SDP')
-    print(res)
+
+    canon = CP.canonicalize(solver_type='SDP_CGAL')
+    # print(res)
+    canon.handler.solve_sketchy()
+    # canon.handler.solve()
 
 
 def main():

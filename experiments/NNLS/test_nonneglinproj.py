@@ -39,7 +39,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     obj = [ConvergenceResidual(x)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps, num_samples=2)
+    CP = CertificationProblem(K, initsets, paramsets, obj, steps, num_samples=1)
     res = CP.solve(solver_type=solver_type, add_bounds=True,
                    add_RLT=False, TimeLimit=3600, minimize=False)
     # print('global', resg)
@@ -86,12 +86,12 @@ def main():
     np.random.seed(0)
     m = 5
     n = 3
-    K = 2
+    K = 1
     A = np.random.randn(m, n)
     # s = 'GLOBAL'
     # s = 'SDP'
-    # s = 'SDP_SCGAL'
-    s = 'SDP_CGAL'
+    s = 'SDP_SCGAL'
+    # s = 'SDP_CGAL'
     res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
     # res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type='SDP')
     print('combined nonneglinstep:', res1)
