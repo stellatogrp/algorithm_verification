@@ -4,6 +4,222 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
 from tqdm import trange
+import jax.numpy as jnp
+import jax.lax as lax
+from functools import partial
+from algocert.solvers.sdp_cgal_solver.lanczos import lanczos
+
+
+def cgal_solve_np():
+    # cp_res = self.test_with_cvxpy()
+    # print(cp_res)
+    cp_res = 0
+    # exit(0)
+    # np.random.seed(0)
+    alpha = 5
+    beta_zero = 1
+    A_op = self.estimate_A_op()
+    K = np.inf
+    n = self.problem_dim
+    d = len(self.A_matrices)
+    X = np.zeros((n, n))
+    y = np.zeros(d)
+    T = 500
+    obj_vals = []
+    X_resids = []
+    y_resids = []
+    feas_vals = []
+
+    for t in trange(1, T+1):
+        beta = beta_zero * np.sqrt(t + 1)
+        eta = 2 / (t + 1)
+        w = self.proj(self.AX(X) + y / beta)
+        D = self.C_matrix + self.Astar_z(y + beta * (self.AX(X) - w))
+
+        xi, v = self.minimum_eigvec(D)
+        xi = np.real(xi[0])
+        v = np.real(v)
+
+        if xi < 0:
+            H = alpha * np.outer(v, v)
+        else:
+            H = np.zeros(X.shape)
+
+        # H = alpha * np.outer(v, v)
+
+        Xnew = (1 - eta) * X + eta * H
+        Xresid = np.linalg.norm(X - Xnew)
+        X = Xnew
+
+        beta_plus = beta_zero * np.sqrt(t + 2)
+
+        # compute gamma
+        wbar = self.proj(self.AX(X) + y / beta_plus)
+        rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
+        gamma = rhs / np.linalg.norm(self.AX(X) - wbar) ** 2
+        gamma = min(beta_zero, gamma)
+
+
+        ynew = y + gamma * (self.AX(X) - wbar)
+        yresid = np.linalg.norm(y-ynew)
+        if np.linalg.norm(ynew) < K:
+            y = ynew
+        else:
+            print('exceed')
+        new_obj = np.trace(self.C_matrix @ X)
+        obj_vals.append(new_obj)
+        X_resids.append(Xresid)
+        y_resids.append(yresid)
+        feas_vals.append(self.proj_dist(self.AX(X)))
+
+
+def cgal(A_op, C_op, A_star_op, b, alpha, T, m, n, lightweight=False):
+    """
+    jax implementation of the cgal algorithm to solve
+
+    min Tr(CX)
+        s.t. Tr(A_i X) = b_i i=1, ..., m
+             X is psd
+
+    Primitives:
+        C_op(x) = C x
+            R^n --> R^n
+        A_op(u) = (Tr(A_1 X), ..., Tr(A_m X))
+             = mathcal{A} vec(X)
+                where mathcal{A} = [vec(A_1), ..., vec(A_m)]
+            R^n --> R^m
+        A_star_op(u, z) = A^*(z) u
+            = sum_i z_i A_i u
+            (R^n, R^m) --> R^n
+
+
+    Algorithm: 3.1 of https://arxiv.org/pdf/1912.02949.pdf
+    Init:
+        beta_0 = 1
+        K = inf
+        X = zeros(n, n)
+        y = zeros(m)
+    for i in range(T):
+        beta = beta_0 sqrt(i + 1)
+        eta = 2 / (i + 1)
+        q_t = t^{1/4} log n
+        (lambda, v) = approxMinEvec(C + A^*(y + beta(AX -b)), q_t)
+        X = (1 - eta) X + eta (alpha vv^T)
+        y = y + gamma(AX - b)
+
+    inputs:
+        C_op: linear operator (see first primitive)
+        A_op: linear operator (see second primitive)
+        A_star_op: linear operator (see third primitive)
+        b: right hand side vector (shape (m))
+        T: number of iterations
+        m: number of constraints
+        n: number of rows of matrix of the standard form sdp
+    outputs:
+        X: primal solution - (n, n) matrix
+        y: dual solution - (m) vector
+    """
+
+    # initialize cgal
+    beta0, K, X_init, y_init = cgal_init(m, n)
+
+    # cgal for loop
+    final_val = cgal_for_loop(A_op, C_op, A_star_op, b, alpha, T,
+                              X_init, y_init, beta0, jit=False, lightweight=lightweight)
+    X, y, obj_vals, infeases, X_resids, y_resids = final_val
+    return X, y, obj_vals, infeases, X_resids, y_resids
+
+
+def cgal_init(m, n):
+    beta0, K = 1, jnp.inf
+    X, y = jnp.zeros((n, n)), jnp.zeros(m)
+
+    return beta0, K, X, y
+
+
+def cgal_for_loop(A_op, C_op, A_star_op, b, alpha, T, X_init, y_init, beta0,
+                  jit=False, lightweight=False):
+    m = b.size
+    n = X_init.shape[0]
+    partial_cgal_iter = partial(cgal_iteration,
+                                C_op=C_op,
+                                A_op=A_op,
+                                A_star_op=A_star_op,
+                                b=b,
+                                alpha=alpha,
+                                m=m,
+                                n=n,
+                                beta0=beta0,
+                                lightweight=lightweight)
+    obj_vals, infeases = jnp.zeros(T), jnp.zeros(T)
+    X_resids, y_resids = jnp.zeros(T), jnp.zeros(T)
+    init_val = X_init, y_init, obj_vals, infeases, X_resids, y_resids
+    if jit:
+        final_val = lax.fori_loop(0, T, partial_cgal_iter, init_val)
+    else:
+        final_val = python_fori_loop(0, T, partial_cgal_iter, init_val)
+    X, y, obj_vals, infeases, X_resids, y_resids = final_val
+    return X, y, obj_vals, infeases, X_resids, y_resids
+
+
+def python_fori_loop(lower, upper, body_fun, init_val):
+    val = init_val
+    for i in range(lower, upper):
+        val = body_fun(i, val)
+    return val
+
+
+def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, lightweight):
+    X, y, obj_vals, infeases, X_resids, y_resids = init_val
+    beta = beta0 * jnp.sqrt(i + 1)
+    eta = 2 / (i + 1)
+    # q = jnp.array(jnp.power(i, .25) * jnp.log(n), int)
+    q = 20
+
+    # get w
+    # w = self.proj(self.AX(X) + y / beta)
+
+    # create the new partial operator
+    #   A_star_partial_op(u) = A_star(u, z)
+    #   where z = y + beta(AX -b)
+    z = y + beta * (A_op(X) - b)
+    A_star_partial_op = partial(A_star_op, z=z)
+
+    # create new operator as input into lanczos
+    def evec_op(u):
+        return C_op(u) + A_star_partial_op(u)
+
+    # get minimum eigenvector
+    lambd, v = lanczos(evec_op, q, n)
+
+    # if lambd < 0:
+    #     H = 0 * X
+    # else:
+    #     H = alpha * jnp.outer(v, v)
+    H = alpha * jnp.outer(v, v)
+
+    # compute gamma
+    gamma_rhs = 4 * (alpha ** 2) * beta * (eta ** 2)
+    w = A_op(X) - b
+    primal_infeas = np.linalg.norm(w)
+
+    gamma = gamma_rhs / primal_infeas ** 2
+    gamma = min(gamma, beta0)
+
+    # update primal and dual solutions with min evec
+    X_next = (1 - eta) * X + eta * H
+    y_next = y + gamma * w
+
+    # compute progress and store it if lightweight is set to False
+    if not lightweight:
+        # obj_vals = obj_vals.at[i].set(C_op(X))
+        # infeases = infeases.at[i].set(jnp.linalg.norm(A_op(X) - b))
+        X_resids = X_resids.at[i].set(jnp.linalg.norm(X - X_next))
+        y_resids = y_resids.at[i].set(jnp.linalg.norm(y - y_next))
+
+    # update the val for the lax.fori_loop
+    val = X_next, y_next, obj_vals, infeases, X_resids, y_resids
+    return val
 
 
 class CGALTester(object):
