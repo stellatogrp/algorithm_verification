@@ -8,6 +8,7 @@ import jax.numpy as jnp
 import jax.lax as lax
 from functools import partial
 from algocert.solvers.sdp_cgal_solver.lanczos import lanczos
+from jax.experimental import sparse
 
 
 def cgal_solve_np():
@@ -125,7 +126,7 @@ def cgal(A_op, C_op, A_star_op, b, alpha, T, m, n, lightweight=False):
 
     # cgal for loop
     final_val = cgal_for_loop(A_op, C_op, A_star_op, b, alpha, T,
-                              X_init, y_init, beta0, jit=False, lightweight=lightweight)
+                              X_init, y_init, beta0, jit=True, lightweight=lightweight)
     X, y, obj_vals, infeases, X_resids, y_resids = final_val
     return X, y, obj_vals, infeases, X_resids, y_resids
 
@@ -183,14 +184,19 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, li
     #   A_star_partial_op(u) = A_star(u, z)
     #   where z = y + beta(AX -b)
     z = y + beta * (A_op(X) - b)
-    A_star_partial_op = partial(A_star_op, z=z)
+    A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(z, 1))
 
     # create new operator as input into lanczos
     def evec_op(u):
-        return C_op(u) + A_star_partial_op(u)
+        # we take the negative since lobpcg_standard finds the largest evec
+        return -C_op(u) - A_star_partial_op(u)
 
     # get minimum eigenvector
-    lambd, v = lanczos(evec_op, q, n)
+    # lambd, v = lanczos(evec_op, q, n)
+    # import pdb
+    # pdb.set_trace()
+    lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.ones((n, 1)))
+    lambd, v = lobpcg_out[0], lobpcg_out[1]
 
     # if lambd < 0:
     #     H = 0 * X
@@ -201,10 +207,10 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, li
     # compute gamma
     gamma_rhs = 4 * (alpha ** 2) * beta * (eta ** 2)
     w = A_op(X) - b
-    primal_infeas = np.linalg.norm(w)
+    primal_infeas = jnp.linalg.norm(w)
 
     gamma = gamma_rhs / primal_infeas ** 2
-    gamma = min(gamma, beta0)
+    gamma = jnp.min(jnp.array([gamma, beta0]))
 
     # update primal and dual solutions with min evec
     X_next = (1 - eta) * X + eta * H
