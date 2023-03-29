@@ -175,7 +175,7 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, li
     beta = beta0 * jnp.sqrt(i + 1)
     eta = 2 / (i + 1)
     # q = jnp.array(jnp.power(i, .25) * jnp.log(n), int)
-    q = 20
+    # q = 20
 
     # get w
     # w = self.proj(self.AX(X) + y / beta)
@@ -193,8 +193,6 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, li
 
     # get minimum eigenvector
     # lambd, v = lanczos(evec_op, q, n)
-    # import pdb
-    # pdb.set_trace()
     lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.ones((n, 1)))
     lambd, v = lobpcg_out[0], lobpcg_out[1]
 
