@@ -1,6 +1,8 @@
 import time
 
 import cvxpy as cp
+# import jax.experimental.sparse as jspa
+# import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
@@ -9,7 +11,7 @@ from tqdm import trange
 from algocert.solvers.sdp_cgal_solver import (OBJ_CANON_METHODS,
                                               SET_CANON_METHODS,
                                               STEP_CANON_METHODS)
-from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec
+from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec, lanczos
 from algocert.solvers.sdp_cgal_solver.nymstrom import NymstromSketch
 
 
@@ -165,6 +167,8 @@ class SDPCGALHandler(object):
             Ai = self.A_matrices[i]
             b_li = self.b_lowerbounds[i]
             b_ui = self.b_upperbounds[i]
+            if b_li == -np.inf:
+                b_li = -1000
             if b_ui == np.inf:
                 b_ui = 1000
             constraints += [
@@ -224,42 +228,153 @@ class SDPCGALHandler(object):
 
     def lanczos(self, M, q):
         return approx_min_eigvec(M, q)
+        # return lanczos(M, q, M.shape[0])
 
-    def solve(self):
-        # cp_res = self.test_with_cvxpy()
-        # print(cp_res)
-        cp_res = 0
+    def lanczos_jax(self, M, q):
+        return lanczos(M, q, self.problem_dim)
+
+    def warmstartX_vec(self):
+        out = np.zeros((self.problem_dim, 1))
+        out[-1, 0] = 1
+        # first, initsets:
+        for init_set in self.CP.get_init_sets():
+            x = init_set.get_iterate()
+            sample = init_set.sample_point()
+            (x_l, x_u) = self.init_iter_range_map[x]
+            # print(sample)
+            out[x_l: x_u] = sample
+
+        # then, paramsets:
+        for param_set in self.CP.get_parameter_sets():
+            for i in range(self.num_samples):
+                sample_dict = self.sample_iter_bound_map[i]
+                x = param_set.get_iterate()
+                (x_l, x_u) = sample_dict[x]
+                sample = param_set.sample_point()
+                # print(sample)
+                out[x_l: x_u] = sample
+
+        # then, steps:
+        for i in range(self.num_samples):
+            steps = self.alg_steps
+            sample_dict = self.sample_iter_bound_map[i]
+            for step in steps:
+                for k in range(1, self.K + 1):
+                    y_out = step.apply(k, self.iterate_to_id_map, sample_dict, out)
+                    # (self, k, iter_to_id_map, ranges, out):
+                    y_range = sample_dict[k][step.get_output_var()]
+                    if y_out is not None:
+                        out[y_range[0]: y_range[1]] = y_out
+
+        # print(out, out.shape)
         # exit(0)
+        return out
+
+    def warmstartX(self):
+        X_vec = self.warmstartX_vec()
+        return X_vec @ X_vec.T
+
+    def compare_warmstart(self):
+        start = time.time()
+        X_resids, y_resids, feas_vals, obj_vals, cp_res = self.solve(
+            plot=False, get_X=False, warmstart=False, return_resids=True)
+        end = time.time()
+        ws_X, ws_y, ws_feas, ws_obj, _ = self.solve(plot=False, get_X=False, warmstart=True, return_resids=True)
+
+        fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
+
+        fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+        T = len(X_resids)
+        ax0.plot(range(1, T+1), X_resids, color='b', label='X resid')
+        ax0.plot(range(1, T+1), y_resids, color='r', label='y resid')
+        ax0.plot(range(1, T+1), feas_vals, color='g', label='dist onto K')
+
+        ax0.plot(range(1, T+1), ws_X, color='b', linestyle='--')
+        ax0.plot(range(1, T+1), ws_y, color='r', linestyle='--')
+        ax0.plot(range(1, T+1), ws_feas, color='g', linestyle='--')
+        ax0.set_yscale('log')
+        ax0.legend()
+
+        ax1.plot(range(1, T+1), obj_vals, label='obj')
+        ax1.plot(range(1, T+1), ws_obj, linestyle='--')
+        ax1.axhline(y=cp_res, linestyle='--', color='black')
+        # ax.axhline(y=0, color='black')
+        # plt.title('Objectives')
+        plt.xlabel('$t$')
+        ax1.set_yscale('symlog')
+        ax1.legend()
+        plt.show()
+
+    def solve(self, plot=True, get_X=False, warmstart=False, return_resids=False):
+        cp_res = self.test_with_cvxpy()
+        print(cp_res)
+        # cp_res = 0
         # np.random.seed(0)
-        alpha = 5
+        # alpha = 5
+        alpha = 7
         beta_zero = 1
         A_op = self.estimate_A_op()
         K = np.inf
         n = self.problem_dim
         d = len(self.A_matrices)
-        X = np.zeros((n, n))
-        y = np.zeros(d)
+        if warmstart:
+            print('warm starting')
+            X = self.warmstartX()
+            y = self.AX(X)
+            # y = np.zeros(d)
+            # exit(0)
+            print('ws first obj:', np.trace(self.C_matrix @ X))
+        else:
+            X = np.zeros((n, n))
+            y = np.zeros(d)
+            print('non ws first obj:', np.trace(self.C_matrix @ X))
         T = 500
         obj_vals = []
         X_resids = []
         y_resids = []
         feas_vals = []
+
+        # for debugging lanczos:
+        xi_diffs = []
+        v_norm_diffs = []
+
         start = time.time()
         for t in trange(1, T+1):
             # print(t)
             beta = beta_zero * np.sqrt(t + 1)
             eta = 2 / (t + 1)
             w = self.proj(self.AX(X) + y / beta)
-            D = self.C_matrix + self.Astar_z(y + beta * (self.AX(X) - w))
+            D_mat = self.C_matrix + self.Astar_z(y + beta * (self.AX(X) - w))
+            # D_jax = jnp.asarray(D_mat.todense())
+            # D_jax = jspa.BCOO.fromdense(D_mat.todense())
+            # print(type(D_jax))
+            # exit(0)
+
+            def mv(v):
+                return D_mat @ v
+
+            # def jax_mv(v):
+            #     return D_jax @ v
+
+            # D = self.C_matrix + self.Astar_z(y + beta * (self.AX(X) - w))
+            D = spa.linalg.LinearOperator((n, n), matvec=mv)
             # print(D)
 
-            # out = self.minimum_eigvec(D)
             xi, v = self.minimum_eigvec(D)
             xi = np.real(xi[0])
             v = np.real(v)
 
             # qt = int(np.ceil((t ** .25) * np.log(n)))
+            # qt = n
+            # test_xi, test_v = self.lanczos(D, qt)
             # xi, v = self.lanczos(D, qt)
+            # xi_diffs.append(np.abs(xi - test_xi))
+            # v_norm_diffs.append(np.linalg.norm(v - test_v))
+
+            # xi, test_v = self.lanczos_jax(mv, qt)
+            # xi, v = self.lanczos_jax(jax_mv, qt)
+
+            # print(np.linalg.norm(v-test_v))
             # print(xi)
             # exit(0)
 
@@ -311,30 +426,35 @@ class SDPCGALHandler(object):
             # print(np.linalg.norm(zt - wbar))
         # print(X_resids, len(X_resids))
         end = time.time()
-        fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
+        if plot:
+            fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
 
-        fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
-        ax0.plot(range(1, T+1), X_resids, label='X resid')
-        ax0.plot(range(1, T+1), y_resids, label='y resid')
-        ax0.plot(range(1, T+1), feas_vals, label='dist onto K')
-        ax0.set_yscale('log')
-        ax0.legend()
+            fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+            ax0.plot(range(1, T+1), X_resids, label='X resid')
+            ax0.plot(range(1, T+1), y_resids, label='y resid')
+            ax0.plot(range(1, T+1), feas_vals, label='dist onto K')
+            ax0.set_yscale('log')
+            ax0.legend()
 
-        ax1.plot(range(1, T+1), obj_vals, label='obj')
-        ax1.axhline(y=cp_res, linestyle='--', color='black')
-        # ax.axhline(y=0, color='black')
-        # plt.title('Objectives')
-        plt.xlabel('$t$')
-        ax1.set_yscale('symlog')
-        ax1.legend()
-        plt.show()
+            ax1.plot(range(1, T+1), obj_vals, label='obj')
+            ax1.axhline(y=cp_res, linestyle='--', color='black')
+            # ax.axhline(y=0, color='black')
+            # plt.title('Objectives')
+            plt.xlabel('$t$')
+            ax1.set_yscale('symlog')
+            ax1.legend()
+            plt.show()
         # plt.savefig('test.pdf')
-        return 0
+        if get_X:
+            return X
+        if return_resids:
+            return X_resids, y_resids, feas_vals, obj_vals, cp_res
+        return D, xi_diffs, v_norm_diffs
 
     def solve_sketchy(self, R=2):
-        # cp_res = self.test_with_cvxpy()
-        # print(cp_res)
-        cp_res = 0
+        cp_res = self.test_with_cvxpy()
+        print(cp_res)
+        # cp_res = 0
         # exit(0)
         # np.random.seed(0)
         alpha = 5
@@ -346,7 +466,7 @@ class SDPCGALHandler(object):
         z = np.zeros(d)
         y = np.zeros(d)
         S = NymstromSketch(n, R)
-        T = 1000
+        T = 500
         obj_vals = []
         z_resids = []
         y_resids = []
@@ -357,7 +477,13 @@ class SDPCGALHandler(object):
             eta = 2 / (t + 1)
             # X = np.outer(z, z)
             w = self.proj(z + y / beta)
-            D = self.C_matrix + self.Astar_z(y + beta * (z - w))
+            D_mat = self.C_matrix + self.Astar_z(y + beta * (z - w))
+
+            def mv(v):
+                return D_mat @ v
+
+            # D = self.C_matrix + self.Astar_z(y + beta * (z - w))
+            D = spa.linalg.LinearOperator((n, n), matvec=mv)
 
             xi, v = self.minimum_eigvec(D)
             xi = np.real(xi[0])
@@ -365,13 +491,14 @@ class SDPCGALHandler(object):
 
             # qt = int(np.ceil((t ** .25) * np.log(n)))
             # print(qt)
-            # test_xi, test_v = self.lanczos(D, qt)
+            # xi, test_v = self.lanczos(D, qt)
             # xi, v = self.lanczos(D, qt)
             # print(v.shape, test_v.shape)
             # print(xi)
             # print(np.abs(xi - test_xi))
             # print(np.linalg.norm(v - test_v))
             # print(test_xi - test_v.T @ D @ test_v)
+            # print((test_v.T @ D @ test_v)[0][0] - xi)
 
             if xi < 0:
                 H = alpha * np.outer(v, v)

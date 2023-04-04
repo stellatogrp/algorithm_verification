@@ -92,6 +92,8 @@ class CGALMaxCutTester(object):
         y = np.zeros(d)
         X_vals = [X]
         y_vals = [y]
+        xi_diffs = []
+        v_norm_diffs = []
         for t in trange(1, T+1):
             beta = beta_0 * np.sqrt(t + 1)
             eta = 2 / (t + 1)
@@ -105,6 +107,9 @@ class CGALMaxCutTester(object):
             # lambd, v = self.min_eigvec(D)
             # lambd, v = self.lanczos(D, 100)
             lambd, v = self.lanczos(D, int(np.ceil((t ** .25) * np.log(n))))
+            sp_lambd, sp_v = self.min_eigvec(D)
+            xi_diffs.append(np.abs(sp_lambd[0] - lambd))
+            v_norm_diffs.append(np.linalg.norm(sp_v - v))
             X = (1 - eta) * X + eta * alpha * (v @ v.T)
             # gamma_rhs = 4 * (alpha ** 2) * beta_0 * (Aop ** 2) / (t + 1) ** 1.5
             gamma_rhs = 4 * (alpha ** 2) * beta * (eta ** 2)
@@ -125,7 +130,7 @@ class CGALMaxCutTester(object):
         # print(self.A(X))
         print('final feas:', self.proj_dist(X_vals[-1]))
         print('final obj:', np.trace(self.obj_C @ X_vals[-1]))
-        return X_vals, y_vals
+        return X_vals, y_vals, xi_diffs, v_norm_diffs
 
     def proj_dist(self, X):
         return np.linalg.norm(self.A(X) - self.b)
@@ -155,6 +160,20 @@ class CGALMaxCutTester(object):
         plt.legend()
         plt.show()
 
+    def plot_sp_vs_lanc(self, xi_diffs, v_norm_diffs):
+        T = len(xi_diffs)
+        fig, ax = plt.subplots(figsize=(6, 4))
+        ax.plot(range(T), xi_diffs, label='val diff', color='red')
+        ax.plot(range(T), v_norm_diffs, label='vec diff', color='blue')
+        ax.axhline(y=2)
+        plt.xlabel('t')
+        plt.yscale('log')
+        plt.legend()
+        plt.title('maxcut scipy vs lanc')
+        # print(np.array(xi_diffs) - np.array(v_norm_diffs))
+        print(xi_diffs)
+        plt.show()
+
     def eig_test(self):
         n = 10
         A = np.random.randn(n, n)
@@ -168,13 +187,14 @@ class CGALMaxCutTester(object):
 def main():
     n = 100
     test = CGALMaxCutTester(n, scale=True)
-    cp_obj = test.solve_maxcut_cvxpy()
+    # cp_obj = test.solve_maxcut_cvxpy()
     # print(test.scale_C)
     start = time.time()
-    X_vals, y_vals = test.cgal(T=1000)
+    X_vals, y_vals, xi_diffs, v_norm_diffs = test.cgal(T=500)
     end = time.time()
     print('time: ', end - start)
-    test.process_plot_resids(X_vals, y_vals, cp_obj)
+    # test.process_plot_resids(X_vals, y_vals, cp_obj)
+    test.plot_sp_vs_lanc(xi_diffs, v_norm_diffs)
     # test.eig_test()
 
 

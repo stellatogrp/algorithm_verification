@@ -30,6 +30,7 @@ def centered_l2_ball_canon(init_set, handler):
         output_mat = spa.lil_matrix((problem_dim, problem_dim))
         init_dict = handler.init_iter_range_map
         x0_bound = init_dict[x]
+        # print(x0_bound)
         (x0_l, x0_u) = x0_bound
         output_mat[x0_l: x0_u, x0_l: x0_u] = spa.eye(x_dim)
         b_l = 0

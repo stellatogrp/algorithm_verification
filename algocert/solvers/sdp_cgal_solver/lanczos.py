@@ -8,6 +8,8 @@ from jax import lax
 from jax.config import config
 from scipy.linalg import eigh_tridiagonal
 
+# from tqdm import trange
+
 config.update("jax_enable_x64", True)
 
 
@@ -174,6 +176,8 @@ def approx_min_eigvec(M, q, tol=1e-6):
     np.random.seed(0)
     n = M.shape[0]
     T = min(q, n-1)
+    # T = q
+    # print(f'lanczos with {T} iterations')
     v = np.random.randn(n)
     v = v / np.linalg.norm(v)
 
@@ -256,11 +260,11 @@ def main():
     # D = spa.linalg.LinearOperator((n, n), matvec=mv)
 
     spa_lambda, spa_v = scipy_mineigval(M)
-    lanc_lambda, lanc_v = approx_min_eigvec(M, 21)
+    lanc_lambda, lanc_v = approx_min_eigvec(M, 99)
     # print(spa_v, lanc_v)
     print('scipy lambd:', spa_lambda[0])
     print('lanczos lambd:', lanc_lambda)
-    print('eigval diff:', np.linalg.norm(spa_v - lanc_v))
+    print('eigvec diff:', np.linalg.norm(spa_v - lanc_v))
 
     print(spa_v.T @ M @ spa_v)
     print(lanc_v.T @ M @ lanc_v)
