@@ -101,6 +101,10 @@ def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_
     rescale_obj = 1 / (scale_c * scale_x)
     rescale_feas = 1 / (scale_a * scale_x)
 
+    scaled_data = dict(C_op=C_op, A_op=A_op, A_star_op=A_star_op, alpha=alpha, norm_A=norm_A,
+                       b=b, rescale_obj=rescale_obj, rescale_feas=rescale_feas)
+    return scaled_data
+
     return C_op, A_op, A_star_op, alpha, norm_A, b, float(rescale_obj), float(rescale_feas)
 
 

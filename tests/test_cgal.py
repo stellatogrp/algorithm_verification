@@ -134,8 +134,11 @@ def test_cgal_scaling_maxcut():
 
     # solve with cgal with data scaling
     scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
-    C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data[:3]
-    alpha_scaled, norm_A_scaled, b_scaled, rescale_obj, rescale_feas = scaled_data[3:]
+    # C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data[:3]
+    # alpha_scaled, norm_A_scaled, b_scaled, rescale_obj, rescale_feas = scaled_data[3:]
+    C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data['C_op'], scaled_data['A_op'], scaled_data['A_star_op']
+    alpha_scaled, norm_A_scaled, b_scaled = scaled_data['alpha'], scaled_data['norm_A'], scaled_data['b']
+    rescale_obj, rescale_feas = scaled_data['rescale_obj'], scaled_data['rescale_feas']
 
     cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
                            rescale_obj, rescale_feas,
