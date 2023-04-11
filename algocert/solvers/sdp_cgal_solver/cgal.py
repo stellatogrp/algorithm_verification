@@ -265,7 +265,10 @@ def cgal_iteration(i, init_val, static_dict):
     if warm_start_v:
         lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, prev_v, m=lobpcg_iters, tol=lobpcg_tol)
     else:
-        lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.zeros((n, 1)), m=lobpcg_iters, tol=lobpcg_tol)
+        lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.ones((n, 1)), m=lobpcg_iters, tol=lobpcg_tol)
+
+    # XX = sparse.linalg._orthonormalize(prev_v)
+    # print('XX', XX)
 
     lambd, v, lobpcg_steps = lobpcg_out[0], lobpcg_out[1], lobpcg_out[2]
 
@@ -274,6 +277,7 @@ def cgal_iteration(i, init_val, static_dict):
     lambd = -lambd
 
     # this will be printed if jit set to false
+    print('prev_v', prev_v)
     print('z', z)
     print('lambd', lambd)
     print('lobpcg_steps', lobpcg_steps)

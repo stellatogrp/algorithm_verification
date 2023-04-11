@@ -8,6 +8,7 @@ from functools import partial
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import pytest
 
 
 def partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v, lobpcg_iters, lobpcg_tol=1e-5):
@@ -113,6 +114,60 @@ def solve_maxcut_cvxpy(L):
     return jnp.array(X_cvxpy.value)
 
 
+def test_warm_start_lobpcg():
+    n = 40
+    m = n
+    cgal_iters = 500
+
+    # random Laplacian
+    L = random_Laplacian_matrix(n)
+
+    # solve with cvxpy
+    X_cvxpy = solve_maxcut_cvxpy(L)
+    cvxpy_obj = -jnp.trace(L @ X_cvxpy)
+
+    # problem data for cgal
+    C_op, A_op, A_star_op, b, alpha, norm_A, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
+
+    ###### solve with cgal
+    rescale_obj_orig, rescale_feas_orig = 1, 1
+    cgal_scaled_out = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
+                           rescale_obj_orig, rescale_feas_orig,
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-5, warm_start_v=True, jit=True)
+    # X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
+    obj_vals, infeases = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
+    # X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
+    lobpcg_steps = cgal_scaled_out['lobpcg_steps']
+
+    # relative measures of success
+    rel_obj = jnp.abs(cvxpy_obj - obj_vals) / (1 + jnp.abs(cvxpy_obj))
+    rel_infeas = infeases / (1 + jnp.linalg.norm(b))
+
+    assert rel_obj[-1] <= 1e-2 and rel_obj[0] >= .05
+    assert rel_infeas[-1] <= 1e-2 and rel_infeas[0] >= .1
+
+
+    ###### solve with cgal with data scaling
+    cgal_scaled_out_cold = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
+                           rescale_obj_orig, rescale_feas_orig,
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-5, warm_start_v=False, jit=True)
+    # X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
+    obj_vals_cold, infeases_cold = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
+    # X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
+    lobpcg_steps_cold = cgal_scaled_out['lobpcg_steps']
+
+    # relative measures of success
+    rel_obj = jnp.abs(cvxpy_obj - obj_vals_cold) / (1 + jnp.abs(cvxpy_obj))
+    rel_infeas = infeases_cold / (1 + jnp.linalg.norm(b))
+
+    assert rel_obj[-1] <= 1e-2 and rel_obj[0] >= .05
+    assert rel_infeas[-1] <= 1e-2 and rel_infeas[0] >= .1
+
+    # compare lobpcg_iters -- they are identical
+    assert jnp.linalg.norm(lobpcg_steps_cold - lobpcg_steps) == 0
+
+
+# @pytest.mark.skip(reason="temp")
 def test_cgal_jit_speed():
     n = 100
     m = n
@@ -163,6 +218,7 @@ def test_cgal_jit_speed():
     assert jit_time <= .1 * non_jit_time
 
 
+# @pytest.mark.skip(reason="temp")
 def test_cgal_scaling_maxcut():
     n = 100
     m = n
