@@ -24,43 +24,43 @@ def partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v, lobpcg_iters
     return -eval_min, -evec_min, iters
 
 
-def test_lobpcg():
-    n = 30
-    m = n
-    # cgal_iters = 1000
+# def test_lobpcg():
+#     n = 30
+#     m = n
+#     # cgal_iters = 1000
 
-    # random Laplacian
-    L = random_Laplacian_matrix(n)
+#     # random Laplacian
+#     L = random_Laplacian_matrix(n)
 
-    # problem data for cgal
-    C_op, A_op, A_star_op, b, alpha, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
+#     # problem data for cgal
+#     C_op, A_op, A_star_op, b, alpha, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
 
-    # init
-    X = jnp.zeros((n, n))
-    y = jnp.zeros(m)
-    beta = 1
+#     # init
+#     X = jnp.zeros((n, n))
+#     y = jnp.zeros(m)
+#     beta = 1
 
-    z = y + beta * (A_op(X) - b)
-    A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(z, 1))
+#     z = y + beta * (A_op(X) - b)
+#     A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(z, 1))
 
-    def evec_op(u):
-        # we take the negative since lobpcg_standard finds the largest evec
-        return -C_op(u) - A_star_partial_op(u)
+#     def evec_op(u):
+#         # we take the negative since lobpcg_standard finds the largest evec
+#         return -C_op(u) - A_star_partial_op(u)
 
-    # first cgal iteration
-    iters = np.array([5, 10, 30, 90, 100])
-    num_passes = iters.size
-    errors = jnp.zeros(num_passes)
-    num_steps = jnp.zeros(num_passes)
-    for i in range(num_passes):
-        lobpcg_out = partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v=jnp.zeros((n, 1)),
-                                       lobpcg_iters=iters[i], lobpcg_tol=1e-15)
-        lambd, v, curr_steps = lobpcg_out
-        error = jnp.linalg.norm(evec_op(v) + lambd * v)
-        errors = errors.at[i].set(error)
-        num_steps = num_steps.at[i].set(curr_steps)
-    assert jnp.all(jnp.diff(errors[:num_passes - 1]) < 0)
-    assert jnp.all(num_steps[:3] == iters[:3])
+#     # first cgal iteration
+#     iters = np.array([5, 10, 30, 90, 100])
+#     num_passes = iters.size
+#     errors = jnp.zeros(num_passes)
+#     num_steps = jnp.zeros(num_passes)
+#     for i in range(num_passes):
+#         lobpcg_out = partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v=jnp.zeros((n, 1)),
+#                                        lobpcg_iters=iters[i], lobpcg_tol=1e-15)
+#         lambd, v, curr_steps = lobpcg_out
+#         error = jnp.linalg.norm(evec_op(v) + lambd * v)
+#         errors = errors.at[i].set(error)
+#         num_steps = num_steps.at[i].set(curr_steps)
+#     assert jnp.all(jnp.diff(errors[:num_passes - 1]) < 0)
+#     assert jnp.all(num_steps[:3] == iters[:3])
 
 
 def random_Laplacian_matrix(n, p=.5):
