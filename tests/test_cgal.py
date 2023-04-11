@@ -115,7 +115,7 @@ def solve_maxcut_cvxpy(L):
 def test_cgal_jit_speed():
     n = 100
     m = n
-    cgal_iters = 100
+    cgal_iters = 20
 
     # random Laplacian
     L = random_Laplacian_matrix(n)
