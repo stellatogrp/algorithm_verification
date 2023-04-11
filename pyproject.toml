@@ -18,7 +18,8 @@ dependencies = [
     "jax",
     "jaxlib",
     "matplotlib",
-    "tqdm"
+    "tqdm",
+    "networkx"
 ]
 
 [tool.setuptools]
