@@ -16,7 +16,8 @@ dependencies = [
     "gurobipy",
     "Mosek",
     "jax",
-    "jaxlib"
+    "jaxlib",
+    "matplotlib
 ]
 
 [tool.setuptools]
