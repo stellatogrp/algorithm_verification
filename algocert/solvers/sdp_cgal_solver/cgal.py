@@ -253,16 +253,6 @@ def cgal_iteration(i, init_val, static_dict):
     eta = 2 / (i + 1)
 
     w = proj(z + y / beta)
-
-    # get w
-    # w = self.proj(self.AX(X) + y / beta)
-
-    # create the new partial operator
-    #   A_star_partial_op(u) = A_star(u, z)
-    #   where z = y + beta(AX -b)
-    # z = y + beta * (A_op(X) - b)
-    # import pdb
-    # pdb.set_trace()
     a_star_z_fixed = y + beta * (z - w)
     A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(a_star_z_fixed, 1))
 
@@ -285,7 +275,6 @@ def cgal_iteration(i, init_val, static_dict):
 
     # this will be printed if jit set to false
     print('z', z)
-    # print('evec(z)', evec_op(z))
     print('lambd', lambd)
     print('lobpcg_steps', lobpcg_steps)
 
@@ -296,14 +285,13 @@ def cgal_iteration(i, init_val, static_dict):
     z_next = (1 - eta) * z + eta * new_z_dir
 
     # calculate primal direction
-    H = vvT # alpha * vvT * (lambd < 0)
+    H = vvT
 
     # update primal
     X_next = (1 - eta) * X + eta * H
 
     # compute gamma
-    gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)  # (i+1)**1.5 #* (eta ** 2)
-    w = A_op(X) - b
+    gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
 
     # dual update
     w = z_next - proj(z_next + y / beta)
@@ -316,7 +304,10 @@ def cgal_iteration(i, init_val, static_dict):
     #   reject if the new ||y_t|| > K
     y_temp = y + gamma * w
     y_next = y + gamma * w * (jnp.linalg.norm(y_temp) <= y_max)
+
+    # update computationally cheap progress
     infeases = infeases.at[i].set(primal_infeas * rescale_feas)
+    lobpcg_steps_mat = lobpcg_steps_mat.at[i].set(lobpcg_steps)
 
     # compute progress and store it if lightweight is set to False
     if not lightweight:
@@ -324,7 +315,7 @@ def cgal_iteration(i, init_val, static_dict):
         # infeases = infeases.at[i].set(jnp.linalg.norm(A_op(X) - b))
         X_resids = X_resids.at[i].set(jnp.linalg.norm(X - X_next))
         y_resids = y_resids.at[i].set(jnp.linalg.norm(y - y_next))
-        lobpcg_steps_mat = lobpcg_steps_mat.at[i].set(lobpcg_steps)
+        
 
     # update the val for the lax.fori_loop
     val = X_next, y_next, z_next, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, v
