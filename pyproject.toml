@@ -17,7 +17,8 @@ dependencies = [
     "Mosek",
     "jax",
     "jaxlib",
-    "matplotlib"
+    "matplotlib",
+    "tqdm"
 ]
 
 [tool.setuptools]
