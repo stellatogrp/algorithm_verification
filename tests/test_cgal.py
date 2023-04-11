@@ -108,7 +108,7 @@ def solve_maxcut_cvxpy(L):
     constraints = [X_cvxpy >> 0, cp.diag(X_cvxpy) == 1]
     obj = cp.Minimize(-cp.trace(L @ X_cvxpy))
     prob = cp.Problem(obj, constraints)
-    prob.solve()
+    prob.solve(solver=cp.SCS)
     return jnp.array(X_cvxpy.value)
 
 
