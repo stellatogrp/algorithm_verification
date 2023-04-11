@@ -249,8 +249,8 @@ def cgal_iteration(i, init_val, static_dict):
 
     # unpack init_val
     X, y, z, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, prev_v = init_val
-    beta = beta0 * jnp.sqrt(i + 1)
-    eta = 2 / (i + 1)
+    beta = beta0 * jnp.sqrt(i + 2)
+    eta = 2 / (i + 2)
 
     w = proj(z + y / beta)
     a_star_z_fixed = y + beta * (z - w)
@@ -280,6 +280,7 @@ def cgal_iteration(i, init_val, static_dict):
 
     # update z
     v_alpha = jnp.sqrt(alpha) * v * (lambd < 0)
+    v_alpha = v_alpha.squeeze()
     vvT = jnp.outer(v_alpha, v_alpha)
     new_z_dir = A_op(vvT)
     z_next = (1 - eta) * z + eta * new_z_dir
@@ -289,6 +290,17 @@ def cgal_iteration(i, init_val, static_dict):
 
     # update primal
     X_next = (1 - eta) * X + eta * H
+
+    # update primal objective
+    obj_addition = v_alpha @ C_op(v_alpha)
+
+    # obj_vals[index] takes the previous primal objective
+    #   in case i == 0 then we take index = 0, else index = i - 1
+    #   if i == 0 then the previous primal objective is zero
+    # we update the primal objective without forming the matrix
+    index = (i - 1) * (i > 0)
+    prev_obj = obj_vals[index] / rescale_obj
+    primal_obj = (1 - eta) * prev_obj + eta * obj_addition
 
     # compute gamma
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
@@ -308,10 +320,11 @@ def cgal_iteration(i, init_val, static_dict):
     # update computationally cheap progress
     infeases = infeases.at[i].set(primal_infeas * rescale_feas)
     lobpcg_steps_mat = lobpcg_steps_mat.at[i].set(lobpcg_steps)
+    obj_vals = obj_vals.at[i].set(primal_obj * rescale_obj)
 
     # compute progress and store it if lightweight is set to False
     if not lightweight:
-        obj_vals = obj_vals.at[i].set(jnp.trace(C_op(X)) * rescale_obj)
+        # obj_vals = obj_vals.at[i].set(jnp.trace(C_op(X)) * rescale_obj)
         # infeases = infeases.at[i].set(jnp.linalg.norm(A_op(X) - b))
         X_resids = X_resids.at[i].set(jnp.linalg.norm(X - X_next))
         y_resids = y_resids.at[i].set(jnp.linalg.norm(y - y_next))
