@@ -233,9 +233,17 @@ class SDPSCGALHandler(object):
             # lastly, the steps:
             for i in range(self.num_samples):
                 steps = self.alg_steps
+                i_sample_step_bounds = self.sample_step_constraint_bounds[i]
                 for step in steps:
+                    step_constr_bounds = i_sample_step_bounds[step]
                     for k in range(1, self.K + 1):
                         canon_method = STEP_PRIMITIVE_2_METHODS[type(step)]
+                        z_indices = step_constr_bounds[k]
+                        print(z_indices)
+                        z_vals = z[z_indices[0]: z_indices[1]]
+                        sample_iter_bounds = self.sample_iter_bound_map[i]
+                        temp = canon_method(u, step, k, z_vals, sample_iter_bounds, self)
+                        out += temp
 
             return out
 

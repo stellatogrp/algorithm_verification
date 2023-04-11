@@ -24,6 +24,7 @@ class NonNegLinStep(Step):
         u_dim = 0
         for x in self.u:
             u_dim += x.get_dim()
+        self.u_dim = u_dim
         C_dim = self.C.shape
         y_dim = self.y.get_dim()
         b_dim = self.b.shape[0]

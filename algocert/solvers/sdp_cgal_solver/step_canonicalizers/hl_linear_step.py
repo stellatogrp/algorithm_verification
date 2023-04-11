@@ -2,6 +2,10 @@ import numpy as np
 import scipy.sparse as spa
 
 
+def check_symmetric(a, tol=1e-6):
+    return np.all(np.abs(a-a.T) < tol)
+
+
 def hl_linear_step_canon(step, k, handler):
     D = step.get_lhs_matrix()
     D = D.todense()
@@ -11,6 +15,7 @@ def hl_linear_step_canon(step, k, handler):
     b = b.todense().reshape(-1, 1)
     y = step.get_output_var()
     u = step.get_input_var()  # remember that this is a block of variables
+    # u_dim = step.u_dim
     iter_to_id_map = handler.iterate_to_id_map
     iter_to_k_map = {}
 
@@ -70,6 +75,7 @@ def hl_linear_step_canon(step, k, handler):
                 start = x_u - x_l
             outmat = (outmat + outmat.T) / 2
             # print((outmat.todense() == outmat.todense().T))
+            # print(check_symmetric(outmat.todense()))
             b_l = b[j, 0]
             b_u = b[j, 0]
             A_curr += [outmat]
@@ -85,7 +91,8 @@ def hl_linear_step_canon(step, k, handler):
                 # first D yyT DT
                 Dm = D[m]
                 Dn = D[n]
-                outmat[y_l: y_u, y_l: y_u] = np.outer(Dm, Dn)
+                DmDnT = np.outer(Dm, Dn)
+                outmat[y_l: y_u, y_l: y_u] = (DmDnT + DmDnT.T) / 2
 
                 # next C uuT CT
                 for j in range(len(u)):
@@ -103,25 +110,91 @@ def hl_linear_step_canon(step, k, handler):
                         # print(A[i], B[j])
                         # print(np.outer(A[i], B[:, j]).shape)
                         abT = -np.outer(A[m], B[n])
-                        outmat[x_l: x_u, z_l: z_u] = abT
-                        if j != k:
+                        if j == k:
+                            outmat[x_l: x_u, z_l: z_u] = abT
+                        else:
+                            outmat[x_l: x_u, z_l: z_u] = abT
                             outmat[z_l: z_u, x_l: x_u] = abT.T
+                            # outmat[z_l: z_u, x_l: x_u] = abT.T / 2
+                        # if j != k:
+                        #     outmat[z_l: z_u, x_l: x_u] = abT.T / 2
                 # then C u bT and b uT CT
                 for j in range(len(u)):
                     x = u[j]
                     A = mats[j]
                     (x_l, x_u) = iter_bounds_map[x]
                     abT = -np.outer(A[m], b[n])
-                    outmat[x_l: x_u, -1] = abT
-                    outmat[-1, x_l: x_u] = abT
+                    outmat[x_l: x_u, -1] = abT / 2
+                    outmat[-1, x_l: x_u] = abT / 2
 
                 # print('mat', outmat)
                 # print((outmat.todense() == outmat.todense().T))
+                outmat = (outmat + outmat.T)/2
+                # print(check_symmetric(outmat.todense()))
                 b_l = b[m, 0] * b[n, 0]
                 b_u = b[m, 0] * b[n, 0]
                 A_curr += [outmat]
                 b_lcurr += [b_l]
                 b_ucurr += [b_u]
+
+        # lastly, DyuT - C uuT - buT = 0
+
+        # TODO: finish
+        # I_udim = spa.csc_matrix(spa.eye(u_dim))
+
+        # for n in range(u_dim):
+        #     print(step.map_overall_dim_to_x(n))
+
+        # for m in range(y_dim):
+        #     # overall_udim = 0
+        #     outmat = spa.lil_matrix((problem_dim, problem_dim))
+        #     y_bounds = sample_dict[k][y]
+        #     (y_l, y_u) = y_bounds
+        #     Dm = D[m]
+        #     # for j in range(len(u)):
+        #     #     x = u[j]
+        #     for n in range(u_dim):
+        #         In = I_udim[n]
+        #         DIT = np.outer(Dm, In)
+        #         curr_udim = 0
+        #         for j in range(len(u)):
+        #             # first, DyuT - buT
+        #             x = u[j]
+        #             x_dim = x.get_dim()
+        #             (x_l, x_u) = iter_bounds_map[x]
+
+        #             # for k in range(j, len(u)):
+        #             #     z = u[k]
+        #             #     A = mats[j]
+        #             #     B = mats[k]
+        #             #     (x_l, x_u) = iter_bounds_map[x]
+        #             #     (z_l, z_u) = iter_bounds_map[z]
+
+        # TODO: finish
+        for m in range(y_dim):
+            Dm = D[m]
+            # bi = b[i, 0]
+            y_bounds = sample_dict[k][y]
+            (y_l, y_u) = y_bounds
+            overall_udim = 0
+            # for n in range(u_dim):
+            #     outmat = spa.lil_matrix((problem_dim, problem_dim))
+            for j in range(len(u)):
+                x = u[j]
+                x_dim = x.get_dim()
+                (x_l, x_u) = iter_bounds_map[x]
+                for l in range(x_dim):
+                    # first, D yuT
+                    outmat = spa.lil_matrix((problem_dim, problem_dim))
+                    outmat[y_l: y_u, l+overall_udim] = Dm.T
+                    # print(outmat[y_l: y_u, l+overall_udim].shape, Dm.T.shape)
+
+                    # next, -buT
+                    # outmat[]
+
+                overall_udim += x_dim
+
+        # exit(0)
 
         A_vals += A_curr
         b_lvals += b_lcurr

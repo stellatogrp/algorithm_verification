@@ -14,3 +14,6 @@ class InitSet(object):
 
     def sdr_canonicalizer(self):
         raise NotImplementedError
+
+    def sample_point(self):
+        raise NotImplementedError
