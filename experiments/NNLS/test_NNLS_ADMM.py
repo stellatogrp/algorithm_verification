@@ -137,7 +137,8 @@ def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
     # print(np.linalg.norm(xset.sample_point()))
 
     # bset = CenteredL2BallSet(b, r=r)
-    bset = BoxSet(b, b_l, b_u)
+    bset = BoxSet(b, b_l, 5 * b_u)
+    # bset = BoxSet(b, b_l, b_u)
     # print(bset.sample_point())
     # exit(0)
 
@@ -152,7 +153,8 @@ def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
 
     # build_X
 
-    CP.canonicalize(solver_type='SDP_CGAL')
+    CP.canonicalize(solver_type='SDP_CGAL', scale=True)
+    CP.solve(plot=True, warmstart=False)
     # CP.solver.handler.compare_warmstart()
 
     # cgal_X = CP.solve(solver_type='SDP_CGAL', plot=True, get_X=True, warmstart=False, return_resids=True)

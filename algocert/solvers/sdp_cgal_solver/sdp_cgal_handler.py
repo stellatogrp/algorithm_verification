@@ -31,9 +31,14 @@ class SDPCGALHandler(object):
         self.range_marker = 0
         self.problem_dim = 0
         self.A_matrices = []
+        self.A_norms = []
         self.b_lowerbounds = []
         self.b_upperbounds = []
         self.C_matrix = None
+        if 'scale' in kwargs:
+            self.scale = kwargs['scale']
+        else:
+            self.scale = False
 
     def convert_hl_to_basic_steps(self):
         pass
@@ -141,6 +146,11 @@ class SDPCGALHandler(object):
         # Flipping objective to make the problem a minimization
         self.C_matrix = -self.C_matrix.tocsr()
         # print(self.C_matrix)
+        if self.scale:
+            self.C_scale = spa.linalg.norm(self.C_matrix)
+            self.C_matrix /= self.C_scale
+        else:
+            self.C_scale = 1
 
     def canonicalize(self):
         self.convert_hl_to_basic_steps()
@@ -156,6 +166,21 @@ class SDPCGALHandler(object):
         self.canonicalize_initial_sets()
         self.canonicalize_parameter_sets()
         self.canonicalize_steps()
+        if self.scale:
+            for i in range(len(self.A_matrices)):
+                Ai = self.A_matrices[i]
+                bl_i = self.b_lowerbounds[i]
+                bu_i = self.b_upperbounds[i]
+                # print(spa.linalg.norm(Ai))
+                Ai_norm = spa.linalg.norm(Ai)
+                self.A_norms.append(Ai_norm)
+                self.A_matrices[i] = Ai / Ai_norm
+                self.b_lowerbounds[i] = bl_i / Ai_norm
+                self.b_upperbounds[i] = bu_i / Ai_norm
+            # just check that it works:
+            # for i in range(len(self.A_matrices)):
+            #     Ai = self.A_matrices[i]
+            #     print(spa.linalg.norm(Ai))
         self.canonicalize_objective()
 
     def test_with_cvxpy(self):
@@ -182,12 +207,24 @@ class SDPCGALHandler(object):
         print('trace of X:', cp.trace(X).value)
         return res
 
-    def estimate_A_op(self):
-        X = np.random.rand(self.problem_dim, self.problem_dim)
-        X = X @ X.T
-        X = X / np.linalg.norm(X)
-        z = self.AX(X)
-        return np.linalg.norm(z)
+    def estimate_A_op(self, num_tries=1000):
+        '''
+        https://math.stackexchange.com/questions/2747959/frobenius-and-operator-norms-of-rank-1-matrices
+        '''
+        op_norm = 0
+        for _ in range(num_tries):
+            # X = np.random.rand(self.problem_dim, self.problem_dim)
+            # X = X @ X.T
+            # X = X / np.linalg.norm(X)
+            x = np.random.rand(self.problem_dim)
+            x /= np.linalg.norm(x)
+            X = np.outer(x, x)
+            z = self.AX(X)
+            test = np.linalg.norm(z)
+            if test > op_norm:
+                op_norm = test
+        print('estimated A_op:', op_norm)
+        return op_norm
 
     def AX(self, X):
         out = []
@@ -267,7 +304,6 @@ class SDPCGALHandler(object):
                         out[y_range[0]: y_range[1]] = y_out
 
         # print(out, out.shape)
-        # exit(0)
         return out
 
     def warmstartX(self):
@@ -281,39 +317,63 @@ class SDPCGALHandler(object):
         end = time.time()
         ws_X, ws_y, ws_feas, ws_obj, _ = self.solve(plot=False, get_X=False, warmstart=True, return_resids=True)
 
-        fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
+        # fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
+        fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(10, 8))
 
         fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
         T = len(X_resids)
-        ax0.plot(range(1, T+1), X_resids, color='b', label='X resid')
-        ax0.plot(range(1, T+1), y_resids, color='r', label='y resid')
-        ax0.plot(range(1, T+1), feas_vals, color='g', label='dist onto K')
+        # ax0.plot(range(1, T+1), X_resids, color='b', label='X resid')
+        ax[0, 0].plot(range(1, T+1), X_resids, label='X_resid')
+        ax[0, 0].set_yscale('log')
+        ax[0, 0].set_ylabel('X_resids')
+        ax[0, 0].plot(range(1, T+1), ws_X, linestyle='--')
 
-        ax0.plot(range(1, T+1), ws_X, color='b', linestyle='--')
-        ax0.plot(range(1, T+1), ws_y, color='r', linestyle='--')
-        ax0.plot(range(1, T+1), ws_feas, color='g', linestyle='--')
-        ax0.set_yscale('log')
-        ax0.legend()
+        ax[0, 1].plot(range(1, T+1), y_resids, label='y_resid')
+        ax[0, 1].set_yscale('log')
+        ax[0, 1].set_ylabel('y_resids')
+        ax[0, 1].plot(range(1, T+1), ws_y, linestyle='--')
 
-        ax1.plot(range(1, T+1), obj_vals, label='obj')
-        ax1.plot(range(1, T+1), ws_obj, linestyle='--')
-        ax1.axhline(y=cp_res, linestyle='--', color='black')
-        # ax.axhline(y=0, color='black')
-        # plt.title('Objectives')
-        plt.xlabel('$t$')
-        ax1.set_yscale('symlog')
-        ax1.legend()
+        ax[1, 0].plot(range(1, T+1), feas_vals, label='feas dist')
+        ax[1, 0].set_yscale('log')
+        ax[1, 0].set_ylabel('feas dist')
+        ax[1, 0].plot(range(1, T+1), ws_feas, linestyle='--')
+
+        ax[1, 1].plot(range(1, T+1), obj_vals, label='obj')
+        ax[1, 1].plot(range(1, T+1), ws_obj, linestyle='--')
+        ax[1, 1].axhline(y=cp_res, linestyle='--', color='black')
+        ax[1, 1].set_ylabel('obj')
+        ax[1, 1].set_yscale('symlog')
+        # ax0.plot(range(1, T+1), y_resids, color='r', label='y resid')
+        # ax0.plot(range(1, T+1), feas_vals, color='g', label='dist onto K')
+
+        # ax0.plot(range(1, T+1), ws_X, color='b', linestyle='--')
+        # ax0.plot(range(1, T+1), ws_y, color='r', linestyle='--')
+        # ax0.plot(range(1, T+1), ws_feas, color='g', linestyle='--')
+        # ax0.set_yscale('log')
+        # ax0.legend()
+
+        # ax1.plot(range(1, T+1), obj_vals, label='obj')
+        # ax1.plot(range(1, T+1), ws_obj, linestyle='--')
+        # ax1.axhline(y=cp_res, linestyle='--', color='black')
+        # # ax.axhline(y=0, color='black')
+        # # plt.title('Objectives')
+        # plt.xlabel('$t$')
+        # ax1.set_yscale('symlog')
+        # ax1.legend()
+        plt.legend()
         plt.show()
 
     def solve(self, plot=True, get_X=False, warmstart=False, return_resids=False):
         cp_res = self.test_with_cvxpy()
-        print(cp_res)
+        print('cp res:', cp_res)
+        print('C_scale:', self.C_scale)
         # cp_res = 0
         # np.random.seed(0)
         # alpha = 5
-        alpha = 7
+        alpha = 140
         beta_zero = 1
         A_op = self.estimate_A_op()
+        # exit(0)
         K = np.inf
         n = self.problem_dim
         d = len(self.A_matrices)
@@ -324,10 +384,12 @@ class SDPCGALHandler(object):
             # y = np.zeros(d)
             # exit(0)
             print('ws first obj:', np.trace(self.C_matrix @ X))
+            print('ws proj dist:', self.proj_dist(self.AX(X)))
         else:
             X = np.zeros((n, n))
             y = np.zeros(d)
             print('non ws first obj:', np.trace(self.C_matrix @ X))
+            print('non ws proj dist:', self.proj_dist(self.AX(X)))
         T = 500
         obj_vals = []
         X_resids = []
@@ -339,6 +401,7 @@ class SDPCGALHandler(object):
         v_norm_diffs = []
 
         start = time.time()
+        num_gamma_exceeds = 0
         for t in trange(1, T+1):
             # print(t)
             beta = beta_zero * np.sqrt(t + 1)
@@ -399,7 +462,12 @@ class SDPCGALHandler(object):
             rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
             # print(alpha, A_op, beta, t)
             # print(rhs)
-            gamma = rhs / np.linalg.norm(self.AX(X) - wbar) ** 2
+            rhs_denom = np.linalg.norm(self.AX(X) - wbar) ** 2
+            gamma = rhs / rhs_denom
+            if gamma >= beta_zero:
+                # print('rhs:', rhs, 'rhs_denom:', rhs_denom, 'gamma:', gamma)
+                # print(gamma)
+                num_gamma_exceeds += 1
             gamma = min(beta_zero, gamma)
             # gamma = .01
             # print(gamma)
@@ -426,6 +494,7 @@ class SDPCGALHandler(object):
             # print(np.linalg.norm(zt - wbar))
         # print(X_resids, len(X_resids))
         end = time.time()
+        print('number of times gamma exceeded beta_0:', num_gamma_exceeds)
         if plot:
             fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
 
@@ -457,7 +526,7 @@ class SDPCGALHandler(object):
         # cp_res = 0
         # exit(0)
         # np.random.seed(0)
-        alpha = 5
+        alpha = 10
         beta_zero = 1
         A_op = self.estimate_A_op()
         K = np.inf
@@ -516,7 +585,8 @@ class SDPCGALHandler(object):
         #     # compute gamma
             wbar = self.proj(z + y / beta_plus)
         #     # rhs = (2 * alpha * A_op) ** 2 * beta / (t + 1) ** 1.5
-            rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
+            # rhs = 4 * beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
+            rhs = beta * (eta ** 2) * (alpha ** 2) * (A_op ** 2)
         #     # print(alpha, A_op, beta, t)
         #     # print(rhs)
             gamma = rhs / np.linalg.norm(z - wbar) ** 2
