@@ -115,7 +115,7 @@ def solve_maxcut_cvxpy(L):
 def test_cgal_jit_speed():
     n = 100
     m = n
-    cgal_iters = 600
+    cgal_iters = 100
 
     # random Laplacian
     L = random_Laplacian_matrix(n)
@@ -139,6 +139,13 @@ def test_cgal_jit_speed():
     lobpcg_steps = cgal_scaled_out['lobpcg_steps']
     jit_time = time.time() - t0_jit
 
+    # relative measures of success
+    # rel_obj = jnp.abs(cvxpy_obj - obj_vals) / (1 + jnp.abs(cvxpy_obj))
+    # rel_infeas = infeases / (1 + jnp.linalg.norm(b))
+
+    # assert rel_obj[-1] <= 1e-3 and rel_obj[0] >= .05
+    # assert rel_infeas[-1] <= 1e-2 and rel_infeas[0] >= .5
+
     ###### solve without jit
     t0_non_jit = time.time()
     rescale_obj_orig, rescale_feas_orig = 1, 1
@@ -151,13 +158,14 @@ def test_cgal_jit_speed():
     lobpcg_steps = cgal_scaled_out['lobpcg_steps']
     non_jit_time = time.time() - t0_non_jit
 
-    assert jit_time <= .2 * non_jit_time
+    # jitting should reduce time by at least 95%
+    assert jit_time <= .05 * non_jit_time
 
 
 def test_cgal_scaling_maxcut():
     n = 100
     m = n
-    cgal_iters = 600
+    cgal_iters = 1000
 
     # random Laplacian
     L = random_Laplacian_matrix(n)
@@ -208,6 +216,25 @@ def test_cgal_scaling_maxcut():
 
     assert rel_obj_scaled[-1] <= 1e-2 and rel_obj_scaled[0] >= .05
     assert rel_infeas_scaled[-1] <= 1e-2 and rel_infeas_scaled[0] >= .5
+
+    # create plots
+    dir = '.github/workflows/test_results'
+    plt.plot(rel_obj, label='unscaled rel obj')
+    plt.plot(rel_obj_scaled, label='scaled rel obj')
+    plt.plot(rel_obj, label='unscaled rel infeas')
+    plt.plot(rel_obj_scaled, label='scaled infeas')
+    plt.yscale('log')
+    plt.legend()
+    plt.savefig(f"{dir}/maxcut_obj_infeas.pdf")
+
+    plt.plot(X_resids, label='unscaled X_resids')
+    plt.plot(X_resids_scaled, label='scaled X_resids')
+    plt.plot(y_resids, label='unscaled y_resids')
+    plt.plot(y_resids_scaled, label='scaled y_resids')
+    plt.yscale('log')
+    plt.legend()
+    plt.savefig(f"{dir}/maxcut_resids.pdf")
+
 
 
 
