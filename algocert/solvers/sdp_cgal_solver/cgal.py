@@ -105,8 +105,6 @@ def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_
                        b=b, rescale_obj=rescale_obj, rescale_feas=rescale_feas)
     return scaled_data
 
-    return C_op, A_op, A_star_op, alpha, norm_A, b, float(rescale_obj), float(rescale_feas)
-
 
 def recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a):
     """
@@ -166,12 +164,13 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
     """
 
     # initialize cgal
-    X_init, y_init = cgal_init(m, n)
+    X_init, y_init, z_init = cgal_init(m, n)
 
     # cgal for loop
-    cgal_out = cgal_for_loop(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, 
+    cgal_out = cgal_for_loop(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas,
                              cgal_iters,
-                             X_init, y_init, beta0, y_max,
+                             X_init, y_init, z_init,
+                             beta0, y_max,
                              jit=jit,
                              lobpcg_iters=lobpcg_iters,
                              lobpcg_tol=lobpcg_tol,
@@ -180,43 +179,45 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
 
 
 def cgal_init(m, n):
-    X, y = jnp.zeros((n, n)), jnp.zeros(m)
-    return X, y
+    X, y, z = jnp.zeros((n, n)), jnp.zeros(m), jnp.zeros(m)
+    return X, y, z
 
 
 def cgal_for_loop(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas,
-                  cgal_iters, X_init, y_init, beta0, y_max,
+                  cgal_iters, X_init, y_init, z_init, beta0, y_max,
                   jit, lobpcg_iters, lobpcg_tol, warm_start_v, lightweight):
     m = b.size
     n = X_init.shape[0]
-    partial_cgal_iter = partial(cgal_iteration,
-                                C_op=C_op,
-                                A_op=A_op,
-                                A_star_op=A_star_op,
-                                b=b,
-                                alpha=alpha,
-                                norm_A=norm_A,
-                                rescale_obj=rescale_obj,
-                                rescale_feas=rescale_feas,
-                                m=m,
-                                n=n,
-                                beta0=beta0,
-                                y_max=y_max,
-                                lobpcg_iters=lobpcg_iters,
-                                lobpcg_tol=lobpcg_tol,
-                                warm_start_v=warm_start_v,
-                                lightweight=lightweight,
-                                fake_dict={'beta0': 1})
+    def proj(input):
+        return b
+    static_dict = dict(C_op=C_op,
+                       A_op=A_op,
+                       A_star_op=A_star_op,
+                       b=b,
+                       alpha=alpha,
+                       norm_A=norm_A,
+                       proj=proj,
+                       rescale_obj=rescale_obj,
+                       rescale_feas=rescale_feas,
+                       m=m,
+                       n=n,
+                       beta0=beta0,
+                       y_max=y_max,
+                       lobpcg_iters=lobpcg_iters,
+                       lobpcg_tol=lobpcg_tol,
+                       warm_start_v=warm_start_v,
+                       lightweight=lightweight)
+    partial_cgal_iter = partial(cgal_iteration, static_dict=static_dict)
     obj_vals, infeases = jnp.zeros(cgal_iters), jnp.zeros(cgal_iters)
     X_resids, y_resids = jnp.zeros(cgal_iters), jnp.zeros(cgal_iters)
     lobpcg_steps_mat = jnp.zeros(cgal_iters)
     v_init = jnp.ones((n, 1))
-    init_val = X_init, y_init, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, v_init
+    init_val = X_init, y_init, z_init, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, v_init
     if jit:
         final_val = lax.fori_loop(0, cgal_iters, partial_cgal_iter, init_val)
     else:
         final_val = python_fori_loop(0, cgal_iters, partial_cgal_iter, init_val)
-    X, y, obj_vals, infeases, X_resids, y_resids, lobpcg_steps, v_final = final_val
+    X, y, z, obj_vals, infeases, X_resids, y_resids, lobpcg_steps, v_final = final_val
     cgal_out = dict(X=X, y=y, obj_vals=obj_vals, infeases=infeases, X_resids=X_resids,
                     y_resids=y_resids, lobpcg_steps=lobpcg_steps)
     return cgal_out
@@ -234,12 +235,24 @@ def python_fori_loop(lower, upper, body_fun, init_val):
     return val
 
 
-def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas,
-                   m, n, beta0, y_max,
-                   lobpcg_iters, lobpcg_tol, warm_start_v, lightweight, fake_dict):
-    X, y, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, prev_v = init_val
+def cgal_iteration(i, init_val, static_dict):
+    # unpack static_dict which is meant to not change for an entire problem
+    #   i and init_val will change and be passed to/from jax.lax.fori_loop
+    C_op, A_op, A_star_op = static_dict['C_op'], static_dict['A_op'], static_dict['A_star_op']
+    b, alpha, norm_A = static_dict['b'], static_dict['alpha'], static_dict['norm_A']
+    rescale_obj, rescale_feas = static_dict['rescale_obj'], static_dict['rescale_feas']
+    m, n = static_dict['m'], static_dict['n']
+    beta0, y_max = static_dict['beta0'], static_dict['y_max']
+    lobpcg_iters, lobpcg_tol = static_dict['lobpcg_iters'], static_dict['lobpcg_tol']
+    warm_start_v, lightweight = static_dict['warm_start_v'], static_dict['lightweight']
+    proj = static_dict['proj']
+
+    # unpack init_val
+    X, y, z, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, prev_v = init_val
     beta = beta0 * jnp.sqrt(i + 1)
-    eta = 2 / (i + 1) * fake_dict['beta0']
+    eta = 2 / (i + 1)
+
+    w = proj(z + y / beta)
 
     # get w
     # w = self.proj(self.AX(X) + y / beta)
@@ -247,8 +260,11 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, norm_A, rescale
     # create the new partial operator
     #   A_star_partial_op(u) = A_star(u, z)
     #   where z = y + beta(AX -b)
-    z = y + beta * (A_op(X) - b)
-    A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(z, 1))
+    # z = y + beta * (A_op(X) - b)
+    # import pdb
+    # pdb.set_trace()
+    a_star_z_fixed = y + beta * (z - w)
+    A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(a_star_z_fixed, 1))
 
     # create new operator as input into lanczos
     def evec_op(u):
@@ -269,12 +285,18 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, norm_A, rescale
 
     # this will be printed if jit set to false
     print('z', z)
-    print('evec(z)', evec_op(z))
+    # print('evec(z)', evec_op(z))
     print('lambd', lambd)
     print('lobpcg_steps', lobpcg_steps)
 
-    # calculate primal step
-    H = alpha * jnp.outer(v, v) * (lambd < 0)
+    # update z
+    v_alpha = jnp.sqrt(alpha) * v * (lambd < 0)
+    vvT = jnp.outer(v_alpha, v_alpha)
+    new_z_dir = A_op(vvT)
+    z_next = (1 - eta) * z + eta * new_z_dir
+
+    # calculate primal direction
+    H = vvT # alpha * vvT * (lambd < 0)
 
     # update primal
     X_next = (1 - eta) * X + eta * H
@@ -282,6 +304,9 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, norm_A, rescale
     # compute gamma
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)  # (i+1)**1.5 #* (eta ** 2)
     w = A_op(X) - b
+
+    # dual update
+    w = z_next - proj(z_next + y / beta)
     primal_infeas = jnp.linalg.norm(w)
 
     gamma_raw = gamma_rhs / (primal_infeas ** 2)
@@ -302,7 +327,7 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, norm_A, rescale
         lobpcg_steps_mat = lobpcg_steps_mat.at[i].set(lobpcg_steps)
 
     # update the val for the lax.fori_loop
-    val = X_next, y_next, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, v
+    val = X_next, y_next, z_next, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, v
     return val
 
 
