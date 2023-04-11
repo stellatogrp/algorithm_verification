@@ -238,6 +238,9 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0,
         lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.zeros((n, 1)), m=lobpcg_iters, tol=lobpcg_tol)
 
     lambd, v, lobpcg_steps = lobpcg_out[0], lobpcg_out[1], lobpcg_out[2]
+
+    # we flip the sign because lobpcg_standard looks for the largest 
+    #   eigenvalue, eigenvector pair
     lambd = -lambd
     print('z', z)
     print('evec(z)', evec_op(z))
@@ -250,7 +253,7 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0,
     #     H = 0 * X
     # else:
     #     H = alpha * jnp.outer(v, v)
-    H = alpha * jnp.outer(v, v)
+    H = alpha * jnp.outer(v, v) * (lambd < 0)
 
     # update primal
     X_next = (1 - eta) * X + eta * H
