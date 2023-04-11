@@ -74,7 +74,42 @@ def cgal_solve_np():
         feas_vals.append(self.proj_dist(self.AX(X)))
 
 
-def cgal(A_op, C_op, A_star_op, b, alpha, T, m, n, warm_start_v=True, jit=True, lightweight=False):
+def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, b_orig, scale_x, scale_c, scale_a):
+    """
+    given original problem data: (C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, b_orig)
+    this method scales the problem data so that it is more favorable for cgal
+
+    inputs: C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, b_orig, scale_x, scale_c
+    outputs: C_op, A_op, A_star_op, alpha, b, rescale_obj, rescale_feas
+    """
+
+    def C_op(x):
+        return C_op_orig(x) * scale_c
+
+    def A_op(u):
+        return A_op_orig(u) * scale_a
+
+    def A_star_op(u, z):
+        return A_star_op_orig(scale_a * u, z)
+
+    b = b_orig * scale_x
+    alpha = alpha_orig * scale_x
+
+    return C_op, A_op, A_star_op, alpha, b
+
+
+def recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a):
+    """
+    given a solution of cgal of the scaled problem this returns a solution to the original problem
+        by reverseing the scaling
+    """
+    X = X_scaled / scale_x
+    y = scale_a * y_scaled / scale_c
+    return X, y
+
+
+def cgal(A_op, C_op, A_star_op, b, alpha, T, m, n,
+         lobpcg_iters=100, lobpcg_tol=1e-10, warm_start_v=True, jit=True, lightweight=False):
     """
     jax implementation of the cgal algorithm to solve
 
@@ -127,6 +162,8 @@ def cgal(A_op, C_op, A_star_op, b, alpha, T, m, n, warm_start_v=True, jit=True, 
     # cgal for loop
     final_val = cgal_for_loop(A_op, C_op, A_star_op, b, alpha, T,
                               X_init, y_init, beta0, jit=jit,
+                              lobpcg_iters=lobpcg_iters,
+                              lobpcg_tol=lobpcg_tol,
                               warm_start_v=warm_start_v, lightweight=lightweight)
     X, y, obj_vals, infeases, X_resids, y_resids = final_val
     return X, y, obj_vals, infeases, X_resids, y_resids
@@ -139,7 +176,7 @@ def cgal_init(m, n):
 
 
 def cgal_for_loop(A_op, C_op, A_star_op, b, alpha, T, X_init, y_init, beta0,
-                  jit, warm_start_v, lightweight):
+                  jit, lobpcg_iters, lobpcg_tol, warm_start_v, lightweight):
     m = b.size
     n = X_init.shape[0]
     partial_cgal_iter = partial(cgal_iteration,
@@ -151,6 +188,8 @@ def cgal_for_loop(A_op, C_op, A_star_op, b, alpha, T, X_init, y_init, beta0,
                                 m=m,
                                 n=n,
                                 beta0=beta0,
+                                lobpcg_iters=lobpcg_iters,
+                                lobpcg_tol=lobpcg_tol,
                                 warm_start_v=warm_start_v,
                                 lightweight=lightweight)
     obj_vals, infeases = jnp.zeros(T), jnp.zeros(T)
@@ -172,7 +211,8 @@ def python_fori_loop(lower, upper, body_fun, init_val):
     return val
 
 
-def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, warm_start_v, lightweight):
+def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0,
+                   lobpcg_iters, lobpcg_tol, warm_start_v, lightweight):
     X, y, obj_vals, infeases, X_resids, y_resids, prev_v = init_val
     beta = beta0 * jnp.sqrt(i + 1)
     eta = 2 / (i + 1)
@@ -193,10 +233,18 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, wa
 
     # get minimum eigenvector
     if warm_start_v:
-        lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, prev_v)
+        lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, prev_v, m=lobpcg_iters, tol=lobpcg_tol)
     else:
-        lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.ones((n, 1)))
-    lambd, v = lobpcg_out[0], lobpcg_out[1]
+        lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.zeros((n, 1)), m=lobpcg_iters, tol=lobpcg_tol)
+
+    lambd, v, lobpcg_steps = lobpcg_out[0], lobpcg_out[1], lobpcg_out[2]
+    lambd = -lambd
+    print('z', z)
+    print('evec(z)', evec_op(z))
+    print('lambd', lambd)
+    print('lobpcg_steps', lobpcg_steps)
+
+    obj_vals = obj_vals.at[i].set(lobpcg_steps)
 
     # if lambd < 0:
     #     H = 0 * X
@@ -204,24 +252,28 @@ def cgal_iteration(i, init_val, C_op, A_op, A_star_op, b, alpha, m, n, beta0, wa
     #     H = alpha * jnp.outer(v, v)
     H = alpha * jnp.outer(v, v)
 
+    # update primal
+    X_next = (1 - eta) * X + eta * H
+
     # compute gamma
-    gamma_rhs = 4 * (alpha ** 2) * beta * (eta ** 2)
+    gamma_rhs = (alpha ** 2) * beta * 1 * (eta ** 2)  # (i+1)**1.5 #* (eta ** 2)
     w = A_op(X) - b
     primal_infeas = jnp.linalg.norm(w)
 
-    gamma = gamma_rhs / primal_infeas ** 2
-    gamma = jnp.min(jnp.array([gamma, beta0]))
+    gamma_raw = gamma_rhs / (primal_infeas ** 2)
+    gamma = jnp.min(jnp.array([gamma_raw, beta0]))
 
-    # update primal and dual solutions with min evec
-    X_next = (1 - eta) * X + eta * H
+    # update dual solutions with min evec
     y_next = y + gamma * w
+    infeases = infeases.at[i].set(primal_infeas)
 
     # compute progress and store it if lightweight is set to False
     if not lightweight:
-        # obj_vals = obj_vals.at[i].set(C_op(X))
+        obj_vals = obj_vals.at[i].set(jnp.trace(C_op(X)))
         # infeases = infeases.at[i].set(jnp.linalg.norm(A_op(X) - b))
         X_resids = X_resids.at[i].set(jnp.linalg.norm(X - X_next))
         y_resids = y_resids.at[i].set(jnp.linalg.norm(y - y_next))
+        # y_resids = y_resids.at[i].set(lambd[0])
 
     # update the val for the lax.fori_loop
     val = X_next, y_next, obj_vals, infeases, X_resids, y_resids, v
