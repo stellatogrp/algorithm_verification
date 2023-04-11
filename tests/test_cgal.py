@@ -90,12 +90,13 @@ def generate_maxcut_prob_data(L):
         return jnp.multiply(u, z)
     b = jnp.ones(n)
     alpha = n
+    norm_A = 1
 
     # data scaling
     scale_x = 1 / n
     scale_c = 1 / jnp.linalg.norm(L, ord='fro')
     scale_a = 1
-    return C_op, A_op, A_star_op, b, alpha, scale_x, scale_c, scale_a
+    return C_op, A_op, A_star_op, b, alpha, norm_A, scale_x, scale_c, scale_a
 
 
 def solve_maxcut_cvxpy(L):
@@ -124,7 +125,7 @@ def test_cgal_scaling_maxcut():
     cvxpy_obj = jnp.trace(L @ X_cvxpy)
 
     # problem data for cgal
-    C_op, A_op, A_star_op, b, alpha, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
+    C_op, A_op, A_star_op, b, alpha, norm_A, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
 
     # solve with cgal
     # X, y, obj_vals, infeases, X_resids, y_resids = cgal(A_op, C_op, A_star_op, b, alpha, cgal_iters, m, n,
@@ -132,14 +133,15 @@ def test_cgal_scaling_maxcut():
     #                                                     jit=True)
 
     # solve with cgal with data scaling
-    scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, b, scale_x, scale_c, scale_a)
-    C_op_scaled, A_op_scaled, A_star_op_scaled, alpha_scaled, b_scaled = scaled_data
-    # cgal_obj = jnp.trace(L @ X)
-    # infeas = jnp.linalg.norm(A_op(X) - b)
+    scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
+    C_op_scaled, A_op_scaled, A_star_op_scaled, alpha_scaled, norm_A_scaled, b_scaled = scaled_data
 
-    cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, cgal_iters, m, n,
-                           lobpcg_iters=1000, lobpcg_tol=1e-50, warm_start_v=True, jit=True)
-    X_scaled, y_scaled, obj_vals_scaled, infeases_scaled, X_resids_scaled, y_resids_scaled = cgal_scaled_out
+    cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
+    X_scaled, y_scaled = cgal_scaled_out['X'], cgal_scaled_out['y']
+    obj_vals_scaled, infeases_scaled = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
+    X_resids_scaled, y_resids_scaled = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
+    lobpcg_steps_scaled = cgal_scaled_out['lobpcg_steps']
     X_recovered, y_recovered = recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a)
     cgal_obj_scaled = jnp.trace(L @ X_recovered)
     infeas_scaled = jnp.linalg.norm(A_op(X_recovered) - b)
