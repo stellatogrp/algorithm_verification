@@ -115,14 +115,14 @@ def solve_maxcut_cvxpy(L):
 def test_cgal_scaling_maxcut():
     n = 100
     m = n
-    cgal_iters = 500
+    cgal_iters = 600
 
     # random Laplacian
     L = random_Laplacian_matrix(n)
 
     # solve with cvxpy
     X_cvxpy = solve_maxcut_cvxpy(L)
-    cvxpy_obj = jnp.trace(L @ X_cvxpy)
+    cvxpy_obj = -jnp.trace(L @ X_cvxpy)
 
     # problem data for cgal
     C_op, A_op, A_star_op, b, alpha, norm_A, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
@@ -134,21 +134,26 @@ def test_cgal_scaling_maxcut():
 
     # solve with cgal with data scaling
     scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
-    C_op_scaled, A_op_scaled, A_star_op_scaled, alpha_scaled, norm_A_scaled, b_scaled = scaled_data
+    C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data[:3]
+    alpha_scaled, norm_A_scaled, b_scaled, rescale_obj, rescale_feas = scaled_data[3:]
 
     cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
+                           rescale_obj, rescale_feas,
                            cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
     X_scaled, y_scaled = cgal_scaled_out['X'], cgal_scaled_out['y']
     obj_vals_scaled, infeases_scaled = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
     X_resids_scaled, y_resids_scaled = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
     lobpcg_steps_scaled = cgal_scaled_out['lobpcg_steps']
     X_recovered, y_recovered = recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a)
-    cgal_obj_scaled = jnp.trace(L @ X_recovered)
-    infeas_scaled = jnp.linalg.norm(A_op(X_recovered) - b)
 
-    import pdb
-    pdb.set_trace()
-    assert False
+    # relative measures of success
+    rel_obj_scaled = jnp.abs(cvxpy_obj - obj_vals_scaled) / (1 + jnp.abs(cvxpy_obj))
+    rel_infeas_scaled = infeases_scaled / (1 + jnp.linalg.norm(b))
+
+    # import pdb
+    # pdb.set_trace()
+    assert rel_obj_scaled[-1] <= 1e-2 and rel_obj_scaled[0] >= .5
+    assert rel_infeas_scaled[-1] <= 1e-2 and rel_infeas_scaled[0] >= .5
 
 
 # def test_cgal_maxcut():
