@@ -47,3 +47,26 @@ jobs:
         with:
           name: test_plots
           path: outputs/test_results/
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: test_plots
+          path: test_plots
+      - name: Set up Apache server
+        uses: khan/apache-server@v1.0.1
+        with:
+          httpd-version: 2.4
+          httpd-conf: |
+            DocumentRoot /var/www/html
+            <Directory /var/www/html>
+              Options Indexes FollowSymLinks MultiViews
+              AllowOverride All
+              Require all granted
+            </Directory>
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: test_plots
+          path: test_plots
+          if-no-files-found: error
+          retention-days: 30
