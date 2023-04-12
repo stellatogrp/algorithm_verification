@@ -166,16 +166,49 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
     # initialize cgal
     X_init, y_init, z_init = cgal_init(m, n)
 
+    # get proj_K from b (no need for b anymore -- just use proj_K)
+    proj_K = b_to_proj_K(b)
+
     # cgal for loop
-    cgal_out = cgal_for_loop(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas,
+    cgal_out = cgal_for_loop(A_op, C_op, A_star_op, proj_K, alpha, norm_A, rescale_obj, rescale_feas,
                              cgal_iters,
                              X_init, y_init, z_init,
                              beta0, y_max,
                              jit=jit,
                              lobpcg_iters=lobpcg_iters,
                              lobpcg_tol=lobpcg_tol,
-                             warm_start_v=warm_start_v, lightweight=lightweight)
+                             warm_start_v=warm_start_v, 
+                             lightweight=lightweight)
     return cgal_out
+
+
+def b_to_proj_K(b):
+    """
+    b is an ambiguous input
+    case 1: b is a vector of length (m)
+        then we have Tr(A_i X) = b_i i=1,...,m
+    case 2: b is a matrix of size (m, 2)
+        then we have l_i <= Tr(A_i X) = u_i i=1,...,m
+        where b = [l_1, u_1;
+                   ...
+                   l_m, u_m]
+
+    we return the projection onto K
+        where 
+        case 1: K = {b}
+        case 2: K = {y | l_i <= y_i <= u_i i=1,...,m}
+    """
+    assert b.ndim == 1 or b.ndim == 2
+    if b.ndim == 1:
+        def proj_K(y):
+            return b
+    elif b.ndim == 2:
+        assert b.shape[1] == 2
+        def proj_K(y):
+            return jnp.clip(y, a_min=b[:, 0], a_max=b[:, 1])
+            # return jnp.min(jnp.max(y, b[:, 0]), b[:, 1])
+
+    return proj_K
 
 
 def cgal_init(m, n):
@@ -183,20 +216,18 @@ def cgal_init(m, n):
     return X, y, z
 
 
-def cgal_for_loop(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas,
+def cgal_for_loop(A_op, C_op, A_star_op, proj_K, alpha, norm_A, rescale_obj, rescale_feas,
                   cgal_iters, X_init, y_init, z_init, beta0, y_max,
                   jit, lobpcg_iters, lobpcg_tol, warm_start_v, lightweight):
-    m = b.size
+    m = y_init.size
     n = X_init.shape[0]
-    def proj(input):
-        return b
+
     static_dict = dict(C_op=C_op,
                        A_op=A_op,
                        A_star_op=A_star_op,
-                       b=b,
                        alpha=alpha,
                        norm_A=norm_A,
-                       proj=proj,
+                       proj_K=proj_K,
                        rescale_obj=rescale_obj,
                        rescale_feas=rescale_feas,
                        m=m,
@@ -239,20 +270,20 @@ def cgal_iteration(i, init_val, static_dict):
     # unpack static_dict which is meant to not change for an entire problem
     #   i and init_val will change and be passed to/from jax.lax.fori_loop
     C_op, A_op, A_star_op = static_dict['C_op'], static_dict['A_op'], static_dict['A_star_op']
-    b, alpha, norm_A = static_dict['b'], static_dict['alpha'], static_dict['norm_A']
+    alpha, norm_A = static_dict['alpha'], static_dict['norm_A']
     rescale_obj, rescale_feas = static_dict['rescale_obj'], static_dict['rescale_feas']
     m, n = static_dict['m'], static_dict['n']
     beta0, y_max = static_dict['beta0'], static_dict['y_max']
     lobpcg_iters, lobpcg_tol = static_dict['lobpcg_iters'], static_dict['lobpcg_tol']
     warm_start_v, lightweight = static_dict['warm_start_v'], static_dict['lightweight']
-    proj = static_dict['proj']
+    proj_K = static_dict['proj_K']
 
     # unpack init_val
     X, y, z, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, prev_v = init_val
     beta = beta0 * jnp.sqrt(i + 2)
     eta = 2 / (i + 2)
 
-    w = proj(z + y / beta)
+    w = proj_K(z + y / beta)
     a_star_z_fixed = y + beta * (z - w)
     A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(a_star_z_fixed, 1))
 
@@ -267,6 +298,8 @@ def cgal_iteration(i, init_val, static_dict):
     else:
         lobpcg_out = sparse.linalg.lobpcg_standard(evec_op, jnp.ones((n, 1)), m=lobpcg_iters, tol=lobpcg_tol)
 
+    # quick check to see why warm start does nothing
+    # the sparse.linalg.lobpcg_standard orthonormalizes the initial guess
     # XX = sparse.linalg._orthonormalize(prev_v)
     # print('XX', XX)
 
@@ -310,7 +343,7 @@ def cgal_iteration(i, init_val, static_dict):
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
 
     # dual update
-    w = z_next - proj(z_next + y / beta)
+    w = z_next - proj_K(z_next + y / beta)
     primal_infeas = jnp.linalg.norm(w)
 
     gamma_raw = gamma_rhs / (primal_infeas ** 2)

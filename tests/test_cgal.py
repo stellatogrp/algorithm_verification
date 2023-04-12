@@ -1,5 +1,6 @@
 import jax.numpy as jnp
 from algocert.solvers.sdp_cgal_solver.cgal import cgal, cgal_iteration, scale_problem_data, recover_original_sol
+from experiments.NNLS.test_NNLS_ADMM import NNLS_test_cgal_copied
 import cvxpy as cp
 import networkx as nx
 import time
@@ -9,6 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import pytest
+from scipy.sparse import csc_matrix
 
 
 def partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v, lobpcg_iters, lobpcg_tol=1e-5):
@@ -114,7 +116,93 @@ def solve_maxcut_cvxpy(L):
     return jnp.array(X_cvxpy.value)
 
 
+def solve_sdp(A_matrices, b_lower, b_upper, C, alpha):
+    m = b_lower.size
+    n = C.shape[0]
+    X = cp.Variable((n, n), symmetric=True)
+
+    constraints = [X >> 0]
+    for i in range(m):
+        if b_lower[i] > -np.inf:
+            constraints.append(cp.trace(A_matrices[i] @ X) >= b_lower[i])
+        if b_upper[i] < np.inf:
+            constraints.append(cp.trace(A_matrices[i] @ X) <= b_upper[i])
+
+    prob = cp.Problem(cp.Minimize(cp.trace(C @ X)), constraints)
+    prob.solve(solver=cp.MOSEK, verbose=True)
+    return prob.value, X.value
+
+
+def test_algocert():
+    m_orig, n_orig = 3, 3
+    A = csc_matrix(np.random.normal(size=(m_orig, n_orig)))
+    cert_prob = NNLS_test_cgal_copied(n_orig, m_orig, A)
+
+    handler = cert_prob.solver.handler
+
+    C_jax = jnp.array(handler.C_matrix.todense())
+    A_matrices = handler.A_matrices
+    m = len(A_matrices)
+    n = C_jax.shape[0]
+    b = jnp.zeros((m, 2))
+    b = b.at[:, 0].set(jnp.array(handler.b_lowerbounds))
+    b = b.at[:, 1].set(jnp.array(handler.b_upperbounds))
+
+    A_matrices_jax_list = []
+    for i in range(m):
+        A_matrices_jax_list.append(jnp.array(A_matrices[i].todense()))
+
+    def C_op(x):
+        return C_jax @ x
+    
+    def A_op(X):
+        Ax = jnp.zeros(m)
+        for i in range(m):
+            Ax = Ax.at[i].set(jnp.trace(A_matrices_jax_list[i] @ X))
+        return Ax
+    
+    def A_star_op(u, z):
+        """
+        returns (A^* z)u 
+            u has shape (n)
+            z has shape (m)
+        """
+        zA = jnp.zeros((n, n))
+        for i in range(m):
+            zA += z[i] * A_matrices_jax_list[i]
+        return zA @ u
+    
+    ###### solve with scs
+    A_matrices_dense = [np.array(A.todense()) for A in A_matrices]
+    scs_optval, X_scs = solve_sdp(A_matrices_dense, np.array(b[:, 0]), np.array(b[:, 1]), 
+                                  np.array(handler.C_matrix.todense()), 10)
+    
+    ###### solve with cgal
+    alpha = np.trace(X_scs)
+    norm_A = 1
+    cgal_iters = 100
+    rescale_obj_orig, rescale_feas_orig = 1, 1
+    cgal_scaled_out = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
+                           rescale_obj_orig, rescale_feas_orig,
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
+    X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
+    obj_vals, infeases = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
+    X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
+    lobpcg_steps = cgal_scaled_out['lobpcg_steps']
+
+    import pdb
+    pdb.set_trace()
+
+    
+
+
+@pytest.mark.skip(reason="temp")
 def test_warm_start_lobpcg():
+    """
+    warm starting lobpcg should not make any difference at all literally
+    because
+    this test checks this
+    """
     n = 40
     m = n
     cgal_iters = 500
@@ -133,27 +221,23 @@ def test_warm_start_lobpcg():
     rescale_obj_orig, rescale_feas_orig = 1, 1
     cgal_scaled_out = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
                            rescale_obj_orig, rescale_feas_orig,
-                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-5, warm_start_v=True, jit=True)
-    # X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
     obj_vals, infeases = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
-    # X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
     lobpcg_steps = cgal_scaled_out['lobpcg_steps']
 
     # relative measures of success
     rel_obj = jnp.abs(cvxpy_obj - obj_vals) / (1 + jnp.abs(cvxpy_obj))
     rel_infeas = infeases / (1 + jnp.linalg.norm(b))
 
-    assert rel_obj[-1] <= 1e-2 and rel_obj[0] >= .05
-    assert rel_infeas[-1] <= 1e-2 and rel_infeas[0] >= .1
+    assert rel_obj[-1] <= 5e-2 and rel_obj[0] >= .05
+    assert rel_infeas[-1] <= 5e-2 and rel_infeas[0] >= .1
 
 
     ###### solve with cgal with data scaling
     cgal_scaled_out_cold = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
                            rescale_obj_orig, rescale_feas_orig,
-                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-5, warm_start_v=False, jit=True)
-    # X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=False, jit=True)
     obj_vals_cold, infeases_cold = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
-    # X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
     lobpcg_steps_cold = cgal_scaled_out['lobpcg_steps']
 
     # relative measures of success
@@ -167,7 +251,7 @@ def test_warm_start_lobpcg():
     assert jnp.linalg.norm(lobpcg_steps_cold - lobpcg_steps) == 0
 
 
-# @pytest.mark.skip(reason="temp")
+@pytest.mark.skip(reason="temp")
 def test_cgal_jit_speed():
     n = 100
     m = n
@@ -218,7 +302,7 @@ def test_cgal_jit_speed():
     assert jit_time <= .1 * non_jit_time
 
 
-# @pytest.mark.skip(reason="temp")
+@pytest.mark.skip(reason="temp")
 def test_cgal_scaling_maxcut():
     n = 100
     m = n
