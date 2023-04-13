@@ -204,7 +204,7 @@ def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_
         return C_op_orig(x) * scale_c
 
     def A_op(u):
-        return A_op_orig(u) * scale_a
+        return jnp.multiply(A_op_orig(u), scale_a)
 
     def A_star_op(u, z):
         return A_star_op_orig(scale_a * u, z)

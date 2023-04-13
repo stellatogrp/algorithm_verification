@@ -63,10 +63,6 @@ def test_op_2_op_norm_computation():
     
     op_norm = compute_operator_norm_from_A_vals(B, m, n)
     
-
-    # evals, evecs = jnp.linalg.eigh(B.T @ B)
-    
-    # assert jnp.abs(op_norm - jnp.sqrt(evals[-1]) <= 1e-6)
     assert op_norm == op_norm_true
 
 
@@ -84,11 +80,28 @@ def test_maxcut_scaling():
     # problem data for cgal
     C_op, A_op, A_star_op, b, alpha, norm_A, scale_x_true, scale_c_true, scale_a_true = generate_maxcut_prob_data(L)
     scale_a, scale_c, scale_x = compute_scale_factors(C_op, A_op, alpha, m, n)
-    # import pdb
-    # pdb.set_trace()
+
+    # make sure the scale factors are accurate
     assert jnp.linalg.norm(scale_a - scale_a_true) <= 1e-10
     assert scale_c == scale_c_true
     assert scale_x == scale_x_true
+
+    # make sure the resulting operators are the same
+    scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
+    C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data['C_op'], scaled_data['A_op'], scaled_data['A_star_op']
+    alpha_scaled, norm_A_scaled, b_scaled = scaled_data['alpha'], scaled_data['norm_A'], scaled_data['b']
+    rescale_obj, rescale_feas = scaled_data['rescale_obj'], scaled_data['rescale_feas']
+
+    rand_vector = jnp.array(np.random.normal(size=(n)))
+    rand_vector2 = jnp.array(np.random.normal(size=(n)))
+    rand_matrix = jnp.array(np.random.normal(size=(n, n)))
+    rand_matrix = (rand_matrix + rand_matrix.T) / 2
+    # import pdb
+    # pdb.set_trace()
+    assert jnp.linalg.norm(C_op(rand_vector) - C_op_scaled(rand_vector) / scale_c) <= 1e-10
+    assert jnp.linalg.norm(A_op(rand_matrix) - A_op_scaled(rand_matrix) / scale_a) <= 1e-10
+    assert jnp.linalg.norm(A_star_op(rand_vector, rand_vector2) - 
+                           A_star_op_scaled(rand_vector, rand_vector2) / scale_a) <= 1e-10
 
 
 def random_Laplacian_matrix(n, p=.5):
