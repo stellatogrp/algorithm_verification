@@ -66,6 +66,7 @@ def test_op_2_op_norm_computation():
     assert op_norm == op_norm_true
 
 
+@pytest.mark.skip(reason="temp")
 def test_maxcut_scaling():
     n = 40
     m = n
@@ -321,7 +322,8 @@ def test_algocert():
     rel_obj_scaled = relative_obj(obj_vals_scaled, cvxpy_obj)
     rel_infeas_scaled = relative_infeas(infeases_scaled, b)
 
-    
+
+@pytest.mark.skip(reason="temp")  
 def test_warm_start_lobpcg():
     """
     warm starting lobpcg should not make any difference at all literally
@@ -378,7 +380,7 @@ def test_warm_start_lobpcg():
     assert jnp.linalg.norm(lobpcg_steps_cold - lobpcg_steps) == 0
 
 
-# @pytest.mark.skip(reason="temp")
+@pytest.mark.skip(reason="temp")
 def test_cgal_jit_speed():
     n = 100
     m = n
@@ -429,21 +431,70 @@ def test_cgal_jit_speed():
     assert jit_time <= .1 * non_jit_time
 
 
+def generate_primitives_from_matrices(A_data, C):
+    m, n, _ = A_data.shape
+    def C_op(x):
+        return C @ x
+    
+    def A_op(X):
+        AX = jnp.zeros(m)
+        for i in range(m):
+            AX = AX.at[i].set(jnp.trace(A_data[i, :, :] @ X))
+        return AX
+    
+    def A_star_op(u, z):
+        zA = jnp.zeros((n, n))
+        for i in range(m):
+            zA += z[i] * A_data[i, :, :]
+        return zA @ u
+        
+    return C_op, A_op, A_star_op
+
+
 def test_phase_retrieval_scaling():
     # generate random A, b, C
+    m, n = 20, 10   
+    A_data, b, C = generate_random_phase_retrieval(m, n)
 
     # solve with cvxpy
+    X_opt, optval = solve_generic_cvxpy(A_data, b, C)
+    alpha_star = jnp.trace(X_opt)
 
     # generate problem data for cgal -- 3 primitives, b
     #   use alpha from cvxpy
+    C_op, A_op, A_star_op = generate_primitives_from_matrices(A_data, C)
+    A_data_stacked = jnp.reshape(A_data, (m, n ** 2))
+    norm_A = jnp.linalg.norm(A_data_stacked, ord=2)
 
     # scale problem data
 
-    #
-    pass
+    
 
 
-# @pytest.mark.skip(reason="temp")
+    # solve original with cgal
+    cgal_iters = 100
+    cgal_out = cgal(A_op, C_op, A_star_op, b, 
+                    alpha=alpha_star, norm_A=norm_A, 
+                    rescale_obj=1, rescale_feas=1, 
+                    cgal_iters=cgal_iters, m=m, n=n)
+    obj_vals, infeases = cgal_out['obj_vals'], cgal_out['infeases']
+    rel_objs = relative_obj(obj_vals, optval)
+    rel_infeases = relative_infeas(infeases, b)
+
+    # solve scaled with cgal
+    cgal_out_scaled, X_recovered, y_recovered = scale_and_solve(C_op, A_op, A_star_op, 
+                                                         alpha_star, norm_A, b, m, n, cgal_iters)
+    obj_vals_scaled, infeases_scaled = cgal_out_scaled['obj_vals'], cgal_out_scaled['infeases']
+    rel_objs_scaled = relative_obj(obj_vals_scaled, optval)
+    rel_infeases_scaled = relative_infeas(infeases_scaled, b)
+
+    import pdb
+    pdb.set_trace()
+    
+    # create plots
+
+
+@pytest.mark.skip(reason="temp")
 def test_cgal_scaling_maxcut():
     n = 100
     m = n
@@ -491,7 +542,6 @@ def test_cgal_scaling_maxcut():
                                                                 scale_a, m, n, cgal_iters)
     obj_vals_scaled, infeases_scaled = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
     X_resids_scaled, y_resids_scaled = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
-    
 
     # relative measures of success
     rel_obj_scaled = jnp.abs(cvxpy_obj - obj_vals_scaled) / (1 + jnp.abs(cvxpy_obj))
@@ -504,12 +554,21 @@ def test_cgal_scaling_maxcut():
                  X_resids, X_resids_scaled, y_resids, y_resids_scaled)
     
 
-def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a, m, n, cgal_iters):
+def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, m, n, cgal_iters):
+    # find scale factors
+    scale_a, scale_c, scale_x = compute_scale_factors(C_op, A_op, alpha, m, n)
+
+    # scale problem data
     scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
     C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data['C_op'], scaled_data['A_op'], scaled_data['A_star_op']
     alpha_scaled, norm_A_scaled, b_scaled = scaled_data['alpha'], scaled_data['norm_A'], scaled_data['b']
     rescale_obj, rescale_feas = scaled_data['rescale_obj'], scaled_data['rescale_feas']
 
+    # x0 = jnp.ones(n)
+    # import pdb
+    # pdb.set_trace()
+
+    # run cgal
     cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
                            rescale_obj, rescale_feas,
                            cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)

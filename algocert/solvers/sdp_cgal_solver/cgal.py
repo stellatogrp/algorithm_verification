@@ -225,12 +225,15 @@ def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_
         return jnp.multiply(A_op_orig(u), scale_a)
 
     def A_star_op(u, z):
-        return A_star_op_orig(scale_a * u, z)
+        # return A_star_op_orig(jnp.multiply(scale_a, u), z)
+        scale_a_mat = jnp.expand_dims(scale_a, axis=1)
+        return A_star_op_orig(u, jnp.multiply(scale_a_mat, z))
 
     b = b_orig * scale_x
     alpha = alpha_orig * scale_x
 
-    norm_A = norm_A_orig * scale_a
+    # norm_A = norm_A_orig * scale_a
+    norm_A = 1
 
     rescale_obj = 1 / (scale_c * scale_x)
     rescale_feas = 1 / (scale_a * scale_x)
@@ -478,7 +481,10 @@ def cgal_iteration(i, init_val, static_dict):
 
     # dual update
     w = z_next - proj_K(z_next + y / beta)
-    primal_infeas = jnp.linalg.norm(w)
+    primal_infeas = jnp.linalg.norm(jnp.multiply(w, rescale_feas))
+
+    # import pdb
+    # pdb.set_trace()
 
     gamma_raw = gamma_rhs / (primal_infeas ** 2)
     gamma = jnp.min(jnp.array([gamma_raw, beta0]))
@@ -489,7 +495,8 @@ def cgal_iteration(i, init_val, static_dict):
     y_next = y + gamma * w * (jnp.linalg.norm(y_temp) <= y_max)
 
     # update computationally cheap progress
-    infeases = infeases.at[i].set(primal_infeas * rescale_feas)
+    # infeases = infeases.at[i].set(primal_infeas * rescale_feas)
+    infeases = infeases.at[i].set(primal_infeas)
     lobpcg_steps_mat = lobpcg_steps_mat.at[i].set(lobpcg_steps)
     obj_vals = obj_vals.at[i].set(primal_obj * rescale_obj)
 
