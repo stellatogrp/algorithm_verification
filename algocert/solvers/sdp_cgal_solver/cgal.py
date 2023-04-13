@@ -158,6 +158,24 @@ def compute_frobenius_from_operator(op, n):
     return jnp.linalg.norm(P, ord='fro')
 
 
+def relative_obj(obj_vals, true_obj):
+    """
+    given the true objective and an array of objective, this returns the 
+        relative objective score
+    Note: this has nothing to do with the scaling
+    """
+    return jnp.abs(true_obj - obj_vals) / (1 + jnp.abs(true_obj))
+
+
+def relative_infeas(infeases, b):
+    """
+    given b, a vector or matrix with 2 columns, and an array of infeasibility measures, 
+        this returns the relative infeasibility score
+    Note: this has nothing to do with the scaling
+    """
+    return infeases / (1 + jnp.linalg.norm(b))
+
+
 
 def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_orig, b_orig,
                        scale_x, scale_c, scale_a):
