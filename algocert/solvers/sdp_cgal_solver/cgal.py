@@ -11,6 +11,12 @@ from algocert.solvers.sdp_cgal_solver.lanczos import lanczos
 from jax.experimental import sparse
 
 
+def full_scale_prob_data():
+    """
+    """
+    return new_prob_data, rescale_
+
+
 def cgal_solve_np():
     # cp_res = self.test_with_cvxpy()
     # print(cp_res)
@@ -74,14 +80,124 @@ def cgal_solve_np():
         feas_vals.append(self.proj_dist(self.AX(X)))
 
 
+def compute_scale_factors(C_op_orig, A_op_orig, alpha_orig, m, n):
+    """
+    Inputs: 2 original primitives, alpha, m, and n
+        note that we do not need b here
+        b has length (m) and X has shape (n, n)
+
+    Outputs: scale_a, scale_c, scale_x
+        scale_a is a vector of length (m)
+        scale_c is a scalar
+        scale_x is a scalar
+
+    Workflow: 1. call this function (compute_scale_factors) to get the scale factors
+              2. call scale_problem_data to scale all of the problem data
+    """
+    scale_x = 1 / alpha_orig
+
+    C_F = compute_frobenius_from_operator(C_op_orig, n)
+    scale_c = 1 / C_F
+
+    # compute Frobenius norms of A matrices
+    A_F_norms, A_vals = get_A_norms_from_A_op(A_op_orig, m, n)
+    scale_a = 1 / A_F_norms
+
+    # compute operator norm of A_stacked
+    op_norm = compute_operator_norm_from_A_vals(A_vals, m, n)
+    scale_a = scale_a / op_norm
+
+    return scale_a, scale_c, scale_x
+
+
+def compute_operator_norm_from_A_vals(A_vals, m, n):
+    """
+    Inputs: operator B_op and p
+    
+    operator B_op that returns B_op(x) = Bx
+        for matrix B where B has shape (m, p)
+
+    Outputs: ||B||_2
+        i.e. the operator norm of the matrix B associated with linear operator B_op
+    """
+    # B_mat = B_op(jnp.eye(p))
+    # construct large A_stacked matrix
+    A_stacked = jnp.reshape(A_vals, (m, n ** 2))
+
+    op_norm = jnp.linalg.norm(A_stacked, ord=2)
+    return op_norm
+
+
+def get_A_norms_from_A_op(A_op, m, n):
+    A_vals = jnp.zeros((m, n, n))
+    for i in range(n):
+        for j in range(n):
+            X = jnp.zeros((n, n))
+            X = X.at[i, j].set(1)
+            A_vals = A_vals.at[:, i, j].set(A_op(X))
+
+    A_norms = jnp.zeros(m)
+    for i in range(m):
+        A_norms = A_norms.at[i].set(jnp.linalg.norm(A_vals[i, :, :], ord='fro'))
+    return A_norms, A_vals
+
+
+def compute_frobenius_from_operator(op, n):
+    """
+    Inputs: linear operator, n
+    Outputs: frobenius norm of associated matrix
+
+    given a linear operator op, with associated matrix P
+        this method returns ||P||_F
+
+    n is the size of the matrix P
+
+    we do this by passing in the identity matrix as an input
+    """
+    P = op(jnp.eye(n))
+    return jnp.linalg.norm(P, ord='fro')
+
+
+
 def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_orig, b_orig,
                        scale_x, scale_c, scale_a):
     """
     given original problem data: (C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, b_orig)
     this method scales the problem data so that it is more favorable for cgal
 
+    scale_x and scale_c are scalars
+    scale_a is a vector
+
     inputs: C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, b_orig, scale_x, scale_c
     outputs: C_op, A_op, A_star_op, alpha, b, rescale_obj, rescale_feas
+
+    For the problem
+
+    min tr(C X)
+        s.t. b^l_i = tr(A_i X) = b^u_i i=1,...,m
+             tr(X) <= alpha
+             X is psd
+
+    This is what the scaled outputs satisfy
+        1. ||C||_F = 1
+        2. ||A_1||_F = ... = ||A_m||_F
+        3. alpha = 1
+        4. ||A_stacked||_2 = 1
+
+    where A_stacked =   [---vec(A_1)---
+                         ---vec(A_2)---
+                         .
+                         .
+                         .
+                         ---vec(A_m)---]
+    A_stacked has shape (m, n * (n + 1) / 2)
+
+    rescale_obj (scalar) and rescale_feas (vector of length m) are returned
+        so that we can compute the objective and infeasibility of the original problem
+
+    During the cgal iterations we use them to compute
+    1. orig_obj_val = scaled_obj_val * rescale_obj
+    2. orig_infeas_val = ||hadamard(z - b, rescale_infeas)||_2
     """
 
     def C_op(x):

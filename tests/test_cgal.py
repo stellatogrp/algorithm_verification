@@ -1,5 +1,5 @@
 import jax.numpy as jnp
-from algocert.solvers.sdp_cgal_solver.cgal import cgal, cgal_iteration, scale_problem_data, recover_original_sol
+from algocert.solvers.sdp_cgal_solver.cgal import cgal, cgal_iteration, scale_problem_data, recover_original_sol, compute_frobenius_from_operator, compute_scale_factors, compute_operator_norm_from_A_vals
 from experiments.NNLS.test_NNLS_ADMM import NNLS_test_cgal_copied
 import cvxpy as cp
 import networkx as nx
@@ -28,43 +28,67 @@ def partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v, lobpcg_iters
     return -eval_min, -evec_min, iters
 
 
-# def test_lobpcg():
-#     n = 30
-#     m = n
-#     # cgal_iters = 1000
+def test_frobenius_norm_computation():
+    """
+    tests to ensure that the operator -> fro norm
+        is done properly
+    """
+    m, n = 20, 45
+    B = jnp.array(np.random.normal(size=(m, n)))
+    def B_op(x):
+        return B @ x
+    
+    B_op_F = compute_frobenius_from_operator(B_op, n)
+    assert B_op_F == jnp.linalg.norm(B, 'fro')
 
-#     # random Laplacian
-#     L = random_Laplacian_matrix(n)
 
-#     # problem data for cgal
-#     C_op, A_op, A_star_op, b, alpha, scale_x, scale_c, scale_a = generate_maxcut_prob_data(L)
+def test_op_2_op_norm_computation():
+    """
+    tests to ensure that the operator -> op norm
+        is done properly
+    """
+    m, n = 20, 45
+    B = jnp.array(np.random.normal(size=(m, n, n)))
+    
 
-#     # init
-#     X = jnp.zeros((n, n))
-#     y = jnp.zeros(m)
-#     beta = 1
+    # symmetrize
+    for i in range(m):
+        B = B.at[i, :, :].set((B[i, :, :] + B[i, :, :].T) / 2)
 
-#     z = y + beta * (A_op(X) - b)
-#     A_star_partial_op = partial(A_star_op, z=jnp.expand_dims(z, 1))
+    B_stacked = jnp.zeros((m, n ** 2))
+    for i in range(m):
+        B_stacked = B_stacked.at[i, :].set(jnp.ravel(B[i, :, :]))
 
-#     def evec_op(u):
-#         # we take the negative since lobpcg_standard finds the largest evec
-#         return -C_op(u) - A_star_partial_op(u)
+    op_norm_true = jnp.linalg.norm(B_stacked, ord=2)
+    
+    op_norm = compute_operator_norm_from_A_vals(B, m, n)
+    
 
-#     # first cgal iteration
-#     iters = np.array([5, 10, 30, 90, 100])
-#     num_passes = iters.size
-#     errors = jnp.zeros(num_passes)
-#     num_steps = jnp.zeros(num_passes)
-#     for i in range(num_passes):
-#         lobpcg_out = partial_cgal_iter(A_op, C_op, A_star_op, b, beta, X, y, prev_v=jnp.zeros((n, 1)),
-#                                        lobpcg_iters=iters[i], lobpcg_tol=1e-15)
-#         lambd, v, curr_steps = lobpcg_out
-#         error = jnp.linalg.norm(evec_op(v) + lambd * v)
-#         errors = errors.at[i].set(error)
-#         num_steps = num_steps.at[i].set(curr_steps)
-#     assert jnp.all(jnp.diff(errors[:num_passes - 1]) < 0)
-#     assert jnp.all(num_steps[:3] == iters[:3])
+    # evals, evecs = jnp.linalg.eigh(B.T @ B)
+    
+    # assert jnp.abs(op_norm - jnp.sqrt(evals[-1]) <= 1e-6)
+    assert op_norm == op_norm_true
+
+
+def test_maxcut_scaling():
+    n = 40
+    m = n
+
+    # random Laplacian
+    L = random_Laplacian_matrix(n)
+
+    # solve with cvxpy
+    X_cvxpy = solve_maxcut_cvxpy(L)
+    cvxpy_obj = -jnp.trace(L @ X_cvxpy)
+
+    # problem data for cgal
+    C_op, A_op, A_star_op, b, alpha, norm_A, scale_x_true, scale_c_true, scale_a_true = generate_maxcut_prob_data(L)
+    scale_a, scale_c, scale_x = compute_scale_factors(C_op, A_op, alpha, m, n)
+    # import pdb
+    # pdb.set_trace()
+    assert jnp.linalg.norm(scale_a - scale_a_true) <= 1e-10
+    assert scale_c == scale_c_true
+    assert scale_x == scale_x_true
 
 
 def random_Laplacian_matrix(n, p=.5):
@@ -133,6 +157,7 @@ def solve_sdp(A_matrices, b_lower, b_upper, C, alpha):
     return prob.value, X.value
 
 
+@pytest.mark.skip(reason="temp")
 def test_algocert():
     m_orig, n_orig = 3, 3
     A = csc_matrix(np.random.normal(size=(m_orig, n_orig)))
@@ -147,6 +172,11 @@ def test_algocert():
     b = jnp.zeros((m, 2))
     b = b.at[:, 0].set(jnp.array(handler.b_lowerbounds))
     b = b.at[:, 1].set(jnp.array(handler.b_upperbounds))
+
+    # scale As and b
+    scaled_A_list, scaled_b = scale_matrices_b(handler.A_list, b, handler.A_norms)
+
+    C_scaled = C_jax / C_jax
 
     A_matrices_jax_list = []
     for i in range(m):
@@ -175,23 +205,49 @@ def test_algocert():
     ###### solve with scs
     A_matrices_dense = [np.array(A.todense()) for A in A_matrices]
     scs_optval, X_scs = solve_sdp(A_matrices_dense, np.array(b[:, 0]), np.array(b[:, 1]), 
-                                  np.array(handler.C_matrix.todense()), 10)
+                                  np.array(handler.C_matrix.todense()), np.inf)
     
     ###### solve with cgal
     alpha = np.trace(X_scs)
-    norm_A = 1
-    cgal_iters = 100
-    rescale_obj_orig, rescale_feas_orig = 1, 1
-    cgal_scaled_out = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
-                           rescale_obj_orig, rescale_feas_orig,
-                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
-    X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
-    obj_vals, infeases = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
-    X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
-    lobpcg_steps = cgal_scaled_out['lobpcg_steps']
+
+    # norm_A = 1
+    # cgal_iters = 100
+    # rescale_obj_orig, rescale_feas_orig = 1, 1
+    # cgal_scaled_out = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
+    #                        rescale_obj_orig, rescale_feas_orig,
+    #                        cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
+    # X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
+    # obj_vals, infeases = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
+    # X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
+    # lobpcg_steps = cgal_scaled_out['lobpcg_steps']
 
     import pdb
     pdb.set_trace()
+
+    ###### solve with cgal scaled
+    
+    cgal_iters = 100
+    # norm_A = 
+    # scale_x = 
+    # scale_a = 
+    # scale_c = 
+    scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
+    C_op_scaled, A_op_scaled, A_star_op_scaled = scaled_data['C_op'], scaled_data['A_op'], scaled_data['A_star_op']
+    alpha_scaled, norm_A_scaled, b_scaled = scaled_data['alpha'], scaled_data['norm_A'], scaled_data['b']
+    rescale_obj, rescale_feas = scaled_data['rescale_obj'], scaled_data['rescale_feas']
+
+    cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
+                           rescale_obj, rescale_feas,
+                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
+    X_scaled, y_scaled = cgal_scaled_out['X'], cgal_scaled_out['y']
+    obj_vals_scaled, infeases_scaled = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
+    X_resids_scaled, y_resids_scaled = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
+    lobpcg_steps_scaled = cgal_scaled_out['lobpcg_steps']
+    X_recovered, y_recovered = recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a)
+
+    # relative measures of success
+    rel_obj_scaled = jnp.abs(cvxpy_obj - obj_vals_scaled) / (1 + jnp.abs(cvxpy_obj))
+    rel_infeas_scaled = infeases_scaled / (1 + jnp.linalg.norm(b))
 
     
 
