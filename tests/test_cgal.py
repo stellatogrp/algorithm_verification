@@ -103,7 +103,7 @@ def test_maxcut_scaling():
     assert jnp.linalg.norm(A_star_op(rand_vector, rand_vector2) - 
                            A_star_op_scaled(rand_vector, rand_vector2) / scale_a) <= 1e-10
     assert jnp.abs(alpha_scaled - 1) <= 1e-10
-    assert jnp.linalg.norm(b - b_scaled / (scale_a * scale_x)) <= 1e-10 
+    assert jnp.linalg.norm(b - b_scaled / (scale_a * scale_x)) <= 1e-10
 
 
 def random_Laplacian_matrix(n, p=.5):
@@ -453,7 +453,7 @@ def generate_primitives_from_matrices(A_data, C):
 
 def test_phase_retrieval_scaling():
     # generate random A, b, C
-    m, n = 20, 10   
+    m, n = 150, 50   
     A_data, b, C = generate_random_phase_retrieval(m, n)
 
     # solve with cvxpy
@@ -474,22 +474,59 @@ def test_phase_retrieval_scaling():
     # solve original with cgal
     cgal_iters = 100
     cgal_out = cgal(A_op, C_op, A_star_op, b, 
-                    alpha=alpha_star, norm_A=norm_A, 
+                    alpha=2 * alpha_star, norm_A=norm_A, 
                     rescale_obj=1, rescale_feas=1, 
-                    cgal_iters=cgal_iters, m=m, n=n)
+                    cgal_iters=cgal_iters, m=m, n=n, beta0=1, jit=True)
     obj_vals, infeases = cgal_out['obj_vals'], cgal_out['infeases']
+    X_resids, y_resids = cgal_out['X_resids'], cgal_out['y_resids']
     rel_objs = relative_obj(obj_vals, optval)
     rel_infeases = relative_infeas(infeases, b)
 
     # solve scaled with cgal
-    cgal_out_scaled, X_recovered, y_recovered = scale_and_solve(C_op, A_op, A_star_op, 
-                                                         alpha_star, norm_A, b, m, n, cgal_iters)
+    cgal_out_scaled, X_recovered, y_recovered, scaled_data, scale_factors = scale_and_solve(C_op, A_op, A_star_op, 
+                                                         2 * alpha_star, norm_A, b, m, n, cgal_iters, beta0=1, jit=True
+                                                         )
     obj_vals_scaled, infeases_scaled = cgal_out_scaled['obj_vals'], cgal_out_scaled['infeases']
     rel_objs_scaled = relative_obj(obj_vals_scaled, optval)
     rel_infeases_scaled = relative_infeas(infeases_scaled, b)
+    X_resids_scaled, y_resids_scaled = cgal_out_scaled['X_resids'], cgal_out_scaled['y_resids']
+
+    # test the scaling
+    rand_vector_n = jnp.array(np.random.normal(size=(n)))
+    rand_vector_m = jnp.array(np.random.normal(size=(m, 1)))
+    rand_matrix = jnp.array(np.random.normal(size=(n, n)))
+    rand_matrix = (rand_matrix + rand_matrix.T) / 2
+    
+    scale_a = scale_factors['scale_a']
+    scale_c = scale_factors['scale_c']
+    scale_x = scale_factors['scale_x']
+    A_op_scaled = scaled_data['A_op']
+    A_star_op_scaled = scaled_data['A_star_op']
+    C_op_scaled = scaled_data['C_op']
+    alpha_scaled = scaled_data['alpha']
+
+    # check the operators are truly scaled
+    assert jnp.linalg.norm(A_op_scaled(rand_matrix) - jnp.multiply(A_op(rand_matrix), scale_a)) <= 1e-6
+    assert jnp.linalg.norm(C_op_scaled(rand_vector_n) - jnp.multiply(C_op(rand_vector_n), scale_c)) <= 1e-6
+    A_star_scaled_val = A_star_op_scaled(rand_matrix, rand_vector_m)
+    scaled_rand_vector_m = jnp.multiply(rand_vector_m, jnp.expand_dims(scale_a, 1))
+    A_star_val = A_star_op(rand_matrix, scaled_rand_vector_m)
+    assert jnp.linalg.norm(A_star_scaled_val - A_star_val) <= 1e-6
+    assert jnp.abs(alpha_scaled - 1) <= 1e-8
+
+    create_plots('phase_retrieval', rel_objs, rel_objs_scaled, rel_infeases, rel_infeases_scaled, 
+                 X_resids, X_resids_scaled, y_resids, y_resids_scaled)
 
     import pdb
     pdb.set_trace()
+    assert False
+
+    # check the frobenius norms of each A_i
+
+
+    # check the operator norm of A_stacked
+
+
     
     # create plots
 
@@ -554,7 +591,7 @@ def test_cgal_scaling_maxcut():
                  X_resids, X_resids_scaled, y_resids, y_resids_scaled)
     
 
-def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, m, n, cgal_iters):
+def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, m, n, cgal_iters, beta0=1, jit=True):
     # find scale factors
     scale_a, scale_c, scale_x = compute_scale_factors(C_op, A_op, alpha, m, n)
 
@@ -571,14 +608,16 @@ def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, m, n, cgal_iters):
     # run cgal
     cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
                            rescale_obj, rescale_feas,
-                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
+                           cgal_iters, m, n, beta0=beta0, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=jit)
     X_scaled, y_scaled = cgal_scaled_out['X'], cgal_scaled_out['y']
     X_recovered, y_recovered = recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a)
-    return cgal_scaled_out, X_recovered, y_recovered
+
+    scale_factors = dict(scale_a=scale_a, scale_c=scale_c, scale_x=scale_x)
+    return cgal_scaled_out, X_recovered, y_recovered, scaled_data, scale_factors
 
 
 def create_plots(title, rel_obj, rel_obj_scaled, rel_infeas, rel_infeas_scaled, 
-                 X_resids, X_resids_scaled, y_resids, y_resids_scaled):
+                 X_resids, X_resids_scaled, y_resids, y_resids_scaled, ylim=(1e-5,1)):
     """
     given a title (e.g. maxcut or phase_retrieval) and a suite of measures of cgal's progress
         this creates plots
@@ -596,6 +635,7 @@ def create_plots(title, rel_obj, rel_obj_scaled, rel_infeas, rel_infeas_scaled,
     plt.plot(rel_obj_scaled, label='scaled rel obj')
     plt.plot(rel_infeas, label='unscaled rel infeas')
     plt.plot(rel_infeas_scaled, label='scaled infeas')
+    plt.ylim(ylim)
     plt.yscale('log')
     plt.xlabel('cgal iterations')
     plt.legend()
@@ -606,6 +646,7 @@ def create_plots(title, rel_obj, rel_obj_scaled, rel_infeas, rel_infeas_scaled,
     plt.plot(X_resids_scaled, label='scaled X_resids')
     plt.plot(y_resids, label='unscaled y_resids')
     plt.plot(y_resids_scaled, label='scaled y_resids')
+    # plt.ylim(ylim)
     plt.xlabel('cgal iterations')
     plt.yscale('log')
     plt.legend()

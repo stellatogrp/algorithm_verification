@@ -100,11 +100,14 @@ def compute_scale_factors(C_op_orig, A_op_orig, alpha_orig, m, n):
     scale_c = 1 / C_F
 
     # compute Frobenius norms of A matrices
-    A_F_norms, A_vals = get_A_norms_from_A_op(A_op_orig, m, n)
+    A_F_norms, scaled_A_vals = get_A_norms_from_A_op(A_op_orig, m, n)
     scale_a = 1 / A_F_norms
 
+    # scale_A_vals
+    # scaled_A_vals = A_vals * scale_a
+
     # compute operator norm of A_stacked
-    op_norm = compute_operator_norm_from_A_vals(A_vals, m, n)
+    op_norm = compute_operator_norm_from_A_vals(scaled_A_vals, m, n)
     scale_a = scale_a / op_norm
 
     return scale_a, scale_c, scale_x
@@ -137,9 +140,11 @@ def get_A_norms_from_A_op(A_op, m, n):
             A_vals = A_vals.at[:, i, j].set(A_op(X))
 
     A_norms = jnp.zeros(m)
+    scaled_A_vals = jnp.zeros((m, n, n))
     for i in range(m):
         A_norms = A_norms.at[i].set(jnp.linalg.norm(A_vals[i, :, :], ord='fro'))
-    return A_norms, A_vals
+        scaled_A_vals = scaled_A_vals.at[i, :, :].set(A_vals[i, :, :] / A_norms[i])
+    return A_norms, scaled_A_vals
 
 
 def compute_frobenius_from_operator(op, n):
@@ -229,7 +234,7 @@ def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_
         scale_a_mat = jnp.expand_dims(scale_a, axis=1)
         return A_star_op_orig(u, jnp.multiply(scale_a_mat, z))
 
-    b = b_orig * scale_x
+    b = jnp.multiply(b_orig, scale_a) * scale_x
     alpha = alpha_orig * scale_x
 
     # norm_A = norm_A_orig * scale_a
@@ -254,7 +259,7 @@ def recover_original_sol(X_scaled, y_scaled, scale_x, scale_c, scale_a):
 
 
 def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cgal_iters, m, n, beta0=1, y_max=jnp.inf,
-         lobpcg_iters=100, lobpcg_tol=1e-10, warm_start_v=True, jit=True, lightweight=False):
+         lobpcg_iters=1000, lobpcg_tol=1e-30, warm_start_v=True, jit=True, lightweight=False):
     """
     jax implementation of the cgal algorithm to solve
 
@@ -476,18 +481,26 @@ def cgal_iteration(i, init_val, static_dict):
     prev_obj = obj_vals[index] / rescale_obj
     primal_obj = (1 - eta) * prev_obj + eta * obj_addition
 
+    # import pdb
+    # pdb.set_trace()
+
     # compute gamma
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
 
     # dual update
     w = z_next - proj_K(z_next + y / beta)
-    primal_infeas = jnp.linalg.norm(jnp.multiply(w, rescale_feas))
+    primal_infeas_scaled = jnp.linalg.norm(jnp.multiply(w, rescale_feas))
+    primal_infeas = jnp.linalg.norm(w)
 
     # import pdb
     # pdb.set_trace()
 
     gamma_raw = gamma_rhs / (primal_infeas ** 2)
     gamma = jnp.min(jnp.array([gamma_raw, beta0]))
+
+    # import pdb
+    # pdb.set_trace()
+    print('gamma', gamma)
 
     # update dual solutions with min evec
     #   reject if the new ||y_t|| > K
