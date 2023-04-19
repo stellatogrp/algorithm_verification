@@ -9,6 +9,7 @@ import jax.lax as lax
 from functools import partial
 from algocert.solvers.sdp_cgal_solver.lanczos import lanczos
 from jax.experimental import sparse
+import time
 
 
 def full_scale_prob_data():
@@ -80,7 +81,7 @@ def cgal_solve_np():
         feas_vals.append(self.proj_dist(self.AX(X)))
 
 
-def compute_scale_factors(C_op_orig, A_op_orig, alpha_orig, m, n):
+def compute_scale_factors(C_op_orig, A_op_orig, alpha_orig, m, n, A_data=None):
     """
     Inputs: 2 original primitives, alpha, m, and n
         note that we do not need b here
@@ -100,7 +101,10 @@ def compute_scale_factors(C_op_orig, A_op_orig, alpha_orig, m, n):
     scale_c = 1 / C_F
 
     # compute Frobenius norms of A matrices
-    A_F_norms, scaled_A_vals = get_A_norms_from_A_op(A_op_orig, m, n)
+    if A_data is None:
+        A_F_norms, scaled_A_vals = get_A_norms_from_A_op(A_op_orig, m, n)
+    else:
+        A_F_norms, scaled_A_vals = get_A_norms_from_A_matrices(A_data, m, n)
     scale_a = 1 / A_F_norms
 
     # scale_A_vals
@@ -129,6 +133,15 @@ def compute_operator_norm_from_A_vals(A_vals, m, n):
 
     op_norm = jnp.linalg.norm(A_stacked, ord=2)
     return op_norm
+
+
+def get_A_norms_from_A_matrices(A_vals, m, n):
+    A_norms = jnp.zeros(m)
+    scaled_A_vals = jnp.zeros((m, n, n))
+    for i in range(m):
+        A_norms = A_norms.at[i].set(jnp.linalg.norm(A_vals[i, :, :], ord='fro'))
+        scaled_A_vals = scaled_A_vals.at[i, :, :].set(A_vals[i, :, :] / A_norms[i])
+    return A_norms, scaled_A_vals
 
 
 def get_A_norms_from_A_op(A_op, m, n):
@@ -178,6 +191,8 @@ def relative_infeas(infeases, b):
         this returns the relative infeasibility score
     Note: this has nothing to do with the scaling
     """
+    if jnp.linalg.norm(b) == np.inf:
+        return infeases / jnp.sqrt(b.size)
     return infeases / (1 + jnp.linalg.norm(b))
 
 
@@ -234,7 +249,11 @@ def scale_problem_data(C_op_orig, A_op_orig, A_star_op_orig, alpha_orig, norm_A_
         scale_a_mat = jnp.expand_dims(scale_a, axis=1)
         return A_star_op_orig(u, jnp.multiply(scale_a_mat, z))
 
-    b = jnp.multiply(b_orig, scale_a) * scale_x
+    if b_orig.ndim == 2:
+        scale_a_mat = jnp.expand_dims(scale_a,1)
+        b = jnp.multiply(b_orig, scale_a_mat) * scale_x
+    else:
+        b = jnp.multiply(b_orig, scale_a) * scale_x
     alpha = alpha_orig * scale_x
 
     # norm_A = norm_A_orig * scale_a
@@ -304,6 +323,7 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
         X: primal solution - (n, n) matrix
         y: dual solution - (m) vector
     """
+    t0 = time.time()
 
     # initialize cgal
     X_init, y_init, z_init = cgal_init(m, n)
@@ -321,6 +341,8 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
                              lobpcg_tol=lobpcg_tol,
                              warm_start_v=warm_start_v, 
                              lightweight=lightweight)
+    cgal_time = time.time() - t0
+    cgal_out['time'] = cgal_time
     return cgal_out
 
 
@@ -488,14 +510,16 @@ def cgal_iteration(i, init_val, static_dict):
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
 
     # dual update
+    # w = jnp.multiply(z_next - proj_K(z_next + y / beta), rescale_feas)
     w = z_next - proj_K(z_next + y / beta)
-    primal_infeas_scaled = jnp.linalg.norm(jnp.multiply(w, rescale_feas))
-    primal_infeas = jnp.linalg.norm(w)
+    # primal_infeas_scaled = jnp.linalg.norm(jnp.multiply(w, rescale_feas))
+    w_norm = jnp.linalg.norm(w)
+    primal_infeas = jnp.linalg.norm(jnp.multiply(z_next - proj_K(z_next), rescale_feas))
 
     # import pdb
     # pdb.set_trace()
 
-    gamma_raw = gamma_rhs / (primal_infeas ** 2)
+    gamma_raw = gamma_rhs / (w_norm ** 2)
     gamma = jnp.min(jnp.array([gamma_raw, beta0]))
 
     # import pdb

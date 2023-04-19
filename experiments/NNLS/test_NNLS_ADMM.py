@@ -218,7 +218,7 @@ def NNLS_test_cgal_copied(n, m, A, N=1, t=.05, xset=None, bset=None):
 
     # build_X
 
-    CP.canonicalize(solver_type='SDP_CGAL', scale=True)
+    CP.canonicalize(solver_type='SDP_CGAL', scale=False)
     # CP.solve(plot=True, warmstart=False)
     return CP
 
