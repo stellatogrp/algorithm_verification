@@ -42,8 +42,4 @@ jobs:
       - name: Test with pytest
         run: |
           pytest tests/test_cgal.py
-      - name: Archive test plots
-        uses: actions/upload-artifact@v3
-        with:
-          name: test_plots
-          path: outputs/test_results/
+

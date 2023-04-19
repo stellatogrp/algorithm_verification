@@ -210,11 +210,11 @@ def NNLS_test_cgal_copied(n, m, A, N=1, t=.05, xset=None, bset=None):
     obj = ConvergenceResidual(x)
     CP = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
     CP2 = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
-    res = CP2.solve(solver_type='SDP')
+    # res = CP2.solve(solver_type='SDP')
     # params = CP2.solver.handler.sdp_param_outerproduct_vars
     # print(params[b].value)
     # print(np.trace(params[b].value))
-    print('cp res:', res)
+    # print('cp res:', res)
 
     # build_X
 
