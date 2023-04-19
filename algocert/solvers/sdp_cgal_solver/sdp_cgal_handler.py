@@ -152,6 +152,12 @@ class SDPCGALHandler(object):
         else:
             self.C_scale = 1
 
+    def divide_b_arrays_scalar(self, scalar):
+        # for i in range(len(self.b_lowerbounds)):
+        #     self.b_lowerbounds[i] /= scalar
+        self.b_lowerbounds /= scalar
+        self.b_upperbounds /= scalar
+
     def canonicalize(self):
         self.convert_hl_to_basic_steps()
         self.create_iterate_id_maps()
@@ -166,6 +172,10 @@ class SDPCGALHandler(object):
         self.canonicalize_initial_sets()
         self.canonicalize_parameter_sets()
         self.canonicalize_steps()
+
+        self.b_lowerbounds = np.array(self.b_lowerbounds)
+        self.b_upperbounds = np.array(self.b_upperbounds)
+
         if self.scale:
             for i in range(len(self.A_matrices)):
                 Ai = self.A_matrices[i]
@@ -311,16 +321,17 @@ class SDPCGALHandler(object):
         return X_vec @ X_vec.T
 
     def compare_warmstart(self):
-        start = time.time()
+        # start = time.time()
         X_resids, y_resids, feas_vals, obj_vals, cp_res = self.solve(
             plot=False, get_X=False, warmstart=False, return_resids=True)
-        end = time.time()
+        # end = time.time()
         ws_X, ws_y, ws_feas, ws_obj, _ = self.solve(plot=False, get_X=False, warmstart=True, return_resids=True)
 
         # fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
         fig, ax = plt.subplots(ncols=2, nrows=2, figsize=(10, 8))
 
-        fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+        # fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+        fig.suptitle('CGAL progress, 1')
         T = len(X_resids)
         # ax0.plot(range(1, T+1), X_resids, color='b', label='X resid')
         ax[0, 0].plot(range(1, T+1), X_resids, label='X_resid')
@@ -363,14 +374,28 @@ class SDPCGALHandler(object):
         plt.legend()
         plt.show()
 
-    def solve(self, plot=True, get_X=False, warmstart=False, return_resids=False):
+    def solve(self, plot=True, get_X=False, warmstart=False, return_resids=False, scale_alpha=False):
         cp_res = self.test_with_cvxpy()
         print('cp res:', cp_res)
         print('C_scale:', self.C_scale)
         # cp_res = 0
-        # np.random.seed(0)
-        # alpha = 5
-        alpha = 140
+
+        if scale_alpha:
+            # alpha_mul = 7
+            alpha_mul = 140
+            alpha = 1
+            # print(self.A_norms)
+            # print(self.b_lowerbounds)
+            # print(self.b_upperbounds)
+            self.divide_b_arrays_scalar(alpha_mul)
+            # print(self.b_lowerbounds)
+            # print(self.b_upperbounds)
+        else:
+            # alpha = 140
+            alpha = 140
+            alpha_mul = 1
+            # alpha = 1000
+
         beta_zero = 1
         A_op = self.estimate_A_op()
         # exit(0)
@@ -390,7 +415,7 @@ class SDPCGALHandler(object):
             y = np.zeros(d)
             print('non ws first obj:', np.trace(self.C_matrix @ X))
             print('non ws proj dist:', self.proj_dist(self.AX(X)))
-        T = 500
+        T = 2000
         obj_vals = []
         X_resids = []
         y_resids = []
@@ -400,7 +425,7 @@ class SDPCGALHandler(object):
         xi_diffs = []
         v_norm_diffs = []
 
-        start = time.time()
+        # start = time.time()
         num_gamma_exceeds = 0
         for t in trange(1, T+1):
             # print(t)
@@ -465,8 +490,9 @@ class SDPCGALHandler(object):
             rhs_denom = np.linalg.norm(self.AX(X) - wbar) ** 2
             gamma = rhs / rhs_denom
             if gamma >= beta_zero:
-                # print('rhs:', rhs, 'rhs_denom:', rhs_denom, 'gamma:', gamma)
+                # print('rhs:', rhs, 'rhs_denom:', rhs_denom, 'gamma:', gamma, 'scaled down:', gamma/(alpha ** 2))
                 # print(gamma)
+                # gamma /= (alpha ** 2)
                 num_gamma_exceeds += 1
             gamma = min(beta_zero, gamma)
             # gamma = .01
@@ -480,7 +506,7 @@ class SDPCGALHandler(object):
                 y = ynew
             else:
                 print('exceed')
-            new_obj = np.trace(self.C_matrix @ X)
+            new_obj = alpha_mul * self.C_scale * np.trace(self.C_matrix @ X)
             # print('obj', new_obj)
             # obj_vals.append(np.trace(self.C_matrix @ X))
             obj_vals.append(new_obj)
@@ -493,12 +519,16 @@ class SDPCGALHandler(object):
             # print(pt + y @ wbar + .5 * beta * (zt - wbar) @ (zt + wbar) - xi)
             # print(np.linalg.norm(zt - wbar))
         # print(X_resids, len(X_resids))
-        end = time.time()
+        # end = time.time()
         print('number of times gamma exceeded beta_0:', num_gamma_exceeds)
+        print('final obj:', new_obj)
+        print(X[-1, -1])
+        # exit(0)
         if plot:
             fig, (ax0, ax1) = plt.subplots(2, figsize=(6, 8))
 
-            fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+            # fig.suptitle(f'CGAL progress, $K=1$, total time = {np.round(end-start, 3)} (s)')
+            fig.suptitle('CGAL progress')
             ax0.plot(range(1, T+1), X_resids, label='X resid')
             ax0.plot(range(1, T+1), y_resids, label='y resid')
             ax0.plot(range(1, T+1), feas_vals, label='dist onto K')
@@ -507,12 +537,14 @@ class SDPCGALHandler(object):
 
             ax1.plot(range(1, T+1), obj_vals, label='obj')
             ax1.axhline(y=cp_res, linestyle='--', color='black')
+            # ax1.set_ylim(bottom=-1)
             # ax.axhline(y=0, color='black')
             # plt.title('Objectives')
             plt.xlabel('$t$')
             ax1.set_yscale('symlog')
             ax1.legend()
-            plt.show()
+            # plt.show()
+            # plt.savefig('Figure3.pdf')
         # plt.savefig('test.pdf')
         if get_X:
             return X
