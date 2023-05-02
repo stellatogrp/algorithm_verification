@@ -90,8 +90,8 @@ def main():
     A = np.random.randn(m, n)
     # s = 'GLOBAL'
     # s = 'SDP'
-    s = 'SDP_SCGAL'
-    # s = 'SDP_CGAL'
+    # s = 'SDP_SCGAL'
+    s = 'SDP_CGAL'
     res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
     # res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type='SDP')
     print('combined nonneglinstep:', res1)

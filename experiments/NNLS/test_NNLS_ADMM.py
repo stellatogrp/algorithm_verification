@@ -107,6 +107,7 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, xset=None, bset=None):
 
 
 def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
+    N = 2
     ATA = A.T @ A
     In = spa.eye(n)
     # r = 1
@@ -138,7 +139,7 @@ def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
 
     # bset = CenteredL2BallSet(b, r=r)
     # bset = BoxSet(b, b_l, 10 * b_u)
-    bset = BoxSet(b, b_l, 5 * b_u)
+    bset = BoxSet(b, b_l, b_u)
     # print(bset.sample_point())
     # exit(0)
 
@@ -154,8 +155,8 @@ def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
     # build_X
 
     CP.canonicalize(solver_type='SDP_CGAL', scale=True)
-    # CP.solve(plot=True, warmstart=False, scale_alpha=True)
-    CP.solver.handler.compare_warmstart()
+    CP.solve(plot=True, warmstart=False, scale_alpha=True)
+    # CP.solver.handler.compare_warmstart()
 
     # cgal_X = CP.solve(solver_type='SDP_CGAL', plot=True, get_X=True, warmstart=False, return_resids=True)
     # print(cgal_X.shape)
@@ -249,7 +250,7 @@ def GD_test(n, m, A, N=1, t=.05):
 def NNLS_test_cgal_combined(n, m, A, N=1, t=.05):
     ATA = A.T @ A
     In = spa.eye(n)
-    r = 1
+    # r = 1
     # x_l = np.zeros((n, 1))
     # x_l = 0.5 * np.ones((n, 1))
     # x_u = np.ones((n, 1))
@@ -273,14 +274,14 @@ def NNLS_test_cgal_combined(n, m, A, N=1, t=.05):
     # xset = BoxSet(x, np.zeros((n, 1)), np.zeros((n, 1)))
     # xset = BoxSet(x, x_l, x_u)
 
-    bset = CenteredL2BallSet(b, r=r)
+    # bset = CenteredL2BallSet(b, r=r)
     bset = BoxSet(b, b_l, b_u)
     obj = ConvergenceResidual(x)
 
     # CP = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
     CP2 = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
     res = CP2.solve(solver_type='SDP')
-    # cgal_X = CP.solve(solver_type='SDP_CGAL', plot=False, get_X=True)
+    # cgal_X = CP.solve(solver_type='SDP_CGAL', plot=True, get_X=True)
 
     print('cp res:', res)
 
@@ -293,9 +294,9 @@ def main():
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # NNLS_cert_prob(n, m, A, N=N, t=.05)
-    NNLS_test_cgal(n, m, A, N=N, t=.05)
+    # NNLS_test_cgal(n, m, A, N=N, t=.05)
     # GD_test(n, m, A, N=N, t=.05)
-    # NNLS_test_cgal_combined(n, m, A, N=N, t=.05)
+    NNLS_test_cgal_combined(n, m, A, N=N, t=.05)
 
 
 if __name__ == '__main__':

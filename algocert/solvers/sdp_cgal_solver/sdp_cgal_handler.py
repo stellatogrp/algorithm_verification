@@ -374,7 +374,7 @@ class SDPCGALHandler(object):
         plt.legend()
         plt.show()
 
-    def solve(self, plot=True, get_X=False, warmstart=False, return_resids=False, scale_alpha=False):
+    def solve(self, plot=True, get_X=False, warmstart=False, return_resids=False, scale_alpha=False, **kwargs):
         cp_res = self.test_with_cvxpy()
         print('cp res:', cp_res)
         print('C_scale:', self.C_scale)
@@ -382,7 +382,7 @@ class SDPCGALHandler(object):
 
         if scale_alpha:
             # alpha_mul = 7
-            alpha_mul = 140
+            alpha_mul = 9000
             alpha = 1
             # print(self.A_norms)
             # print(self.b_lowerbounds)
@@ -392,7 +392,7 @@ class SDPCGALHandler(object):
             # print(self.b_upperbounds)
         else:
             # alpha = 140
-            alpha = 140
+            alpha = 9000
             alpha_mul = 1
             # alpha = 1000
 
@@ -544,7 +544,7 @@ class SDPCGALHandler(object):
             ax1.set_yscale('symlog')
             ax1.legend()
             # plt.show()
-            # plt.savefig('Figure3.pdf')
+            plt.savefig('Figure1.pdf')
         # plt.savefig('test.pdf')
         if get_X:
             return X
