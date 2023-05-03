@@ -15,6 +15,11 @@ dependencies = [
     "cvxpy >= 1.2.0",
     "gurobipy",
     "Mosek",
+    "jax",
+    "jaxlib",
+    "matplotlib",
+    "tqdm",
+    "networkx"
 ]
 
 [tool.setuptools]

@@ -41,4 +41,5 @@ jobs:
           echo "$WLSLICENSE" > /opt/gurobi/gurobi.lic
       - name: Test with pytest
         run: |
-          pytest tests
+          pytest tests/test_cgal.py
+

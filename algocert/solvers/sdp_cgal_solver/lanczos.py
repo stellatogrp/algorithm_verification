@@ -7,10 +7,17 @@ import scipy.sparse as spa
 from jax import lax
 from jax.config import config
 from scipy.linalg import eigh_tridiagonal
+import matplotlib.pyplot as plt
+
 
 # from tqdm import trange
 
 config.update("jax_enable_x64", True)
+jax_eigh_tridiagonal = partial(jax.scipy.linalg.eigh_tridiagonal, eigvals_only=True, select='i', select_range=(0, 0))
+
+
+def fill_diagonal(x):
+    return jax.ops.index_updat(x, jnp.diag_indices(x.shape[0]), 0)
 
 
 def lanczos_matrix(M, lanczos_iters):
@@ -57,10 +64,19 @@ def init_lanczos(n):
 
 
 def finalize_lanczos(v_mat, alpha_vec, beta_vec):
+    n = alpha_vec.size
+
     # beta_trunc needs to take first i-1 entries, while alpha_vec takes first i entries
     beta_trunc = beta_vec[:-1]
 
     # this line errors - todo figure out why
+    # l_test, v_test = jax_eigh_tridiagonal(alpha_vec, beta_trunc)
+    # min_eval = jax_eigh_tridiagonal(alpha_vec, beta_trunc)
+    # tridiag_mat = jnp.zeros((n, n))
+
+    # tridiag_mat = tridiag_mat.at[diag_elements].set(alpha_vec)
+
+    # min_evec = jnp.linalg.solve(tridiag_mat - min_eval * jnp.eye(n), jnp.zeros(n))
     # l_test, v_test = jax.scipy.linalg.eigh_tridiagonal(alpha_vec, beta_trunc, select='i', select_range=[0, 0])
     l_test, v_test = eigh_tridiagonal(alpha_vec, beta_trunc, select='i', select_range=[0, 0])
 

@@ -172,6 +172,59 @@ def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
     # print(np.trace(Ai @ cgal_X))
 
 
+def NNLS_test_cgal_copied(n, m, A, N=1, t=.05, xset=None, bset=None):
+    ATA = A.T @ A
+    In = spa.eye(n)
+    # r = 1
+    # x_l = np.zeros((n, 1))
+    # x_l = 0.5 * np.ones((n, 1))
+    # x_u = np.ones((n, 1))
+    b_l = np.zeros((m, 1))
+    b_u = np.ones((m, 1))
+
+    C = spa.bmat([[In - t * ATA, t * A.T]])
+    D = spa.eye(n, n)
+    b_const = spa.csc_matrix(np.zeros((n, 1)))
+
+    # u = Iterate(n + m, name='u')
+    y = Iterate(n, name='y')
+    x = Iterate(n, name='x')
+    b = Parameter(m, name='b')
+
+    # step1 = BlockStep(u, [x, b])
+    # step2 = LinearStep(y, u, A=C, D=D, b=b_const)
+    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
+    step2 = NonNegProjStep(x, y)
+
+    steps = [step1, step2]
+
+    xset = CenteredL2BallSet(x, r=0)
+    # xset = BoxSet(x, x_l, x_u)
+    # print(np.linalg.norm(xset.sample_point()))
+
+    # bset = CenteredL2BallSet(b, r=r)
+    bset = BoxSet(b, b_l, 5 * b_u)
+    # bset = BoxSet(b, b_l, b_u)
+    # print(bset.sample_point())
+    # exit(0)
+
+    obj = ConvergenceResidual(x)
+    CP = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
+    CP2 = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
+    # res = CP2.solve(solver_type='SDP')
+    # params = CP2.solver.handler.sdp_param_outerproduct_vars
+    # print(params[b].value)
+    # print(np.trace(params[b].value))
+    # print('cp res:', res)
+
+    # build_X
+
+    CP.canonicalize(solver_type='SDP_CGAL', scale=False)
+    # CP.solve(plot=True, warmstart=False)
+    return CP
+
+
+
 def GD_test(n, m, A, N=1, t=.05):
     ATA = A.T @ A
     In = spa.eye(n)
