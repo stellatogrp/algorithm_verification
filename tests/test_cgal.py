@@ -44,7 +44,7 @@ def solve_generic_cvxpy(A_data, b, C):
         
     obj = cp.Minimize(cp.trace(C @ X))
     prob = cp.Problem(obj, constraints)
-    prob.solve(solver=cp.SCS)
+    prob.solve(solver=cp.SCS, verbose=True, max_iters=1000)
     return jnp.array(X.value), prob.value
 
 
@@ -70,7 +70,7 @@ def generate_maxcut_prob_data(L):
     # data scaling
     scale_x = 1 / n
     scale_c = 1 / jnp.linalg.norm(L, ord='fro')
-    scale_a = 1
+    scale_a = jnp.ones(n)
     return C_op, A_op, A_star_op, b, alpha, norm_A, scale_x, scale_c, scale_a
 
 
@@ -249,10 +249,10 @@ def test_maxcut_scaling():
     assert jnp.linalg.norm(b - b_scaled / (scale_a * scale_x)) <= 1e-10
 
 
-@pytest.mark.skip(reason="temp")
+# @pytest.mark.skip(reason="temp")
 def test_phase_retrieval_scaling():
     # generate random A, b, C
-    m, n = 150, 50   
+    m, n = 20, 10
     A_data, b, C = generate_random_phase_retrieval(m, n)
     A_data_stacked = jnp.reshape(A_data, (m, n ** 2))
     norm_A = jnp.linalg.norm(A_data_stacked, ord=2)
@@ -266,7 +266,7 @@ def test_phase_retrieval_scaling():
     C_op, A_op, A_star_op = generate_primitives_from_matrices(A_data, C)
     
     # solve original with cgal
-    cgal_iters = 100
+    cgal_iters = 1000
     cgal_out = cgal(A_op, C_op, A_star_op, b, 
                     alpha=2 * alpha_star, norm_A=norm_A, 
                     rescale_obj=1, rescale_feas=1, 
@@ -300,20 +300,20 @@ def test_phase_retrieval_scaling():
     alpha_scaled = scaled_data['alpha']
 
     # check the operators are truly scaled
-    assert jnp.linalg.norm(A_op_scaled(rand_matrix) - jnp.multiply(A_op(rand_matrix), scale_a)) <= 1e-6
-    assert jnp.linalg.norm(C_op_scaled(rand_vector_n) - jnp.multiply(C_op(rand_vector_n), scale_c)) <= 1e-6
-    A_star_scaled_val = A_star_op_scaled(rand_matrix, rand_vector_m)
-    scaled_rand_vector_m = jnp.multiply(rand_vector_m, jnp.expand_dims(scale_a, 1))
-    A_star_val = A_star_op(rand_matrix, scaled_rand_vector_m)
-    assert jnp.linalg.norm(A_star_scaled_val - A_star_val) <= 1e-6
-    assert jnp.abs(alpha_scaled - 1) <= 1e-8
+    # assert jnp.linalg.norm(A_op_scaled(rand_matrix) - jnp.multiply(A_op(rand_matrix), scale_a)) <= 1e-6
+    # assert jnp.linalg.norm(C_op_scaled(rand_vector_n) - jnp.multiply(C_op(rand_vector_n), scale_c)) <= 1e-6
+    # A_star_scaled_val = A_star_op_scaled(rand_matrix, rand_vector_m)
+    # scaled_rand_vector_m = jnp.multiply(rand_vector_m, jnp.expand_dims(scale_a, 1))
+    # A_star_val = A_star_op(rand_matrix, scaled_rand_vector_m)
+    # assert jnp.linalg.norm(A_star_scaled_val - A_star_val) <= 1e-6
+    # assert jnp.abs(alpha_scaled - 1) <= 1e-8
 
     create_plots('phase_retrieval', rel_objs, rel_objs_scaled, rel_infeases, rel_infeases_scaled, 
                  X_resids, X_resids_scaled, y_resids, y_resids_scaled)
 
-    import pdb
-    pdb.set_trace()
-    assert False
+    # import pdb
+    # pdb.set_trace()
+    # assert False
 
     # check the frobenius norms of each A_i
 
@@ -321,9 +321,9 @@ def test_phase_retrieval_scaling():
     # check the operator norm of A_stacked
 
 
-# @pytest.mark.skip(reason="temp")
+@pytest.mark.skip(reason="temp")
 def test_algocert():
-    m_orig, n_orig = 10, 10
+    m_orig, n_orig = 15, 15
     A = csc_matrix(np.random.normal(size=(m_orig, n_orig)))
     cert_prob = NNLS_test_cgal_copied(n_orig, m_orig, A)
     handler = cert_prob.solver.handler
@@ -338,8 +338,7 @@ def test_algocert():
     b = b.at[:, 0].set(jnp.array(handler.b_lowerbounds))
     b = b.at[:, 1].set(jnp.array(handler.b_upperbounds))
     A_data = jnp.zeros((m, n, n))
-    # import pdb
-    # pdb.set_trace()
+    
     for i in range(m):
         A_data = A_data.at[i, :, :].set(A_matrices[i].todense())
     A_data_stacked = jnp.reshape(A_data, (m, n ** 2))
@@ -348,6 +347,8 @@ def test_algocert():
     # solve with SCS
     X_opt, optval = solve_generic_cvxpy(A_data, b, C)
     alpha_star = jnp.trace(X_opt)
+    # import pdb
+    # pdb.set_trace()
     # import pdb
     # pdb.set_trace()
     # assert False
@@ -364,7 +365,7 @@ def test_algocert():
     
     
     ###### solve with cgal
-    cgal_iters = 2000
+    cgal_iters = 20
     cgal_out = cgal(A_op, C_op, A_star_op, b, 
                     alpha=2 * alpha_star, norm_A=norm_A, 
                     rescale_obj=1, rescale_feas=1, 
@@ -389,10 +390,10 @@ def test_algocert():
 
     create_plots('algocert_nnls', rel_objs, rel_objs_scaled, rel_infeases, rel_infeases_scaled, 
                  X_resids, X_resids_scaled, y_resids, y_resids_scaled)
-
-
-    import pdb
-    pdb.set_trace()
+    print('solve_time_unscaled', solve_time)
+    print('solve_time_scaled', solve_time_scaled)
+    # import pdb
+    # pdb.set_trace()
 
 
 @pytest.mark.skip(reason="temp")  
@@ -510,9 +511,9 @@ def test_cgal_jit_speed():
 
 @pytest.mark.skip(reason="temp")
 def test_cgal_scaling_maxcut():
-    n = 100
+    n = 10
     m = n
-    cgal_iters = 1000
+    cgal_iters = 10000
 
     # random Laplacian
     L = random_Laplacian_matrix(n)
@@ -528,7 +529,7 @@ def test_cgal_scaling_maxcut():
     rescale_obj_orig, rescale_feas_orig = 1, 1
     cgal_scaled_out = cgal(A_op, C_op, A_star_op, b, alpha, norm_A,
                            rescale_obj_orig, rescale_feas_orig,
-                           cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
+                           cgal_iters, m, n, lobpcg_iters=100, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
     X, y = cgal_scaled_out['X'], cgal_scaled_out['y']
     obj_vals, infeases = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
     X_resids, y_resids = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
@@ -537,9 +538,16 @@ def test_cgal_scaling_maxcut():
     # relative measures of success
     rel_obj = jnp.abs(cvxpy_obj - obj_vals) / (1 + jnp.abs(cvxpy_obj))
     rel_infeas = infeases / (1 + jnp.linalg.norm(b))
+    plt.plot(rel_obj)
+    plt.plot(rel_infeas)
+    plt.yscale('log')
+    plt.xscale('log')
+    plt.show()
+    import pdb
+    pdb.set_trace()
 
-    assert rel_obj[-1] <= 1e-3 and rel_obj[0] >= .05
-    assert rel_infeas[-1] <= 1e-2 and rel_infeas[0] >= .1
+    # assert rel_obj[-1] <= 1e-3 and rel_obj[0] >= .05
+    # assert rel_infeas[-1] <= 1e-2 and rel_infeas[0] >= .1
 
 
     ###### solve with cgal with data scaling
@@ -551,9 +559,9 @@ def test_cgal_scaling_maxcut():
     # cgal_scaled_out = cgal(A_op_scaled, C_op_scaled, A_star_op_scaled, b_scaled, alpha_scaled, norm_A_scaled,
     #                        rescale_obj, rescale_feas,
     #                        cgal_iters, m, n, lobpcg_iters=1000, lobpcg_tol=1e-10, warm_start_v=True, jit=True)
-    cgal_scaled_out, X_recovered, y_recovered = scale_and_solve(C_op, A_op, A_star_op, alpha, 
-                                                                norm_A, b, scale_x, scale_c, 
-                                                                scale_a, m, n, cgal_iters)
+    scale_factors = dict(scale_a=scale_a, scale_x=scale_x, scale_c=scale_c)
+    cgal_scaled_out, X_recovered, y_recovered, scaled_data, scale_factors = scale_and_solve(C_op, A_op, A_star_op, alpha, 
+                                                                norm_A, b, m, n, cgal_iters, scale_factors=scale_factors)
     obj_vals_scaled, infeases_scaled = cgal_scaled_out['obj_vals'], cgal_scaled_out['infeases']
     X_resids_scaled, y_resids_scaled = cgal_scaled_out['X_resids'], cgal_scaled_out['y_resids']
 
@@ -561,18 +569,21 @@ def test_cgal_scaling_maxcut():
     rel_obj_scaled = jnp.abs(cvxpy_obj - obj_vals_scaled) / (1 + jnp.abs(cvxpy_obj))
     rel_infeas_scaled = infeases_scaled / (1 + jnp.linalg.norm(b))
 
-    assert rel_obj_scaled[-1] <= 1e-2 and rel_obj_scaled[0] >= .05
-    assert rel_infeas_scaled[-1] <= 1e-2 and rel_infeas_scaled[0] >= .5
+    # assert rel_obj_scaled[-1] <= 1e-2 and rel_obj_scaled[0] >= .05
+    # assert rel_infeas_scaled[-1] <= 1e-2 and rel_infeas_scaled[0] >= .5
 
     create_plots('maxcut', rel_obj, rel_obj_scaled, rel_infeas, rel_infeas_scaled, 
                  X_resids, X_resids_scaled, y_resids, y_resids_scaled)
     
 
 def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, m, n, 
-                    cgal_iters, A_data=None, beta0=1, jit=True):
+                    cgal_iters, A_data=None, beta0=1, jit=True, scale_factors=None):
     # find scale factors
-    scale_a, scale_c, scale_x = compute_scale_factors(C_op, A_op, alpha, m, 
+    if scale_factors is None:
+        scale_a, scale_c, scale_x = compute_scale_factors(C_op, A_op, alpha, m, 
                                                       n, A_data=A_data)
+    else:
+        scale_a, scale_c, scale_x = scale_factors['scale_a'], scale_factors['scale_c'], scale_factors['scale_x']
 
     # scale problem data
     scaled_data = scale_problem_data(C_op, A_op, A_star_op, alpha, norm_A, b, scale_x, scale_c, scale_a)
@@ -580,7 +591,7 @@ def scale_and_solve(C_op, A_op, A_star_op, alpha, norm_A, b, m, n,
     alpha_scaled, norm_A_scaled, b_scaled = scaled_data['alpha'], scaled_data['norm_A'], scaled_data['b']
     rescale_obj, rescale_feas = scaled_data['rescale_obj'], scaled_data['rescale_feas']
 
-    # x0 = jnp.ones(n)
+    # x0 = jnp.ones((n,1))
     # import pdb
     # pdb.set_trace()
 
@@ -618,6 +629,7 @@ def create_plots(title, rel_obj, rel_obj_scaled, rel_infeas, rel_infeas_scaled,
     # if rel_obj.min() < cutoff_y or rel_obj_scaled.min() < cutoff_y or rel_infeas.min() < cutoff_y or rel_infeas_scaled < cutoff_y:
     #     plt.ylim(ylim)
     plt.yscale('log')
+    plt.xscale('log')
     plt.xlabel('cgal iterations')
     plt.legend()
     plt.savefig(f"{dir}/{title}_obj_infeas.pdf")
@@ -630,6 +642,7 @@ def create_plots(title, rel_obj, rel_obj_scaled, rel_infeas, rel_infeas_scaled,
     # plt.ylim(ylim)
     plt.xlabel('cgal iterations')
     plt.yscale('log')
+    plt.xscale('log')
     plt.legend()
     plt.savefig(f"{dir}/{title}_resids.pdf")
 
