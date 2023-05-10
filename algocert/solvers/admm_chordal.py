@@ -22,6 +22,12 @@ def chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, sigma=1, rho=1, k=
         s.t.  l_i <= tr(A_i X) <= u_i i=1, ..., m
               X_j = E_j X E_j.T
               X_j >> 0 j=1,...,p
+
+    The E_j matrices can be formed from chordal_list_of_lists
+
+    Each E_j has shape (r, n) where X has shape (n, n)
+    - each row of each E_j has exactly one 1 and the rest zeros
+    - the one corresponds to that variable being in the chord
     """
     num_chords = len(chordal_list_of_lists)
 
@@ -34,7 +40,8 @@ def chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, sigma=1, rho=1, k=
         psd_sizes.append(chordal_list_of_lists[i].size)
 
     # create the B matrix
-    B = create_B(A, chordal_list_of_lists)
+    n_orig = A_mat_list[0].shape[0]
+    B = create_B(A, chordal_list_of_lists, n_orig)
     
     # call the separable solver
     algo_out = solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k)
@@ -42,12 +49,12 @@ def chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, sigma=1, rho=1, k=
     return z_final, iter_losses, z_all
 
 
-def create_B(A, chordal_list_of_lists):
+def create_B(A, chordal_list_of_lists, n_orig):
     m, n = A.shape
     mat_list = [A]
     p = len(chordal_list_of_lists)
     for i in range(p):
-        curr_mat = chords_2_mat(chordal_list_of_lists[i], n)
+        curr_mat = chords_2_mat(chordal_list_of_lists[i], n_orig)
         mat_list.append(curr_mat)
     B = jnp.vstack(mat_list)
     return B
@@ -57,7 +64,9 @@ def chords_2_mat(chordal_vec, n):
     r = chordal_vec.size
     E = jnp.zeros((r, n))
     E = E.at[jnp.arange(r), chordal_vec].set(1)
+
     H = vec_symm_kron(E)
+    
     return H
 
 
@@ -90,17 +99,17 @@ def vec_symm_kron(E):
 
     # multiply non-diagonal rows by sqrt(2)
     H_symm = H_symm * jnp.sqrt(2)
-    H_diag_row_vals = H_symm[:, diag_n_cols]
+    H_diag_row_vals = H_symm[diag_r_rows, :]
     H_symm = H_symm.at[diag_r_rows, :].set(H_diag_row_vals / jnp.sqrt(2))
 
     # cut the lower triangular rows and cols
-    H_symm = H_symm[triu_r_rows, triu_n_cols]
+    H_symm = H_symm[triu_r_rows[:, jnp.newaxis], triu_n_cols]
     return H_symm
 
 
 def convert_A_mat_list_2_A(A_mat_list):
     m = len(A_mat_list)
-    n = A_mat_list.shape[0]
+    n = A_mat_list[0].shape[0]
     nc2 = int(n * (n + 1) / 2)
     A = jnp.zeros((m, nc2))
     for i in range(m):
@@ -124,10 +133,12 @@ def solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k):
     proj = create_algocert_projection(l, u, psd_sizes)
 
     # create the linear system factorization
-    M = sigma * jnp.eye(n) + B.T @ jnp.diag(rho) @ B
+    # M = sigma * jnp.eye(n) + B.T @ jnp.diag(rho) @ B
+    M = sigma * jnp.eye(n) + B.T @ B
     factor = jsp.linalg.lu_factor(M)
 
-    z0 = jnp.array(np.zeros(n + 2 * m))
+    # z0 = jnp.array(np.zeros(n + 2 * m))
+    z0 = jnp.array(np.zeros(n + m))
     algo_out = k_steps_eval_osqp(k, z0, c, factor, proj, B, rho, sigma, jit=True)
     return algo_out
 
@@ -437,8 +448,6 @@ def cgal_iteration(i, init_val, static_dict):
     prev_obj = obj_vals[index] / rescale_obj
     primal_obj = (1 - eta) * prev_obj + eta * obj_addition
 
-    # import pdb
-    # pdb.set_trace()
 
     # compute gamma
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
@@ -537,6 +546,7 @@ def proj(input, n, zero_cone_int, nonneg_cone_int, soc_proj_sizes, soc_num_proj,
     sdp_vector_sizes = [55, 5050]
     sdp_num_proj = [2, 1]
     """
+
     nonneg = jnp.clip(input[n + zero_cone_int: n + zero_cone_int + nonneg_cone_int], a_min=0)
     projection = jnp.concatenate([input[:n + zero_cone_int], nonneg])
 
@@ -767,7 +777,14 @@ def create_projection_fn(cones, n):
         cone of K
     For all of the cones we consider, the cones are self-dual
     """
-    zero_cone, nonneg_cone = cones['z'], cones['l']
+    if 'z' in cones.keys():
+        zero_cone = cones['z']
+    else:
+        zero_cone = 0
+    if 'l' in cones.keys():
+        nonneg_cone = cones['l']
+    else:
+        nonneg_cone = 0
     soc = 'q' in cones.keys() and len(cones['q']) > 0
     sdp = 's' in cones.keys() and len(cones['s']) > 0
     if soc:
@@ -798,7 +815,8 @@ def create_projection_fn(cones, n):
                          sdp_vector_sizes=sdp_vector_sizes,
                          sdp_num_proj=sdp_num_proj,
                          )
-    return jit(projection)
+    # return jit(projection)
+    return projection
 
 
 def count_num_repeated_elements(vector):
