@@ -14,6 +14,26 @@ import jax.scipy as jsp
 from jax import jit, vmap
 
 
+def psd_completion(X, chordal_list_of_lists):
+    n = X.shape[0]
+    M = cp.Variable((n, n), symmetric=True)
+    constraints = [M >> 0]
+    edges = []
+    for i in range(len(chordal_list_of_lists)):
+        chord_vec = chordal_list_of_lists[i]
+        for j in range(chord_vec.size):
+            for k in range(j + 1):
+                index1, index2 = int(chord_vec[j]), int(chord_vec[k])
+                if (index1, index2) not in edges:
+                    constraints.append(M[index1, index2] == X[index1, index2])
+                    edges.append((index1, index2))
+    print('edges', edges)
+    # prob = cp.Problem(cp.Minimize(cp.norm(X - M)), constraints)
+    prob = cp.Problem(cp.Minimize(0), constraints)
+    prob.solve(solver=cp.SCS, verbose=True, eps_abs=1e-3, eps_rel=1e-3)
+    return M.value
+
+
 def chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, sigma=1, rho=1, k=500):
     """
     solves the following sdp with chordal sparsity
@@ -134,7 +154,7 @@ def solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k):
 
     # create the linear system factorization
     # M = sigma * jnp.eye(n) + B.T @ jnp.diag(rho) @ B
-    M = sigma * jnp.eye(n) + B.T @ B
+    M = sigma * jnp.eye(n) + rho * B.T @ B
     factor = jsp.linalg.lu_factor(M)
 
     # z0 = jnp.array(np.zeros(n + 2 * m))
