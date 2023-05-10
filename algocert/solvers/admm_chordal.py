@@ -148,6 +148,7 @@ def solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k):
     C = box(l, u) x psd_cone(psd_sizes[0]) x ... x psd_cone(psd_sizes[p - 1])
     """
     m, n = B.shape
+    print('B size', B.shape)
 
     # create the projection
     proj = create_algocert_projection(l, u, psd_sizes)
@@ -155,7 +156,12 @@ def solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k):
     # create the linear system factorization
     # M = sigma * jnp.eye(n) + B.T @ jnp.diag(rho) @ B
     M = sigma * jnp.eye(n) + rho * B.T @ B
+
+    t0 = time.time()
     factor = jsp.linalg.lu_factor(M)
+    factor_time = time.time() - t0
+    print('factor time', factor_time)
+    
 
     # z0 = jnp.array(np.zeros(n + 2 * m))
     z0 = jnp.array(np.zeros(n + m))
