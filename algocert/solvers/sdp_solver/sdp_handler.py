@@ -29,10 +29,17 @@ class SDPHandler(object):
         else:
             self.add_RLT = False
 
+        if 'add_planet' in kwargs:
+            self.add_planet = kwargs['add_planet']
+        else:
+            self.add_planet = False
+
         if 'minimize' in kwargs:
             self.minimize = kwargs['minimize']
         else:
             self.minimize = False
+
+        self.kwargs = kwargs
 
     def convert_hl_to_basic_steps(self):
         all_steps_canonicalizeable = True
@@ -102,7 +109,8 @@ class SDPHandler(object):
                 self.iterate_to_type_map[output_var] = type(step)
                 canon_method = STEP_CANON_METHODS[type(step)]
                 constraints = canon_method(steps, i, curr, prev, self.iterate_to_id_map,
-                                           self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT)
+                                           self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT,
+                                           self.kwargs)
                 self.sdp_constraints += constraints
 
     def canonicalize_objective(self):

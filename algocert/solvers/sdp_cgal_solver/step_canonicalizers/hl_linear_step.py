@@ -12,7 +12,7 @@ def hl_linear_step_canon(step, k, handler):
     C = step.get_rhs_matrix()
     C = C.todense()
     b = step.get_rhs_const_vec()
-    b = b.todense().reshape(-1, 1)
+    b = b.reshape(-1, 1)
     y = step.get_output_var()
     u = step.get_input_var()  # remember that this is a block of variables
     # u_dim = step.u_dim

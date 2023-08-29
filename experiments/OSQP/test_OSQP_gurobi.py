@@ -114,7 +114,7 @@ def OSQP_cert_prob(n, m, N=1, t=.05, xset=None, bset_func=None):
     # print('sdp', res)
     # res = CP.solve(solver_type='SDP', add_RLT=True, verbose=True)
     # print('sdp rlt', res)
-    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
+    resg = CP.solve(solver_type='GLOBAL', add_bounds=False, TimeLimit=3600)
     print('global', resg)
 
 

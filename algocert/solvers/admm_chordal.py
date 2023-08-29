@@ -1,17 +1,21 @@
-import cvxpy as cp
-# import jax.scipy as jsp
-import matplotlib.pyplot as plt
-import numpy as np
-import scipy.sparse as spa
-from tqdm import trange
-import jax.numpy as jnp
-import jax.lax as lax
-from functools import partial
-from algocert.solvers.sdp_cgal_solver.lanczos import lanczos
-from jax.experimental import sparse
 import time
+from functools import partial
+
+import cvxpy as cp
+import jax.lax as lax
+import jax.numpy as jnp
 import jax.scipy as jsp
-from jax import jit, vmap
+# import jax.scipy as jsp
+# import matplotlib.pyplot as plt
+import numpy as np
+# import scipy.sparse as spa
+# from jax import jit, vmap
+from jax import vmap
+from jax.experimental import sparse
+
+# from tqdm import trange
+
+# from algocert.solvers.sdp_cgal_solver.lanczos import lanczos
 
 
 def psd_completion(X, chordal_list_of_lists):
@@ -62,7 +66,7 @@ def chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, sigma=1, rho=1, k=
     # create the B matrix
     n_orig = A_mat_list[0].shape[0]
     B = create_B(A, chordal_list_of_lists, n_orig)
-    
+
     # call the separable solver
     algo_out = solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k)
     z_final, iter_losses, z_all = algo_out
@@ -86,7 +90,7 @@ def chords_2_mat(chordal_vec, n):
     E = E.at[jnp.arange(r), chordal_vec].set(1)
 
     H = vec_symm_kron(E)
-    
+
     return H
 
 
@@ -161,7 +165,6 @@ def solve_separable_sdp(c, B, l, u, psd_sizes, sigma, rho, k):
     factor = jsp.linalg.lu_factor(M)
     factor_time = time.time() - t0
     print('factor time', factor_time)
-    
 
     # z0 = jnp.array(np.zeros(n + 2 * m))
     z0 = jnp.array(np.zeros(n + m))
@@ -173,7 +176,7 @@ def create_algocert_projection(l, u, psd_sizes):
     """
     creates a function that does the following projection
     let p = len(psd_sizes)
-    
+
     consider w = proj(u, v_1,...,v_p)
     then
         w = (z, x_1, ..., x_p)
@@ -182,6 +185,7 @@ def create_algocert_projection(l, u, psd_sizes):
     """
     cones = dict(s=psd_sizes)
     psd_projections = create_projection_fn(cones, 0)
+
     def full_proj(z):
         z_box, z_psd = z[:l.size], z[l.size:]
         z_box_proj = jnp.clip(z_box, a_min=l, a_max=u)
@@ -260,6 +264,7 @@ def fp_eval_osqp(i, val, factor, proj, B, c, rho, sigma):
     z_all = z_all.at[i, :].set(z_next)
     return z_next, loss_vec, z_all
 
+
 def k_steps_eval_osqp(k, z0, c, factor, proj, B, rho, sigma, jit):
     iter_losses = jnp.zeros(k)
     m, n = B.shape
@@ -291,6 +296,7 @@ def k_steps_eval_osqp(k, z0, c, factor, proj, B, rho, sigma, jit):
     z_all_plus_1 = z_all_plus_1.at[1:, :].set(z_all)
     return z_final, iter_losses, z_all_plus_1
 
+
 def lin_sys_solve(factor, b):
     """
     solves the linear system
@@ -298,6 +304,7 @@ def lin_sys_solve(factor, b):
     where factor is the lu factorization of A
     """
     return jsp.linalg.lu_solve(factor, b)
+
 
 def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cgal_iters, m, n, beta0=1, y_max=jnp.inf,
          lobpcg_iters=1000, lobpcg_tol=1e-30, warm_start_v=True, jit=True, lightweight=False):
@@ -343,6 +350,13 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
     """
     t0 = time.time()
 
+    # TODO: these two are just here for flake8, incorporate everything else
+    def cgal_init(m, n):
+        pass
+
+    def b_to_proj_K(b):
+        pass
+
     # initialize cgal
     X_init, y_init, z_init = cgal_init(m, n)
 
@@ -357,11 +371,12 @@ def cgal(A_op, C_op, A_star_op, b, alpha, norm_A, rescale_obj, rescale_feas, cga
                              jit=jit,
                              lobpcg_iters=lobpcg_iters,
                              lobpcg_tol=lobpcg_tol,
-                             warm_start_v=warm_start_v, 
+                             warm_start_v=warm_start_v,
                              lightweight=lightweight)
     cgal_time = time.time() - t0
     cgal_out['time'] = cgal_time
     return cgal_out
+
 
 def cgal_for_loop(A_op, C_op, A_star_op, proj_K, alpha, norm_A, rescale_obj, rescale_feas,
                   cgal_iters, X_init, y_init, z_init, beta0, y_max,
@@ -407,7 +422,7 @@ def cgal_iteration(i, init_val, static_dict):
     C_op, A_op, A_star_op = static_dict['C_op'], static_dict['A_op'], static_dict['A_star_op']
     alpha, norm_A = static_dict['alpha'], static_dict['norm_A']
     rescale_obj, rescale_feas = static_dict['rescale_obj'], static_dict['rescale_feas']
-    m, n = static_dict['m'], static_dict['n']
+    _, n = static_dict['m'], static_dict['n']
     beta0, y_max = static_dict['beta0'], static_dict['y_max']
     lobpcg_iters, lobpcg_tol = static_dict['lobpcg_iters'], static_dict['lobpcg_tol']
     warm_start_v, lightweight = static_dict['warm_start_v'], static_dict['lightweight']
@@ -474,7 +489,6 @@ def cgal_iteration(i, init_val, static_dict):
     prev_obj = obj_vals[index] / rescale_obj
     primal_obj = (1 - eta) * prev_obj + eta * obj_addition
 
-
     # compute gamma
     gamma_rhs = (alpha ** 2) * beta * norm_A * (eta ** 2)
 
@@ -507,11 +521,11 @@ def cgal_iteration(i, init_val, static_dict):
         # infeases = infeases.at[i].set(jnp.linalg.norm(A_op(X) - b))
         X_resids = X_resids.at[i].set(jnp.linalg.norm(X - X_next))
         y_resids = y_resids.at[i].set(jnp.linalg.norm(y - y_next))
-        
 
     # update the val for the lax.fori_loop
     val = X_next, y_next, z_next, obj_vals, infeases, X_resids, y_resids, lobpcg_steps_mat, v
-    return 
+    val
+    return
 
 
 def python_fori_loop(lower, upper, body_fun, init_val):
@@ -528,7 +542,7 @@ def python_fori_loop(lower, upper, body_fun, init_val):
 
 def relative_obj(obj_vals, true_obj):
     """
-    given the true objective and an array of objective, this returns the 
+    given the true objective and an array of objective, this returns the
         relative objective score
     Note: this has nothing to do with the scaling
     """
@@ -537,13 +551,14 @@ def relative_obj(obj_vals, true_obj):
 
 def relative_infeas(infeases, b):
     """
-    given b, a vector or matrix with 2 columns, and an array of infeasibility measures, 
+    given b, a vector or matrix with 2 columns, and an array of infeasibility measures,
         this returns the relative infeasibility score
     Note: this has nothing to do with the scaling
     """
     if jnp.linalg.norm(b) == np.inf:
         return infeases / jnp.sqrt(b.size)
     return infeases / (1 + jnp.linalg.norm(b))
+
 
 def proj(input, n, zero_cone_int, nonneg_cone_int, soc_proj_sizes, soc_num_proj, sdp_row_sizes,
          sdp_vector_sizes, sdp_num_proj):
@@ -645,6 +660,7 @@ def proj(input, n, zero_cone_int, nonneg_cone_int, soc_proj_sizes, soc_num_proj,
         projection = jnp.concatenate([projection, sdp_proj])
     return projection
 
+
 def sdp_proj_single(x, n):
     """
     x_proj = argmin_y ||y - x||_2^2
@@ -722,6 +738,7 @@ def unvec_symm(x, dim, triu_indices=None):
     X /= jnp.sqrt(2)
     X = X.at[jnp.diag_indices(dim)].set(jnp.diagonal(X) * jnp.sqrt(2) / 2)
     return X
+
 
 def soc_proj_single(input):
     """

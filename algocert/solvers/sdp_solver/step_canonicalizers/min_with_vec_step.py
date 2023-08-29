@@ -5,7 +5,7 @@ from algocert.basic_algorithm_steps.linear_step import LinearStep
 from algocert.variables.parameter import Parameter
 
 
-def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
+def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
     step = steps[i]
     prev_step = steps[i-1]
 

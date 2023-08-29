@@ -92,10 +92,10 @@ def main():
     # s = 'SDP'
     # s = 'SDP_SCGAL'
     s = 'SDP_CGAL'
-    res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
-    # res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type='SDP')
-    print('combined nonneglinstep:', res1)
-    # print('split nonneglinstep:', res2)
+    # res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
+    res2 = NNLS_cert_prob_two_step(n, m, spa.csc_matrix(A), K=K, t=.05, solver_type=s)
+    # print('combined nonneglinstep:', res1)
+    print('split nonneglinstep:', res2)
 
 
 if __name__ == '__main__':
