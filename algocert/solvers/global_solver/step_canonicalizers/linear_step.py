@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):
+def linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, iter_to_id_map):
     """
     canonicalizes the iteration
     D y = A u + b
@@ -67,7 +67,7 @@ def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map
     model.addConstr(constraint_lhs == constraint_rhs)
 
 
-def hl_lin_step_bound_canon(step, k, iter_to_id_map,
+def linear_step_bound_canon(step, k, iter_to_id_map,
                             iter_to_lower_bound_map, iter_to_upper_bound_map,
                             param_to_lower_bound_map, param_to_upper_bound_map):
     u = step.get_input_var()  # remember this is a list of vars

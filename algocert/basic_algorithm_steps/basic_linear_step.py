@@ -2,12 +2,12 @@ from algocert.basic_algorithm_steps.step import Step
 from algocert.variables.iterate import Iterate
 
 
-class LinearStep(Step):
+class BasicLinearStep(Step):
 
-    """Docstring for LinearStep. """
+    """Docstring for BasicLinearStep. """
 
     def __init__(self, y: Iterate, x: Iterate, D=None, A=None, b=None, Dinv=None):
-        """Step representing y = Ax
+        """Step representing y = Ax + b
 
         Args:
             A (TODO): TODO

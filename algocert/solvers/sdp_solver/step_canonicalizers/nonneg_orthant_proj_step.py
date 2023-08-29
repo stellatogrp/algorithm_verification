@@ -1,7 +1,7 @@
 import cvxpy as cp
 import numpy as np
 
-from algocert.basic_algorithm_steps.linear_step import LinearStep
+from algocert.basic_algorithm_steps.basic_linear_step import BasicLinearStep
 from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
     RLT_constraints
 
@@ -30,7 +30,7 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
         ]) >> 0,
     ]
 
-    if type(prev_step) == LinearStep:
+    if type(prev_step) == BasicLinearStep:
         # print(type(x))
         A = prev_step.get_rhs_matrix()
         D = prev_step.get_lhs_matrix()
