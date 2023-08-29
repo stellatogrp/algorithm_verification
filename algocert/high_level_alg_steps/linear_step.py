@@ -4,9 +4,9 @@ from algocert.basic_algorithm_steps.step import Step
 from algocert.variables.iterate import Iterate
 
 
-class HighLevelLinearStep(Step):
+class LinearStep(Step):
 
-    """Docstring for HighLevelLinearStep. """
+    """Docstring for LinearStep. """
 
     def __init__(self, y: Iterate, u: [Iterate], D=None, A=None, b=None, Dinv=None):
         """Step representing Dy = A[u] + b

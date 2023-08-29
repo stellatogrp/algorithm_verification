@@ -8,7 +8,7 @@ import scipy.sparse as spa
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
     NonNegProjStep
 from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
@@ -49,7 +49,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
 
     # step1 = BlockStep(u, [x, b])
     # step2 = LinearStep(y, u, A=C, D=D, b=b_const)
-    step1 = HighLevelLinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
+    step1 = LinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
     step2 = NonNegProjStep(x, y)
 
     steps = [step1, step2]
@@ -128,12 +128,12 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
 
 def main():
     np.random.seed(10)
-    m = 20
-    n = 10
-    K = 1
+    m = 10
+    n = 5
+    K = 4
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
-    NNLS_cert_prob(n, m, A, K=K, t=.01, glob_include=True)
+    NNLS_cert_prob(n, m, A, K=K, t=.05, glob_include=True)
 
 
 if __name__ == '__main__':

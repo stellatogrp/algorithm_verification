@@ -6,7 +6,7 @@ def check_symmetric(a, tol=1e-6):
     return np.all(np.abs(a-a.T) < tol)
 
 
-def hl_linear_step_canon(step, k, handler):
+def linear_step_canon(step, k, handler):
     D = step.get_lhs_matrix()
     D = D.todense()
     C = step.get_rhs_matrix()

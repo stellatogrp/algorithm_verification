@@ -1,7 +1,7 @@
 import cvxpy as cp
 import numpy as np
 
-from algocert.basic_algorithm_steps.linear_step import LinearStep
+from algocert.basic_algorithm_steps.basic_linear_step import BasicLinearStep
 from algocert.variables.parameter import Parameter
 
 
@@ -52,7 +52,7 @@ def min_vec_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerprod
             ]) >> 0,
         ]
 
-    if type(prev_step) == LinearStep:
+    if type(prev_step) == BasicLinearStep:
         # print(type(x))
         A = prev_step.get_rhs_matrix()
         D = prev_step.get_lhs_matrix()

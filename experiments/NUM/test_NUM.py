@@ -9,7 +9,7 @@ import scipy.sparse as spa
 from algocert.basic_algorithm_steps.partial_nonneg_orthant_proj_step import \
     PartialNonNegProjStep
 from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
 # from algocert.init_set.box_stack_set import BoxStackSet
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
@@ -66,14 +66,14 @@ def NUM_experiment(m_orig, n, K=1):
     s1_A = MpIinv @ s1_Atemp
     s1_b = np.zeros((k, 1))
 
-    step1 = HighLevelLinearStep(u, [z, q], D=s1_D, A=s1_A, b=s1_b, Dinv=s1_D)
+    step1 = LinearStep(u, [z, q], D=s1_D, A=s1_A, b=s1_b, Dinv=s1_D)
 
     # step 2
     s2_D = Ik
     s2_A = spa.bmat([[2 * Ik, -Ik]])
     s2_b = np.zeros((k, 1))
 
-    step2 = HighLevelLinearStep(w, [u, z], D=s2_D, A=s2_A, b=s2_b, Dinv=s2_D)
+    step2 = LinearStep(w, [u, z], D=s2_D, A=s2_A, b=s2_b, Dinv=s2_D)
 
     # step 3
     # step3 = NonNegProjStep(u_tilde, w)
@@ -85,7 +85,7 @@ def NUM_experiment(m_orig, n, K=1):
     s4_A = spa.bmat([[Ik, Ik, -Ik]])
     s4_b = np.zeros((k, 1))
 
-    step4 = HighLevelLinearStep(z, [z, u_tilde, u], D=s4_D, A=s4_A, b=s4_b, Dinv=s4_D)
+    step4 = LinearStep(z, [z, u_tilde, u], D=s4_D, A=s4_A, b=s4_b, Dinv=s4_D)
 
     steps = [step1, step2, step3, step4]
 
@@ -97,7 +97,7 @@ def NUM_experiment(m_orig, n, K=1):
 
     CP = CertificationProblem(K, [zset], [qset], obj, steps)
 
-    resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
+    resg = CP.solve(solver_type='GLOBAL', add_bounds=False, TimeLimit=3600)
     print('global', resg)
 
 
