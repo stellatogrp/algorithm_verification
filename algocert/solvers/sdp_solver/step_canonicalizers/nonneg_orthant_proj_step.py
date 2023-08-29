@@ -6,7 +6,7 @@ from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
     RLT_constraints
 
 
-def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
+def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
     step = steps[i]
     prev_step = steps[i-1]
 
@@ -86,6 +86,19 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
             y_var <= A @ x_var + b,
             yyT_var <= A @ xxT_var @ A.T + A @ x_var @ b.T + b @ x_var.T @ A.T + b @ b.T
         ]
+
+        if 'add_planet' in kwargs:
+            if kwargs['add_planet']:
+                constraints += [
+                    cp.diag(A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
+                            b @ x_var.T - y_var @ upper_x.T + yxT_var) >= 0,
+                    # cp.diag(A @ xxT_var - A @ x_var @ lower_x.T + b @ x_var.T - b @ lower_x.T \
+                    # - yxT_var + y_var @ lower_x.T) >= 0,
+                    # cp.diag(
+                    #     A @ xxT_var + A @ x_var @ b.T - A @ yxT_var.T + b @ x_var.T @ A.T + b @ b.T \
+                    #  - b @ y_var.T - yxT_var @ A.T - y_var @ b.T + yyT_var
+                    # ) >= 0,
+                ]
     return constraints
 
 

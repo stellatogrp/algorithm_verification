@@ -56,10 +56,13 @@ def hl_linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map
 
         constraint_rhs += A.tocsc()[:, left: right] @ x_var
         # print((A.tocsc()[:, left: right] @ x_var).shape)
-    # print('rhs', constraint_rhs.shape)
-    # print('lhs', constraint_lhs.shape)
-    # print(b, b.shape)
-    constraint_rhs += b.reshape(-1, )
+    print('rhs', constraint_rhs.shape)
+    print('lhs', constraint_lhs.shape)
+    print(b, b.shape)
+    # constraint_rhs += b.reshape(-1, )
+    b = b.reshape(-1, )
+    # exit(0)
+    constraint_rhs += b.reshape(constraint_rhs.shape)
 
     model.addConstr(constraint_lhs == constraint_rhs)
 

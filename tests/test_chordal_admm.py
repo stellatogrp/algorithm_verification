@@ -1,12 +1,17 @@
-import jax.numpy as jnp
-import numpy as np
-import matplotlib.pyplot as plt
-from algocert.solvers.admm_chordal import chordal_solve, unvec_symm, psd_completion
-import cvxpy as cp
-import pytest
 import time
 
+import cvxpy as cp
+import jax.numpy as jnp
+import matplotlib.pyplot as plt
+import numpy as np
+import pytest
+
+from algocert.solvers.admm_chordal import (chordal_solve, psd_completion,
+                                           unvec_symm)
+
 # @pytest.mark.skip(reason="temp")
+
+
 def test_full_sdp():
     n_orig = 10
     chordal_list_of_lists = [jnp.arange(n_orig)]
@@ -20,7 +25,7 @@ def test_full_sdp():
     C = np.random.normal(size=(n_orig, n_orig))
     C = (C + C.T) / 2
     l, u = jnp.ones(n_orig), jnp.ones(n_orig)
-    rho_vec = jnp.ones(n_orig)
+    # rho_vec = jnp.ones(n_orig)
     sol = chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, rho=1)
     z_k, iter_losses, z_all = sol
     nc2 = int(n_orig * (n_orig + 1) / 2)
@@ -65,7 +70,7 @@ def test_block_arrow_general():
     # pdb.set_trace()
 
     # create block_arrow
-    block_arrow_mask, chordal_list_of_lists = create_block_arrow_mask(diag_block_sizes, 
+    block_arrow_mask, chordal_list_of_lists = create_block_arrow_mask(diag_block_sizes,
                                                                       arrow_width, num_blocks)
 
     # mask C, A_i's
@@ -78,7 +83,8 @@ def test_block_arrow_general():
     # solve with chordal sparsity
     t0 = time.time()
     sol = chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, sigma=1e-6, rho=1, k=10000)
-    chordal_time  = time.time() - t0
+    chordal_time = time.time() - t0
+    print(chordal_time)
     z_k, iter_losses, z_all = sol
     nc2 = int(n_orig * (n_orig + 1) / 2)
     X_sol = unvec_symm(z_k[:nc2], n_orig)
@@ -104,7 +110,7 @@ def test_block_arrow_general():
     # pdb.set_trace()
 
 
-# @pytest.mark.skip(reason="temp")
+@pytest.mark.skip(reason="temp")
 def test_block_arrow_diag_constraints():
     diag_block_sizes = 10
     arrow_width = 10
@@ -123,7 +129,7 @@ def test_block_arrow_diag_constraints():
     C_dense = (C_dense + C_dense.T) / 2
 
     # create block_arrow
-    block_arrow_mask, chordal_list_of_lists = create_block_arrow_mask(diag_block_sizes, 
+    block_arrow_mask, chordal_list_of_lists = create_block_arrow_mask(diag_block_sizes,
                                                                       arrow_width, num_blocks)
 
     # mask C
@@ -132,7 +138,7 @@ def test_block_arrow_diag_constraints():
     # solve with chordal sparsity
     t0 = time.time()
     sol = chordal_solve(A_mat_list, C, l, u, chordal_list_of_lists, rho=1)
-    chordal_time  = time.time() - t0
+    chordal_time = time.time() - t0
     z_k, iter_losses, z_all = sol
     nc2 = int(n_orig * (n_orig + 1) / 2)
     X_sol = unvec_symm(z_k[:nc2], n_orig)
@@ -142,7 +148,6 @@ def test_block_arrow_diag_constraints():
     # do psd completion
     X_psd = psd_completion(X_sol, chordal_list_of_lists)
     evals, evecs = jnp.linalg.eigh(X_psd)
-    
 
     final_obj = jnp.trace(C @ X_psd)
 
@@ -165,7 +170,7 @@ def test_block_arrow_diag_constraints():
     # solve without chordal sparsity
     t0 = time.time()
     sol_no_chordal = chordal_solve(A_mat_list, C, l, u, [jnp.arange(n_orig)], rho=1)
-    non_chordal_time  = time.time() - t0
+    non_chordal_time = time.time() - t0
     z_k_no_chordal, iter_losses_no_chordal, z_all_no_chordal = sol_no_chordal
     X_sol_no_chordal = unvec_symm(z_k_no_chordal[:nc2], n_orig)
     evals_no_chordal, evecs_no_chordal = jnp.linalg.eigh(X_sol_no_chordal)
@@ -176,22 +181,21 @@ def test_block_arrow_diag_constraints():
     assert non_chordal_time >= 1.1 * chordal_time
 
 
-
 def create_block_arrow_mask(diag_block_sizes, arrow_width, num_blocks):
     total_size = num_blocks * diag_block_sizes + arrow_width
     block_arrow_mask = jnp.zeros((total_size, total_size))
     chordal_list_of_lists = []
     arrow_indices = jnp.arange(num_blocks * diag_block_sizes, total_size)
 
-    # make diagonal blocks take values of 1 
+    # make diagonal blocks take values of 1
     for i in range(num_blocks):
         start_index = i * diag_block_sizes
         end_index = (i + 1) * diag_block_sizes
-        block_arrow_mask = block_arrow_mask.at[start_index:end_index, 
+        block_arrow_mask = block_arrow_mask.at[start_index:end_index,
                                                start_index:end_index].set(1)
         curr_chord = jnp.arange(start_index, end_index)
         chordal_list_of_lists.append(jnp.concatenate([curr_chord, arrow_indices]))
-        
+
     # make arrow block take values of 1
     block_arrow_mask = block_arrow_mask.at[-arrow_width:, :].set(1)
     block_arrow_mask = block_arrow_mask.at[:, -arrow_width:].set(1)

@@ -6,7 +6,7 @@ from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
     RLT_constraints
 
 
-def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT):
+def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
     step = steps[i]
     prev_step = steps[i-1]
     u = step.get_rhs_var()

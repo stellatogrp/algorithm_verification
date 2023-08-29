@@ -7,7 +7,7 @@ def nonneg_lin_canon(step, k, handler):
     # y = step.get_output_var()
     # n = y.get_dim()
     # u = step.get_input_var()  # remember this is a stack of variables
-    # b = step.get_rhs_const_vec()
+    # # b = step.get_rhs_const_vec()
     # C = step.get_rhs_matrix()
     # C_blocks = step.C_blocks
     # iter_to_id_map = handler.iterate_to_id_map
@@ -60,16 +60,16 @@ def nonneg_lin_canon(step, k, handler):
     #         b_lcurr += [0]
     #         b_ucurr += [np.inf]
 
-    #     # next, y - Cu >= b
-    #     for j in range(n):
-    #         outmat = spa.lil_matrix((problem_dim, problem_dim))
-    #         bj = b[j, 0]
-    #         yj = y_l + j
-    #         outmat[yj, -1] = .5
-    #         outmat[-1, yj] = .5
-    #         # TODO: finish this
+    # #     # next, y - Cu >= b
+    # #     for j in range(n):
+    # #         outmat = spa.lil_matrix((problem_dim, problem_dim))
+    # #         bj = b[j, 0]
+    # #         yj = y_l + j
+    # #         outmat[yj, -1] = .5
+    # #         outmat[-1, yj] = .5
+    # #         # TODO: finish this
 
-    # # exit(0)
+    # # # exit(0)
 
     return A_vals, b_lvals, b_uvals
 
