@@ -6,7 +6,8 @@ from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
     RLT_constraints
 
 
-def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
+def partial_nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars,
+                                      add_RLT, kwargs):
     step = steps[i]
     prev_step = steps[i-1]
 
@@ -64,7 +65,6 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
     upper_y = curr.iterate_vars[y].get_upper_bound()
     lower_x = curr.iterate_vars[x].get_lower_bound()
     upper_x = curr.iterate_vars[x].get_upper_bound()
-
     if add_RLT:
         extra_constraints = RLT_constraints(yxT_var, y_var, lower_y, upper_y, x_var, lower_x, upper_x)
         constraints += extra_constraints
@@ -73,32 +73,23 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
         # constraints += [lower_x <= x_var, x_var <= upper_x]
         # constraints += RLT_constraints(yyT_var, y_var, lower_y, upper_y, y_var, lower_y, upper_y)
         # constraints += [lower_y <= y_var, y_var <= upper_y]
+        # triangle constraints
+        # print(upper_y, lower_y, upper_x, lower_x)
+        frac = np.divide(upper_y - lower_y, upper_x - lower_x)
+        # print('frac', frac)
+        A = np.zeros((n, n))
+        for i in range(n):
+            # this aboslutely should not have been necessary, but for some reason I couldn't get the numpy functions
+            # to work as desired
+            A[i, i] = frac[i, 0]
+        b = np.multiply(frac, -lower_x) + lower_y
+        # constraints += [
+        #     y_var <= A @ x_var + b,
+        #     yyT_var <= A @ xxT_var @ A.T + A @ x_var @ b.T + b @ x_var.T @ A.T + b @ b.T
+        # ]
 
         if 'add_planet' in kwargs:
             if kwargs['add_planet']:
-
-                print((upper_x - lower_x).reshape(-1,))
-                gaps_vec = (upper_x - lower_x).reshape(-1,)
-                pos_gap_indices = np.argwhere(gaps_vec >= 1e-5).reshape(-1, )
-                zero_gap_indices = np.argwhere(gaps_vec < 1e-5).reshape(-1, )
-                print(pos_gap_indices, zero_gap_indices)
-
-                # TODO: only planet for pos_gap_indices, for the rest, we should just be able to leave them alone?
-
-                exit(0)
-                frac = np.divide(upper_y - lower_y, upper_x - lower_x)
-                A = np.zeros((n, n))
-                for i in range(n):
-                    # this absolutely should not have been necessary, but I couldn't get the numpy functions
-                    # to work as desired
-                    A[i, i] = frac[i, 0]
-                b = np.multiply(frac, -lower_x) + lower_y
-
-                # constraints += [
-                #     y_var <= A @ x_var + b,
-                #     yyT_var <= A @ xxT_var @ A.T + A @ x_var @ b.T + b @ x_var.T @ A.T + b @ b.T
-                # ]
-
                 constraints += [
                     cp.diag(A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
                             b @ x_var.T - y_var @ upper_x.T + yxT_var) >= 0,
@@ -112,7 +103,7 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
     return constraints
 
 
-def nonneg_orthant_proj_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
+def partial_nonneg_orthant_proj_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
     step = steps[i]
     #  prev_step = steps[i - 1]
     y = step.get_output_var()

@@ -4,8 +4,8 @@ import numpy as np
 import scipy.sparse as spa
 
 # from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-# from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-#     NonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+    NonNegProjStep
 from algocert.basic_algorithm_steps.partial_nonneg_orthant_proj_step import \
     PartialNonNegProjStep
 from algocert.certification_problem import CertificationProblem
@@ -23,7 +23,7 @@ from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
 
-def NUM_experiment(m_orig, n, K=1):
+def NUM_single(m_orig, n, K=1, glob_include=True):
     R = np.random.binomial(n=2, p=0.25, size=(m_orig, n))
     print(R)
 
@@ -37,8 +37,8 @@ def NUM_experiment(m_orig, n, K=1):
 
     w = np.random.uniform(0, 1, size=n)
     t = np.ones(n)
-    c_l = -np.ones(m_orig)  # np.zeros(m_orig)
-    c_u = np.ones(m_orig)
+    c_l = np.ones(m_orig)
+    c_u = 2 * np.ones(m_orig)
 
     q_l = np.hstack([w, c_l, np.zeros(n), t])
     q_u = np.hstack([w, c_u, np.zeros(n), t])
@@ -61,12 +61,18 @@ def NUM_experiment(m_orig, n, K=1):
     qset = BoxSet(q, q_l, q_u)
 
     # step 1
-    s1_D = Ik
-    s1_Atemp = spa.bmat([[Ik, -Ik]])
-    s1_A = MpIinv @ s1_Atemp
+    # s1_D = Ik
+    # s1_Atemp = spa.bmat([[Ik, -Ik]])
+    # s1_A = MpIinv @ s1_Atemp
+    # s1_b = np.zeros((k, 1))
+
+    # step1 = LinearStep(u, [z, q], D=s1_D, A=s1_A, b=s1_b, Dinv=s1_D)
+
+    s1_D = MpI
+    s1_A = spa.bmat([[Ik, -Ik]])
     s1_b = np.zeros((k, 1))
 
-    step1 = LinearStep(u, [z, q], D=s1_D, A=s1_A, b=s1_b, Dinv=s1_D)
+    step1 = LinearStep(u, [z, q], D=s1_D, A=s1_A, b=s1_b, Dinv=MpIinv)
 
     # step 2
     s2_D = Ik
@@ -76,9 +82,9 @@ def NUM_experiment(m_orig, n, K=1):
     step2 = LinearStep(w, [u, z], D=s2_D, A=s2_A, b=s2_b, Dinv=s2_D)
 
     # step 3
-    # step3 = NonNegProjStep(u_tilde, w)
     nonneg_ranges = (n, m + n)
     step3 = PartialNonNegProjStep(u_tilde, w, nonneg_ranges)
+    step3 = NonNegProjStep(u_tilde, w)
 
     # step 4
     s4_D = Ik
@@ -96,8 +102,44 @@ def NUM_experiment(m_orig, n, K=1):
     obj = [ConvergenceResidual(z)]
 
     CP = CertificationProblem(K, [zset], [qset], obj, steps)
+    CP2 = CertificationProblem(K, [zset], [qset], obj, steps)
 
-    resg = CP.solve(solver_type='GLOBAL', add_bounds=False, TimeLimit=3600)
+    # out = []
+    # # K = 2
+    # for K_curr in range(1, K+1):
+    #     CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+    #     CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+    #     CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+    #     CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+
+    #     (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
+    #     (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
+    #     (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+    #     if glob_include:
+    #         (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
+    #     else:
+    #         glob, glob_time = 0, 0
+
+    #     out.append(
+    #         pd.Series({
+    #             'K': K_curr,
+    #             'sdp': sdp,
+    #             'sdptime': sdptime,
+    #             'sdp_r': sdp_r,
+    #             'sdp_rtime': sdp_rtime,
+    #             'sdp_p': sdp_p,
+    #             'sdp_ptime': sdp_ptime,
+    #             'glob': glob,
+    #             'glob_time': glob_time,
+    #         })
+    #     )
+    # out_df = pd.DataFrame(out)
+    # print(out_df)
+
+    res = CP.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+
+    resg = CP2.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
+    print('sdp', res)
     print('global', resg)
 
 
@@ -122,8 +164,8 @@ def main():
     np.random.seed(0)
     m = 2
     n = 3
-    K = 1
-    NUM_experiment(m, n, K=K)
+    K = 2
+    NUM_single(m, n, K=K)
 
 
 if __name__ == '__main__':

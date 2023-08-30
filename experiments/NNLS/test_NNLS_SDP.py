@@ -127,10 +127,10 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
 
 
 def main():
-    np.random.seed(10)
+    np.random.seed(1)
     m = 10
     n = 5
-    K = 4
+    K = 8
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     NNLS_cert_prob(n, m, A, K=K, t=.05, glob_include=True)
