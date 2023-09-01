@@ -35,10 +35,10 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     # self.w_sample = np.random.uniform(0, 1, size=self.n)
     # self.t_sample = 1 * np.ones(self.n)
 
-    w = np.random.uniform(0, 1, size=n)
-    t = np.ones(n)
-    c_l = np.ones(m_orig)
-    c_u = 2 * np.ones(m_orig)
+    w = -np.random.uniform(0, 1, size=n)
+    t = 1 * np.ones(n)
+    c_l = .5 * np.ones(m_orig)
+    c_u = 1.5 * np.ones(m_orig)
 
     q_l = np.hstack([w, c_l, np.zeros(n), t])
     q_u = np.hstack([w, c_u, np.zeros(n), t])
@@ -92,12 +92,14 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     s4_b = np.zeros((k, 1))
 
     step4 = LinearStep(z, [z, u_tilde, u], D=s4_D, A=s4_A, b=s4_b, Dinv=s4_D)
+    # step4 = LinearStep(z, [z, w, u], D=s4_D, A=s4_A, b=s4_b, Dinv=s4_D)
 
     steps = [step1, step2, step3, step4]
 
     # for the iterate/parameter sets
     qset = BoxSet(q, q_l, q_u)
     zset = BoxSet(z, np.zeros((k, 1)), np.zeros((k, 1)))
+    # zset = BoxSet(z, -np.ones((k, 1)), np.ones((k, 1)))
 
     obj = [ConvergenceResidual(z)]
 

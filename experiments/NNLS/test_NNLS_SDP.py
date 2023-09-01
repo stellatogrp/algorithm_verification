@@ -1,4 +1,5 @@
 #  import certification_problem.init_set as cpi
+import cvxpy as cp
 import numpy as np
 import pandas as pd
 import scipy.sparse as spa
@@ -59,8 +60,11 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # x_u = 10 + np.ones((n, 1))
 
     # x_l = np.zeros((n, 1))
+    # x_u = np.zeros((n, 1))
+
     x_l = -1 * np.ones((n, 1))
     x_u = np.ones((n, 1))
+    # x_u[0] = -1
     xset = BoxSet(x, x_l, x_u)
 
     # bset = CenteredL2BallSet(b, r=r)
@@ -126,6 +130,22 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # out_df.to_csv(out_fname, index=False)
 
 
+def cp_test(A):
+    m, n = A.shape
+    b = 20 * np.ones(m)
+
+    x = cp.Variable(n)
+    obj = .5 * cp.sum_squares(A @ x - b)
+    constraints = [x >= 0]
+
+    prob = cp.Problem(cp.Minimize(obj), constraints)
+    res = prob.solve()
+    print(res)
+    print(np.round(x.value, 4))
+
+    exit(0)
+
+
 def main():
     np.random.seed(1)
     m = 10
@@ -133,6 +153,7 @@ def main():
     K = 8
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
+    # cp_test(A)
     NNLS_cert_prob(n, m, A, K=K, t=.05, glob_include=True)
 
 

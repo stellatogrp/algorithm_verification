@@ -76,39 +76,83 @@ def nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, par
 
         if 'add_planet' in kwargs:
             if kwargs['add_planet']:
+                test = True
+                if test:
+                    print((upper_x - lower_x).reshape(-1,))
+                    gaps_vec = (upper_x - lower_x).reshape(-1,)
+                    pos_gap_indices = np.argwhere(gaps_vec >= 1e-5).reshape(-1, )
+                    zero_gap_indices = np.argwhere(gaps_vec < 1e-5).reshape(-1, )
+                    print(pos_gap_indices, zero_gap_indices)
 
-                print((upper_x - lower_x).reshape(-1,))
-                gaps_vec = (upper_x - lower_x).reshape(-1,)
-                pos_gap_indices = np.argwhere(gaps_vec >= 1e-5).reshape(-1, )
-                zero_gap_indices = np.argwhere(gaps_vec < 1e-5).reshape(-1, )
-                print(pos_gap_indices, zero_gap_indices)
+                    frac = np.divide((upper_y - lower_y)[pos_gap_indices], (upper_x - lower_x)[pos_gap_indices])
+                    n_pos = pos_gap_indices.shape[0]
+                    A = np.zeros((n_pos, n_pos))
+                    # print(A)
+                    for i in range(n_pos):
+                        A[i, i] = frac[i, 0]
+                    b = np.multiply(frac, -lower_x[pos_gap_indices]) + lower_y[pos_gap_indices]
 
-                # TODO: only planet for pos_gap_indices, for the rest, we should just be able to leave them alone?
+                    # print(xxT_var.shape)
+                    # print(xxT_var[pos_gap_indices].shape)
+                    # print(xxT_var[pos_gap_indices][:, pos_gap_indices].shape)
+                    # print(xxT_var[pos_gap_indices][:, pos_gap_indices])
+                    # print(xxT_var[pos_gap_indices, pos_gap_indices].shape)
+                    # exit(0)
 
-                exit(0)
-                frac = np.divide(upper_y - lower_y, upper_x - lower_x)
-                A = np.zeros((n, n))
-                for i in range(n):
-                    # this absolutely should not have been necessary, but I couldn't get the numpy functions
-                    # to work as desired
-                    A[i, i] = frac[i, 0]
-                b = np.multiply(frac, -lower_x) + lower_y
+                    constr = A @ x_var[pos_gap_indices] @ upper_x[pos_gap_indices].T - \
+                        A @ xxT_var[pos_gap_indices][:, pos_gap_indices] + \
+                        b @ upper_x[pos_gap_indices].T - \
+                        b @ x_var[pos_gap_indices].T - \
+                        y_var[pos_gap_indices] @ upper_x[pos_gap_indices].T + \
+                        yxT_var[pos_gap_indices][:, pos_gap_indices]
 
-                # constraints += [
-                #     y_var <= A @ x_var + b,
-                #     yyT_var <= A @ xxT_var @ A.T + A @ x_var @ b.T + b @ x_var.T @ A.T + b @ b.T
-                # ]
+                    # print(constr, constr.shape)
+                    constraints += [constr >= 0]
+                    # print(lower_x[zero_gap_indices])
+                    # exit(0)
 
-                constraints += [
-                    cp.diag(A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
-                            b @ x_var.T - y_var @ upper_x.T + yxT_var) >= 0,
-                    # cp.diag(A @ xxT_var - A @ x_var @ lower_x.T + b @ x_var.T - b @ lower_x.T \
-                    # - yxT_var + y_var @ lower_x.T) >= 0,
-                    # cp.diag(
-                    #     A @ xxT_var + A @ x_var @ b.T - A @ yxT_var.T + b @ x_var.T @ A.T + b @ b.T \
-                    #  - b @ y_var.T - yxT_var @ A.T - y_var @ b.T + yyT_var
-                    # ) >= 0,
-                ]
+                    # A = np.diag(frac)
+                    # print(frac)
+                    # print(A, A.shape)
+
+                    # for idx in zero_gap_indices:
+                    #     # constraints += [x_var[idx] == upper_x[idx]]
+                    #     constraints += [y_var[idx] == np.maximum(upper_x[idx], 0)]
+                    #     constraints += [yyT_var[idx, idx] == (np.maximum(upper_x[idx], 0)) ** 2]
+
+                    # TODO: only planet for pos_gap_indices, for the rest, we should just be able to leave them alone?
+                    # exit(0)
+                else:
+                    # frac = np.divide((upper_y - lower_y)[pos_gap_indices], (upper_x - lower_x)[pos_gap_indices])
+                    frac = np.divide(upper_y - lower_y, upper_x - lower_x)
+                    # n = pos_gap_indices.shape[0]
+                    A = np.zeros((n, n))
+                    for i in range(n):
+                        # this absolutely should not have been necessary, but I couldn't get the numpy functions
+                        # to work as desired
+                        A[i, i] = frac[i, 0]
+                    b = np.multiply(frac, -lower_x) + lower_y
+
+                    # exit(0)
+
+                    # constraints += [
+                    #     y_var <= A @ x_var + b,
+                    #     yyT_var <= A @ xxT_var @ A.T + A @ x_var @ b.T + b @ x_var.T @ A.T + b @ b.T
+                    # ]
+
+                    constraints += [
+                        cp.diag(A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
+                                b @ x_var.T - y_var @ upper_x.T + yxT_var) >= 0,
+
+                        # cp.diag()
+
+                        # cp.diag(A @ xxT_var - A @ x_var @ lower_x.T + b @ x_var.T - b @ lower_x.T \
+                        # - yxT_var + y_var @ lower_x.T) >= 0,
+                        # cp.diag(
+                        #     A @ xxT_var + A @ x_var @ b.T - A @ yxT_var.T + b @ x_var.T @ A.T + b @ b.T \
+                        #  - b @ y_var.T - yxT_var @ A.T - y_var @ b.T + yyT_var
+                        # ) >= 0,
+                    ]
     return constraints
 
 
