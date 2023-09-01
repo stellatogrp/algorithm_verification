@@ -7,8 +7,7 @@ from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps.proximal_step import proximal_step
 from tqdm import trange
 
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-    NonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet

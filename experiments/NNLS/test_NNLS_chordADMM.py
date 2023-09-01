@@ -6,14 +6,15 @@ from tqdm import trange
 
 # from algocert.basic_algorithm_steps.block_step import BlockStep
 # from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-    NonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+
 # from algocert.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+
 # from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter

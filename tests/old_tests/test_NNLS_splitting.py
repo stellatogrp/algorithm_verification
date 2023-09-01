@@ -3,8 +3,7 @@ import numpy as np
 import scipy.sparse as spa
 
 from algocert import CertificationProblem
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-    NonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet

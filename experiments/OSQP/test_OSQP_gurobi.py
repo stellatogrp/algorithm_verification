@@ -9,6 +9,7 @@ from algocert.init_set.box_set import BoxSet
 from algocert.init_set.box_stack_set import BoxStackSet
 from algocert.init_set.const_set import ConstSet
 from algocert.init_set.control_example_set import ControlExampleSet
+
 # from algocert.init_set.init_set import InitSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate

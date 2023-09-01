@@ -4,9 +4,11 @@ import scipy.sparse as spa
 # from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
 # NonNegProjStep
 from algocert.certification_problem import CertificationProblem
+
 # from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
 from algocert.init_set.box_set import BoxSet
+
 # from algocert.init_set.const_set import ConstSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate

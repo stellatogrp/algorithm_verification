@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from test_rho_convresid import (OSQP_cert_prob, generate_problem,
-                                generate_rho_opt)
+from test_rho_convresid import OSQP_cert_prob, generate_problem, generate_rho_opt
 
 plt.rcParams.update({
     "text.usetex": True,

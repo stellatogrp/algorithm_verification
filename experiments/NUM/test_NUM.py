@@ -1,22 +1,23 @@
 # import cvxpy as cp
 import numpy as np
+
 # import pandas as pd
 import scipy.sparse as spa
 
 # from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-    NonNegProjStep
-from algocert.basic_algorithm_steps.partial_nonneg_orthant_proj_step import \
-    PartialNonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algocert.basic_algorithm_steps.partial_nonneg_orthant_proj_step import PartialNonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
+
 # from algocert.init_set.box_stack_set import BoxStackSet
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 # from algocert.init_set.const_set import ConstSet
 # from algocert.init_set.control_example_set import ControlExampleSet
 # from algocert.init_set.init_set import InitSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+
 # from algocert.objectives.l1_conv_resid import L1ConvResid
 # from algocert.utils.plotter import plot_results
 from algocert.variables.iterate import Iterate

@@ -1,6 +1,7 @@
 import time
 
 import cvxpy as cp
+
 # import jax.experimental.sparse as jspa
 # import jax.numpy as jnp
 import matplotlib.pyplot as plt
@@ -8,9 +9,11 @@ import numpy as np
 import scipy.sparse as spa
 from tqdm import trange
 
-from algocert.solvers.sdp_cgal_solver import (OBJ_CANON_METHODS,
-                                              SET_CANON_METHODS,
-                                              STEP_CANON_METHODS)
+from algocert.solvers.sdp_cgal_solver import (
+    OBJ_CANON_METHODS,
+    SET_CANON_METHODS,
+    STEP_CANON_METHODS,
+)
 from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec, lanczos
 from algocert.solvers.sdp_cgal_solver.nymstrom import NymstromSketch
 

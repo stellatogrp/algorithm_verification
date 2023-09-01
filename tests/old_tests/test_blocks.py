@@ -3,8 +3,7 @@ import scipy.sparse as spa
 
 from algocert.basic_algorithm_steps.block_step import BlockStep
 from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-    NonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual

@@ -2,11 +2,13 @@ import gurobipy as gp
 import numpy as np
 
 from algocert.init_set.mult_trajectory import MultTrajectorySets
-from algocert.solvers.global_solver import (BOUND_SET_CANON_METHODS,
-                                            BOUND_STEP_CANON_METHODS,
-                                            OBJ_CANON_METHODS,
-                                            SET_CANON_METHODS,
-                                            STEP_CANON_METHODS)
+from algocert.solvers.global_solver import (
+    BOUND_SET_CANON_METHODS,
+    BOUND_STEP_CANON_METHODS,
+    OBJ_CANON_METHODS,
+    SET_CANON_METHODS,
+    STEP_CANON_METHODS,
+)
 
 
 class GlobalHandler(object):

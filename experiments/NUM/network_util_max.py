@@ -7,13 +7,16 @@ from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
+
 # from algocert.init_set.box_stack_set import BoxStackSet
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.const_set import ConstSet
+
 # from algocert.init_set.control_example_set import ControlExampleSet
 # from algocert.init_set.init_set import InitSet
 # from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.objectives.l1_conv_resid import L1ConvResid
+
 # from algocert.utils.plotter import plot_results
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter

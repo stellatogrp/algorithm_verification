@@ -1,8 +1,10 @@
 # import cvxpy as cp
 import gurobipy as gp
 import numpy as np
+
 # import pandas as pd
 import scipy.sparse as spa
+
 # from control_example import ControlExample
 from quadcopter import QuadCopter
 
@@ -13,9 +15,11 @@ from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.box_stack_set import BoxStackSet
 from algocert.init_set.const_set import ConstSet
+
 # from algocert.init_set.offcenter_l2_ball_set import OffCenterL2BallSet
 # from algocert.init_set.control_example_set import ControlExampleSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
+
 # from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
