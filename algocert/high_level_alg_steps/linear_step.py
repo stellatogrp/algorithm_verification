@@ -14,12 +14,14 @@ class LinearStep(Step):
         Args:
             A (TODO): TODO
         """
+        super().__init__()
         self.A = A
         self.D = D
         self.b = b
         self.u = u
         self.y = y
         self.Dinv = Dinv
+        self.is_linstep = True
         self._test_dims()
 
     def _test_dims(self):

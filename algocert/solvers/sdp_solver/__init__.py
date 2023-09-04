@@ -40,8 +40,8 @@ from algocert.solvers.sdp_solver.step_canonicalizers.block_step import (
     block_step_bound_canon, block_step_canon)
 from algocert.solvers.sdp_solver.step_canonicalizers.box_proj_step import \
     box_proj_step_canon
-from algocert.solvers.sdp_solver.step_canonicalizers.linear_step import \
-    linear_step_canon
+from algocert.solvers.sdp_solver.step_canonicalizers.linear_step import (
+    linear_step_bound_canon, linear_step_canon)
 from algocert.solvers.sdp_solver.step_canonicalizers.max_with_vec_step import (
     max_vec_bound_canon, max_vec_canon)
 from algocert.solvers.sdp_solver.step_canonicalizers.min_with_vec_step import (
@@ -63,6 +63,7 @@ SET_CANON_METHODS = {
 STEP_CANON_METHODS = {
     BlockStep: block_step_canon,
     BasicLinearStep: basic_linear_step_canon,
+    LinearStep: linear_step_canon,
     NonNegLinStep: nonneg_lin_canon,
     NonNegProjStep: nonneg_orthant_proj_canon,
     MaxWithVecStep: max_vec_canon,
@@ -77,6 +78,7 @@ RLT_CANON_SET_METHODS = {
 RLT_CANON_STEP_METHODS = {
     BlockStep: block_step_bound_canon,
     BasicLinearStep: basic_linear_step_bound_canon,
+    LinearStep: linear_step_bound_canon,
     NonNegProjStep: nonneg_orthant_proj_bound_canon,
     MaxWithVecStep: max_vec_bound_canon,
     MinWithVecStep: min_vec_bound_canon,
@@ -89,6 +91,6 @@ OBJ_CANON_METHODS = {
 }
 
 HL_TO_BASIC_STEP_METHODS = {
-    LinearStep: linear_step_canon,
+    # LinearStep: linear_step_canon,
     BoxProjStep: box_proj_step_canon,
 }

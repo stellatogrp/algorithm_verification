@@ -24,6 +24,7 @@ class SDPHandler(object):
         self.id_to_iterate_map = {}
         self.iterate_to_type_map = {}
         self.iteration_handlers = []
+        self.linstep_output_vars = set([])
         self.sdp_constraints = []
         self.sdp_obj = 0
 
@@ -84,6 +85,15 @@ class SDPHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(self.K + 1):
             self.iteration_handlers.append(SingleIterationHandler(k, steps, self.iterate_list, self.param_list))
+
+    def extract_lin_step_output_vars(self):
+        # print('extracting')
+        steps = self.CP.get_algorithm_steps()
+        for step in steps:
+            print(step.get_output_var())
+            if step.is_linstep:
+                self.linstep_output_vars.add(step.get_output_var())
+        # print(self.linstep_output_vars)
 
     def canonicalize_initial_sets(self):
         for init_set in self.CP.get_init_sets():
@@ -188,6 +198,7 @@ class SDPHandler(object):
         self.create_iterate_id_maps()
         self.compute_sdp_param_vars()
         self.create_iteration_handlers()
+        self.extract_lin_step_output_vars()
 
         if self.add_RLT:
             self.propagate_lower_upper_bounds()

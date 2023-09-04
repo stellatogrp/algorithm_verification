@@ -5,6 +5,7 @@ class Step(object):
     def __init__(self, k_vals=None):
         """TODO: to be defined. """
         self.k_vals = None
+        self.is_linstep = False
 
     def get_output_var(self):
         raise NotImplementedError

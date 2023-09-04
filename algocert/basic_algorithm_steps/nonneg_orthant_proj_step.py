@@ -11,6 +11,7 @@ class NonNegProjStep(Step):
     def __init__(self, y: Iterate, x: Iterate):
         """Step representing y = (x)_+
         """
+        super().__init__()
         self.x = x
         self.y = y
         self._test_dims()

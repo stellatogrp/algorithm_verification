@@ -99,6 +99,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     out = []
     # K = 2
     for K_curr in range(1, K+1):
+        K_curr = 2
         CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
@@ -111,6 +112,8 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
             glob, glob_time = 0, 0
+
+        exit(0)
 
         out.append(
             pd.Series({
@@ -148,9 +151,9 @@ def cp_test(A):
 
 def main():
     np.random.seed(1)
-    m = 10
-    n = 5
-    K = 8
+    m = 5
+    n = 3
+    K = 1
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)
