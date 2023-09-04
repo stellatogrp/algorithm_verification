@@ -1,13 +1,20 @@
 import numpy as np
 
 
-def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
+def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
     '''
         Convert a higher level linear step -> a block step followed by a homogenized linear step
     '''
     print('here')
+    step = steps[i]
+    step.get_lhs_matrix()
+    step.get_rhs_matrix()
+    step.get_rhs_const_vec()
+    step.get_output_var()
+    step.get_input_var()  # remember this is a stack of variables
 
-    exit(0)
+
+    # exit(0)
     # D = step.get_lhs_matrix()
     # Dinv = step.get_lhs_matrix_inv()
     # A = step.get_rhs_matrix()
@@ -23,6 +30,7 @@ def linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outer
     # step1 = BlockStep(u_block, u)
     # step2 = BasicLinearStep(y, u_block, A=A, D=D, b=b, Dinv=Dinv)
     # return [u_block], [step1, step2]
+    return []
 
 
 def linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):

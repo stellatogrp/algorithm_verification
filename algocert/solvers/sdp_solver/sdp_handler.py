@@ -90,7 +90,7 @@ class SDPHandler(object):
         # print('extracting')
         steps = self.CP.get_algorithm_steps()
         for step in steps:
-            print(step.get_output_var())
+            # print(step.get_output_var())
             if step.is_linstep:
                 self.linstep_output_vars.add(step.get_output_var())
         # print(self.linstep_output_vars)
@@ -115,13 +115,16 @@ class SDPHandler(object):
     def canonicalize_steps(self):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
-            curr = self.iteration_handlers[k]
-            prev = self.iteration_handlers[k - 1]
+            self.iteration_handlers[k]
+            self.iteration_handlers[k - 1]
             for i, step in enumerate(steps):
                 output_var = step.get_output_var()
                 self.iterate_to_type_map[output_var] = type(step)
                 canon_method = STEP_CANON_METHODS[type(step)]
-                constraints = canon_method(steps, i, curr, prev, self.iterate_to_id_map,
+                # constraints = canon_method(steps, i, curr, prev, self.iterate_to_id_map,
+                #                            self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT,
+                #                            self.kwargs)
+                constraints = canon_method(steps, i, self.iteration_handlers, k, self.iterate_to_id_map,
                                            self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT,
                                            self.kwargs)
                 self.sdp_constraints += constraints

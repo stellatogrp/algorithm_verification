@@ -64,7 +64,9 @@ def basic_linear_step_canon(steps, i, curr, prev, iter_id_map, param_vars, param
     return constraints
 
 
-def basic_linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
+def basic_linear_step_bound_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, param_outerproduct_vars):
+    curr = iteration_handlers[k]
+    iteration_handlers[k - 1]
     step = steps[i]
     #  prev_step = steps[i - 1]
     u = step.get_rhs_var()
