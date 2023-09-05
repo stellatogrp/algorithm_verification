@@ -25,6 +25,7 @@ class SDPHandler(object):
         self.iterate_to_type_map = {}
         self.iteration_handlers = []
         self.linstep_output_vars = set([])
+        self.var_linstep_map = {}
         self.sdp_constraints = []
         self.sdp_obj = 0
 
@@ -93,6 +94,7 @@ class SDPHandler(object):
             # print(step.get_output_var())
             if step.is_linstep:
                 self.linstep_output_vars.add(step.get_output_var())
+                self.var_linstep_map[step.get_output_var()] = step
         # print(self.linstep_output_vars)
 
     def canonicalize_initial_sets(self):
@@ -125,7 +127,9 @@ class SDPHandler(object):
                 #                            self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT,
                 #                            self.kwargs)
                 constraints = canon_method(steps, i, self.iteration_handlers, k, self.iterate_to_id_map,
-                                           self.sdp_param_vars, self.sdp_param_outerproduct_vars, self.add_RLT,
+                                           self.sdp_param_vars, self.sdp_param_outerproduct_vars,
+                                           self.var_linstep_map,
+                                           self.add_RLT,
                                            self.kwargs)
                 self.sdp_constraints += constraints
 

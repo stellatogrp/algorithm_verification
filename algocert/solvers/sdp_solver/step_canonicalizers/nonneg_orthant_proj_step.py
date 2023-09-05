@@ -1,15 +1,15 @@
 import cvxpy as cp
 import numpy as np
 
-from algocert.basic_algorithm_steps.basic_linear_step import BasicLinearStep
 from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
 
 
-def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
+def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, param_outerproduct_vars,
+                              var_linstep_map, add_RLT, kwargs):
     step = steps[i]
-    prev_step = steps[i-1]
+    steps[i-1]
     curr = iteration_handlers[k]
-    iteration_handlers[k - 1]
+    # prev = iteration_handlers[k - 1]
 
     y = step.get_output_var()
     x = step.get_input_var()
@@ -31,35 +31,64 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
         ]) >> 0,
     ]
 
-    if type(prev_step) == BasicLinearStep:
-        # print(type(x))
-        A = prev_step.get_rhs_matrix()
-        D = prev_step.get_lhs_matrix()
-        b = prev_step.get_rhs_const_vec()
-        block_step = steps[i-2]
-        u = block_step.get_output_var()
-        u_var = curr.iterate_vars[u].get_cp_var()
-        uuT_var = curr.iterate_outerproduct_vars[u]
-        block_vars = block_step.list_x
-        # print(block_vars)
-        yuT_var = curr.iterate_cross_vars[y][u]
+    print(var_linstep_map)
+    if x in var_linstep_map:
         yuT_blocks = []
-        for var in block_vars:
+        print(x)
+        print('in linstep map')
+        step = var_linstep_map[x]
+        D = step.get_lhs_matrix()
+        A = step.get_rhs_matrix()
+        # A_blocks = step.get_rhs_matrix_blocks()
+        b = step.get_rhs_const_vec()
+        u = step.get_input_var()
+
+        for var in u:
             if var.is_param:
                 yuT_blocks.append(curr.iterate_param_vars[y][var])
             else:
                 yuT_blocks.append(curr.iterate_cross_vars[y][var])
+        yuT_var = cp.hstack(yuT_blocks)
+
         constraints += [
-            yuT_var == cp.bmat([
-                yuT_blocks
-            ]),
-            cp.bmat([
-                [yyT_var, yuT_var, y_var],
-                [yuT_var.T, uuT_var, u_var],
-                [y_var.T, u_var.T, np.array([[1]])]
-            ]) >> 0,
             yxT_var @ D.T == yuT_var @ A.T + y_var @ b.T,
+            # cp.bmat([
+            #     [yyT_var, yuT_var, y_var],
+            #     [yuT_var.T, ]
+            # ])
         ]
+        # exit(0)
+
+    # TODO Rework this
+    # if type(prev_step) == BasicLinearStep:
+    #     # print(type(x))
+    #     A = prev_step.get_rhs_matrix()
+    #     D = prev_step.get_lhs_matrix()
+    #     b = prev_step.get_rhs_const_vec()
+    #     block_step = steps[i-2]
+    #     u = block_step.get_output_var()
+    #     u_var = curr.iterate_vars[u].get_cp_var()
+    #     uuT_var = curr.iterate_outerproduct_vars[u]
+    #     block_vars = block_step.list_x
+    #     # print(block_vars)
+    #     yuT_var = curr.iterate_cross_vars[y][u]
+    #     yuT_blocks = []
+    #     for var in block_vars:
+    #         if var.is_param:
+    #             yuT_blocks.append(curr.iterate_param_vars[y][var])
+    #         else:
+    #             yuT_blocks.append(curr.iterate_cross_vars[y][var])
+    #     constraints += [
+    #         yuT_var == cp.bmat([
+    #             yuT_blocks
+    #         ]),
+    #         cp.bmat([
+    #             [yyT_var, yuT_var, y_var],
+    #             [yuT_var.T, uuT_var, u_var],
+    #             [y_var.T, u_var.T, np.array([[1]])]
+    #         ]) >> 0,
+    #         yxT_var @ D.T == yuT_var @ A.T + y_var @ b.T,
+    #     ]
 
     lower_y = curr.iterate_vars[y].get_lower_bound()
     upper_y = curr.iterate_vars[y].get_upper_bound()

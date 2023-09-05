@@ -1,9 +1,11 @@
 import cvxpy as cp
 import numpy as np
 
+from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
+
 
 def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
-                      param_outerproduct_vars, add_RLT, kwargs):
+                      param_outerproduct_vars, var_linstep_map, add_RLT, kwargs):
     '''
         Convert a higher level linear step -> a block step followed by a homogenized linear step
     '''
@@ -47,6 +49,7 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
                 handlers_to_use.append(curr)
     u_var = cp.vstack(u_blocks)
     yuT_var = cp.hstack(yuT_blocks)
+    extra_RLT_cons = []
     # print(yuT_var.shape)
 
     uuT_blocks = [[None for i in range(block_size)] for j in range(block_size)]
@@ -67,6 +70,23 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
                 # print(var1, var2, cvx_var.shape)
                 uuT_blocks[i][j] = cvx_var
                 uuT_blocks[j][i] = cvx_var.T
+                if add_RLT:
+                    v1_cpvar = var1_handler.iterate_vars[var1].get_cp_var()
+                    lower_v1 = var1_handler.iterate_vars[var1].get_lower_bound()
+                    upper_v1 = var1_handler.iterate_vars[var1].get_upper_bound()
+                    if not var2.is_param:
+                        v2_cpvar = var2_handler.iterate_vars[var2].get_cp_var()
+                        lower_v2 = var2_handler.iterate_vars[var2].get_lower_bound()
+                        upper_v2 = var2_handler.iterate_vars[var2].get_upper_bound()
+                    else:
+                        v2_cpvar = param_vars[var2].get_cp_var()
+                        lower_v2 = param_vars[var2].get_lower_bound()
+                        upper_v2 = param_vars[var2].get_upper_bound()
+                    extra_RLT_cons += RLT_constraints(cvx_var,
+                                                      v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
+
+    # TODO add in cross terms with RHS (if applicable)
+    # TODO add RLT for blocks with themselves
 
     uuT_var = cp.bmat(uuT_blocks)
 
@@ -79,6 +99,8 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
             [y_var.T, u_var.T, np.array([[1]])]
         ]) >> 0,
     ]
+
+    constraints += extra_RLT_cons
 
     # exit(0)
     # D = step.get_lhs_matrix()
