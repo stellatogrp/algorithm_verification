@@ -42,7 +42,7 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
         b = step.get_rhs_const_vec()
         step.get_input_var()
 
-        u_var, yuT_var, uuT_var = return_blocked_vars(k, y, x, iteration_handlers, step, param_vars, param_outerproduct_vars, iter_id_map)
+        u_var, yuT_var, uuT_var, extra_RLT_cons = return_blocked_vars(k, y, x, iteration_handlers, step, param_vars, param_outerproduct_vars, iter_id_map, add_RLT)
 
         constraints += [
             yxT_var @ D.T == yuT_var @ A.T + y_var @ b.T,
@@ -52,6 +52,8 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                 [y_var.T, u_var.T, np.array([[1]])]
             ]) >> 0,
         ]
+
+        constraints += extra_RLT_cons
 
     lower_y = curr.iterate_vars[y].get_lower_bound()
     upper_y = curr.iterate_vars[y].get_upper_bound()
@@ -150,7 +152,8 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
 
 
 def return_blocked_vars(k, y, x, iteration_handlers, step,
-                        param_vars, param_outerproduct_vars, iter_id_map):
+                        param_vars, param_outerproduct_vars, iter_id_map,
+                        add_RLT):
     '''
         Returns u_var, uuT_var, and yuT_var where u is the blocks for x
         Assumes the handler for y and x are both curr
@@ -162,20 +165,40 @@ def return_blocked_vars(k, y, x, iteration_handlers, step,
     block_size = len(step.get_rhs_matrix_blocks())
     u_blocks = []
     yuT_blocks = []
+    extra_RLT_cons = []
+    y_var = curr.iterate_vars[y].get_cp_var()
+    y_l = curr.iterate_vars[y].get_lower_bound()
+    y_u = curr.iterate_vars[y].get_upper_bound()
 
     for var in u:
         if var.is_param:
-            if var.is_param:
-                u_blocks.append(param_vars[var].get_cp_var())
-                yuT_blocks.append(curr.iterate_param_vars[y][var])
-                handlers_to_use.append(None)
+            u_blocks.append(param_vars[var].get_cp_var())
+            yuT_blocks.append(curr.iterate_param_vars[y][var])
+            handlers_to_use.append(None)
         else:
-            yuT_blocks.append(curr.iterate_cross_vars[y][var])
+            yvar_T = curr.iterate_cross_vars[y][var]
+            yuT_blocks.append(yvar_T)
             if curr_or_prev(y, var, iter_id_map) == 0:
-                u_blocks.append(prev.iterate_vars[var].get_cp_var())
+                prev_var = prev.iterate_vars[var].get_cp_var()
+                prev_l = prev.iterate_vars[var].get_lower_bound()
+                prev_u = prev.iterate_vars[var].get_upper_bound()
+
+                if add_RLT:
+                    extra_RLT_cons += RLT_constraints(yvar_T, y_var, y_l, y_u, prev_var, prev_l, prev_u)
+
+                # y_var, lower_y, upper_y, x_var, lower_x, upper_x)
+
+                u_blocks.append(prev_var)
                 handlers_to_use.append(prev)
             else:
-                u_blocks.append(curr.iterate_vars[var].get_cp_var())
+                curr_var = curr.iterate_vars[var].get_cp_var()
+                curr_l = curr.iterate_vars[var].get_lower_bound()
+                curr_u = curr.iterate_vars[var].get_upper_bound()
+
+                if add_RLT:
+                    extra_RLT_cons += RLT_constraints(yvar_T, y_var, y_l, y_u, curr_var, curr_l, curr_u)
+
+                u_blocks.append(curr_var)
                 handlers_to_use.append(curr)
     u_var = cp.vstack(u_blocks)
     yuT_var = cp.hstack(yuT_blocks)
@@ -200,7 +223,7 @@ def return_blocked_vars(k, y, x, iteration_handlers, step,
                 uuT_blocks[j][i] = cvx_var.T
     uuT_var = cp.bmat(uuT_blocks)
 
-    return u_var, yuT_var, uuT_var
+    return u_var, yuT_var, uuT_var, extra_RLT_cons
 
 
 def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):

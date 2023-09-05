@@ -25,6 +25,8 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
 
     y_var = curr.iterate_vars[y].get_cp_var()
     yyT_var = curr.iterate_outerproduct_vars[y]
+    lower_y = curr.iterate_vars[y].get_lower_bound()
+    upper_y = curr.iterate_vars[y].get_upper_bound()
     handlers_to_use = []
     block_size = len(A_blocks)
 
@@ -33,22 +35,32 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
     #     print(A.todense())
 
     u_blocks = []
+    lower_u = []
+    upper_u = []
     yuT_blocks = []
     for var in u:
         if var.is_param:
             u_blocks.append(param_vars[var].get_cp_var())
+            lower_u.append(param_vars[var].get_lower_bound())
+            upper_u.append(param_vars[var].get_upper_bound())
             yuT_blocks.append(curr.iterate_param_vars[y][var])
             handlers_to_use.append(None)
         else:
             yuT_blocks.append(curr.iterate_cross_vars[y][var])
             if curr_or_prev(y, var, iter_id_map) == 0:
                 u_blocks.append(prev.iterate_vars[var].get_cp_var())
+                lower_u.append(prev.iterate_vars[var].get_lower_bound())
+                upper_u.append(prev.iterate_vars[var].get_upper_bound())
                 handlers_to_use.append(prev)
             else:
                 u_blocks.append(curr.iterate_vars[var].get_cp_var())
+                lower_u.append(curr.iterate_vars[var].get_lower_bound())
+                upper_u.append(curr.iterate_vars[var].get_upper_bound())
                 handlers_to_use.append(curr)
     u_var = cp.vstack(u_blocks)
     yuT_var = cp.hstack(yuT_blocks)
+    lower_u = np.vstack(lower_u).reshape((-1, 1))
+    upper_u = np.vstack(upper_u).reshape((-1, 1))
     extra_RLT_cons = []
     # print(yuT_var.shape)
 
@@ -71,19 +83,19 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
                 uuT_blocks[i][j] = cvx_var
                 uuT_blocks[j][i] = cvx_var.T
                 if add_RLT:
-                    v1_cpvar = var1_handler.iterate_vars[var1].get_cp_var()
-                    lower_v1 = var1_handler.iterate_vars[var1].get_lower_bound()
-                    upper_v1 = var1_handler.iterate_vars[var1].get_upper_bound()
+                    var1_handler.iterate_vars[var1].get_cp_var()
+                    var1_handler.iterate_vars[var1].get_lower_bound()
+                    var1_handler.iterate_vars[var1].get_upper_bound()
                     if not var2.is_param:
-                        v2_cpvar = var2_handler.iterate_vars[var2].get_cp_var()
-                        lower_v2 = var2_handler.iterate_vars[var2].get_lower_bound()
-                        upper_v2 = var2_handler.iterate_vars[var2].get_upper_bound()
+                        var2_handler.iterate_vars[var2].get_cp_var()
+                        var2_handler.iterate_vars[var2].get_lower_bound()
+                        var2_handler.iterate_vars[var2].get_upper_bound()
                     else:
-                        v2_cpvar = param_vars[var2].get_cp_var()
-                        lower_v2 = param_vars[var2].get_lower_bound()
-                        upper_v2 = param_vars[var2].get_upper_bound()
-                    extra_RLT_cons += RLT_constraints(cvx_var,
-                                                      v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
+                        param_vars[var2].get_cp_var()
+                        param_vars[var2].get_lower_bound()
+                        param_vars[var2].get_upper_bound()
+                    # extra_RLT_cons += RLT_constraints(cvx_var,
+                    #                                   v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
 
     # TODO add in cross terms with RHS (if applicable)
     # TODO add RLT for blocks with themselves
@@ -99,6 +111,10 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
             [y_var.T, u_var.T, np.array([[1]])]
         ]) >> 0,
     ]
+
+    if add_RLT:
+        constraints += RLT_constraints(uuT_var, u_var, lower_u, upper_u, u_var, lower_u, upper_u)
+        constraints += RLT_constraints(yuT_var, y_var, lower_y, upper_y, u_var, lower_u, upper_u)
 
     constraints += extra_RLT_cons
 
