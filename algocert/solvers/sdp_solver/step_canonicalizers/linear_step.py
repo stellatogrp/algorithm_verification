@@ -28,7 +28,7 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
     handlers_to_use = []
     block_size = len(A_blocks)
 
-    print(step.get_rhs_matrix_blocks())
+    # print(step.get_rhs_matrix_blocks())
     # for A in step.get_rhs_matrix_blocks():
     #     print(A.todense())
 
