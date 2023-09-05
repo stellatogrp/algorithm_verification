@@ -105,6 +105,7 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
     constraints += [
         D @ y_var == A @ u_var + b,
         D @ yyT_var @ D.T == A @ uuT_var @ A.T + A @ u_var @ b.T + b @ u_var.T @ A.T + b @ b.T,
+        D @ yuT_var == A @ uuT_var + b @ u_var.T,
         cp.bmat([
             [yyT_var, yuT_var, y_var],
             [yuT_var.T, uuT_var, u_var],

@@ -34,7 +34,6 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
     # print(var_linstep_map)
     if x in var_linstep_map:
         # print(x)
-        # print('in linstep map')
         step = var_linstep_map[x]
         D = step.get_lhs_matrix()
         A = step.get_rhs_matrix()
