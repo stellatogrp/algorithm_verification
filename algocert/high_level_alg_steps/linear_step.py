@@ -22,7 +22,10 @@ class LinearStep(Step):
         self.y = y
         self.Dinv = Dinv
         self.is_linstep = True
+        self.A_blocks = []
+        self.A_boundaries = []
         self._test_dims()
+        self._split_A()
 
     def _test_dims(self):
         # should be D: (n, k), y: (k, 1), A: (n, m), u: (m, 1), b: (n, 1)
@@ -75,6 +78,9 @@ class LinearStep(Step):
     def get_rhs_matrix(self):
         return self.A
 
+    def get_rhs_matrix_blocks(self):
+        return self.A_blocks
+
     def get_lhs_matrix(self):
         return self.D
 
@@ -86,6 +92,22 @@ class LinearStep(Step):
 
     #  def apply(self, x):
     #      return intermediate
+
+    def _split_A(self):
+        self._split_A_boundaries()
+        A = self.A
+        for i, x in enumerate(self.u):
+            (left, right) = self.A_boundaries[i]
+            self.A_blocks.append(A.tocsc()[:, left: right])
+
+    def _split_A_boundaries(self):
+        left = 0
+        right = 0
+        for x in self.u:
+            n = x.get_dim()
+            right = left + n
+            self.A_boundaries.append((left, right))
+            left = right
 
     def map_overall_dim_to_x(self, i):
         assert 0 <= i and i < self.u_dim

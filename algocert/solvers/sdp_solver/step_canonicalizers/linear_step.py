@@ -1,18 +1,84 @@
+import cvxpy as cp
 import numpy as np
 
 
-def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
+def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
+                      param_outerproduct_vars, add_RLT, kwargs):
     '''
         Convert a higher level linear step -> a block step followed by a homogenized linear step
     '''
-    print('here')
-    step = steps[i]
-    step.get_lhs_matrix()
-    step.get_rhs_matrix()
-    step.get_rhs_const_vec()
-    step.get_output_var()
-    step.get_input_var()  # remember this is a stack of variables
+    # print('here')
+    constraints = []
 
+    step = steps[i]
+    curr = iteration_handlers[k]
+    prev = iteration_handlers[k - 1]
+
+    D = step.get_lhs_matrix()
+    A = step.get_rhs_matrix()
+    A_blocks = step.get_rhs_matrix_blocks()
+    b = step.get_rhs_const_vec()
+    y = step.get_output_var()
+    u = step.get_input_var()  # remember this is a stack of variables
+
+    y_var = curr.iterate_vars[y].get_cp_var()
+    yyT_var = curr.iterate_outerproduct_vars[y]
+    handlers_to_use = []
+    block_size = len(A_blocks)
+
+    print(step.get_rhs_matrix_blocks())
+    # for A in step.get_rhs_matrix_blocks():
+    #     print(A.todense())
+
+    u_blocks = []
+    yuT_blocks = []
+    for var in u:
+        if var.is_param:
+            u_blocks.append(param_vars[var].get_cp_var())
+            yuT_blocks.append(curr.iterate_param_vars[y][var])
+            handlers_to_use.append(None)
+        else:
+            yuT_blocks.append(curr.iterate_cross_vars[y][var])
+            if curr_or_prev(y, var, iter_id_map) == 0:
+                u_blocks.append(prev.iterate_vars[var].get_cp_var())
+                handlers_to_use.append(prev)
+            else:
+                u_blocks.append(curr.iterate_vars[var].get_cp_var())
+                handlers_to_use.append(curr)
+    u_var = cp.vstack(u_blocks)
+    yuT_var = cp.hstack(yuT_blocks)
+    # print(yuT_var.shape)
+
+    uuT_blocks = [[None for i in range(block_size)] for j in range(block_size)]
+    for i in range(block_size):
+        var1 = u[i]
+        var1_handler = handlers_to_use[i]
+        for j in range(i, block_size):
+            var2 = u[j]
+            var2_handler = handlers_to_use[j]
+
+            if i == j:
+                if var1.is_param:
+                    uuT_blocks[i][i] = param_outerproduct_vars[var1]
+                else:
+                    uuT_blocks[i][i] = var1_handler.iterate_outerproduct_vars[var1]
+            else:
+                cvx_var = get_cross(var1, var2, var1_handler, var2_handler, iter_id_map)
+                # print(var1, var2, cvx_var.shape)
+                uuT_blocks[i][j] = cvx_var
+                uuT_blocks[j][i] = cvx_var.T
+
+    uuT_var = cp.bmat(uuT_blocks)
+
+    constraints += [
+        D @ y_var == A @ u_var + b,
+        D @ yyT_var @ D.T == A @ uuT_var @ A.T + A @ u_var @ b.T + b @ u_var.T @ A.T + b @ b.T,
+        cp.bmat([
+            [yyT_var, yuT_var, y_var],
+            [yuT_var.T, uuT_var, u_var],
+            [y_var.T, u_var.T, np.array([[1]])]
+        ]) >> 0,
+    ]
 
     # exit(0)
     # D = step.get_lhs_matrix()
@@ -30,7 +96,25 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, 
     # step1 = BlockStep(u_block, u)
     # step2 = BasicLinearStep(y, u_block, A=A, D=D, b=b, Dinv=Dinv)
     # return [u_block], [step1, step2]
-    return []
+    return constraints
+
+
+def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):
+    if var2.is_param:
+        return var1_handler.iterate_param_vars[var1][var2]
+    else:  # both are iterates, not parameters
+        var1_id = iter_id_map[var1]
+        var2_id = iter_id_map[var2]
+        if var1_handler == var2_handler:
+            if var1_id < var2_id:
+                return var1_handler.iterate_cross_vars[var2][var1].T
+            else:
+                return var1_handler.iterate_cross_vars[var1][var2]
+        else:  # diff handlers, use the earlier var handler
+            if var1_id < var2_id:
+                return var1_handler.iterate_cross_vars[var1][var2]
+            else:
+                return var2_handler.iterate_cross_vars[var2][var1].T
 
 
 def linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):
