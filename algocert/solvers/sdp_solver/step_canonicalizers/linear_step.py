@@ -83,22 +83,61 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
                 uuT_blocks[i][j] = cvx_var
                 uuT_blocks[j][i] = cvx_var.T
                 if add_RLT:
-                    var1_handler.iterate_vars[var1].get_cp_var()
-                    var1_handler.iterate_vars[var1].get_lower_bound()
-                    var1_handler.iterate_vars[var1].get_upper_bound()
+                    # TODO after adding cross, see if this can be removed
+                    v1_cpvar = var1_handler.iterate_vars[var1].get_cp_var()
+                    lower_v1 = var1_handler.iterate_vars[var1].get_lower_bound()
+                    upper_v1 = var1_handler.iterate_vars[var1].get_upper_bound()
                     if not var2.is_param:
-                        var2_handler.iterate_vars[var2].get_cp_var()
-                        var2_handler.iterate_vars[var2].get_lower_bound()
-                        var2_handler.iterate_vars[var2].get_upper_bound()
+                        v2_cpvar = var2_handler.iterate_vars[var2].get_cp_var()
+                        lower_v2 = var2_handler.iterate_vars[var2].get_lower_bound()
+                        upper_v2 = var2_handler.iterate_vars[var2].get_upper_bound()
                     else:
-                        param_vars[var2].get_cp_var()
-                        param_vars[var2].get_lower_bound()
-                        param_vars[var2].get_upper_bound()
-                    # extra_RLT_cons += RLT_constraints(cvx_var,
-                    #                                   v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
+                        v2_cpvar = param_vars[var2].get_cp_var()
+                        lower_v2 = param_vars[var2].get_lower_bound()
+                        upper_v2 = param_vars[var2].get_upper_bound()
+                    extra_RLT_cons += RLT_constraints(cvx_var,
+                                                      v1_cpvar, lower_v1, upper_v1, v2_cpvar, lower_v2, upper_v2)
 
     # TODO add in cross terms with RHS (if applicable)
-    # TODO add RLT for blocks with themselves
+    print(f'---k={k}---')
+    for x in u:
+        if x in var_linstep_map:
+            C = var_linstep_map[x].get_lhs_matrix()
+            F = var_linstep_map[x].get_rhs_matrix()
+            c = var_linstep_map[x].get_rhs_const_vec()
+            yxT_var = curr.iterate_cross_vars[y][x]
+            # print(linstep_input_var_need_prev(step, iter_id_map))
+            # print(linstep_input_var_need_prev(var_linstep_map[x], iter_id_map))
+            if curr_or_prev(y, x, iter_id_map) == 0:
+                if linstep_input_var_need_prev(step, iter_id_map):
+                    if k == 1:
+                        print(f'found k = 1, {y}, {x}')
+                        continue
+                x_handler_indices = get_block_handler_indices(k-1, var_linstep_map[x], iteration_handlers, iter_id_map)
+            else:
+                x_handler_indices = get_block_handler_indices(k, var_linstep_map[x], iteration_handlers, iter_id_map)
+            u_handler_indices = get_block_handler_indices(k, step, iteration_handlers, iter_id_map)
+            print(y, x, u_handler_indices, x_handler_indices)
+
+            z_blocks = []
+            for i, z in enumerate(var_linstep_map[x].get_input_var()):
+                idx = x_handler_indices[i]
+                if z.is_param:
+                    z_blocks.append(param_vars[z].get_cp_var())
+                else:
+                    z_blocks.append(iteration_handlers[idx].iterate_vars[z].get_cp_var())
+            # print(z_blocks)
+            z_var = cp.vstack(z_blocks)
+            # print(z_var)
+
+            uxT_var = build_cross_var_mat(u, u_handler_indices, var_linstep_map[x].get_input_var(), x_handler_indices,
+                                          iteration_handlers, iter_id_map, param_outerproduct_vars)
+            # print((D @ yxT_var @ C.T).shape)
+            constraints += [D @ yxT_var @ C.T == A @ uxT_var @ F.T + A @ u_var @ c.T + b @ z_var.T @ F.T + b @ c.T]
+            # exit(0)
+
+
+    # exit(0)
 
     uuT_var = cp.bmat(uuT_blocks)
 
@@ -119,26 +158,67 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
 
     constraints += extra_RLT_cons
 
-    # exit(0)
-    # D = step.get_lhs_matrix()
-    # Dinv = step.get_lhs_matrix_inv()
-    # A = step.get_rhs_matrix()
-    # b = step.get_rhs_const_vec()
-    # y = step.get_output_var()
-    # u = step.get_input_var()
-    # u_dim = 0
-    # for x in u:
-    #     u_dim += x.get_dim()
-    # name = y.get_name()
-    # new_name = name + '_block'
-    # u_block = Iterate(u_dim, name=new_name)
-    # step1 = BlockStep(u_block, u)
-    # step2 = BasicLinearStep(y, u_block, A=A, D=D, b=b, Dinv=Dinv)
-    # return [u_block], [step1, step2]
     return constraints
 
 
+def get_block_handler_indices(k, step, iteration_handlers, iter_id_map):
+    u = step.get_input_var()
+    y = step.get_output_var()
+    handler_indices = []
+    for x in u:
+        if x.is_param:
+            handler_indices.append(None)
+        else:
+            if curr_or_prev(y, x, iter_id_map) == 0:
+                handler_indices.append(k-1)
+            else:
+                handler_indices.append(k)
+    return handler_indices
+
+
+def build_cross_var_mat(u, u_handler_indices, x, x_handler_indices, iteration_handlers, iter_id_map, param_outerproduct_vars):
+    m = len(u_handler_indices)
+    n = len(x_handler_indices)
+    print(m, n, u, x)
+    out = [[None for j in range(n)] for i in range(m)]
+    # print(out)
+    for i in range(m):
+        for j in range(n):
+            var1 = u[i]
+            var1_idx = u_handler_indices[i]
+            var2 = x[j]
+            var2_idx = x_handler_indices[j]
+            if var1_idx is None:
+                if var2_idx is None:
+                    #  TODO fix case of multiple parameters
+                    out[i][j] = param_outerproduct_vars[var1]
+                else:
+                    out[i][j] = iteration_handlers[var2_idx].iterate_param_vars[var2][var1].T
+            else:
+                if var2_idx is None:
+                    out[i][j] = iteration_handlers[var1_idx].iterate_param_vars[var1][var2]
+                else:
+                    if var1 == var2:
+                        if var1_idx == var2_idx:
+                            out[i][j] = iteration_handlers[var1_idx].iterate_outerproduct_vars[var1]
+                        elif var1_idx > var2_idx:
+                            out[i][j] = iteration_handlers[var1_idx].iterate_cross_vars[var1][var1]
+                        else:
+                            out[i][j] = iteration_handlers[var2_idx].iterate_cross_vars[var1][var1].T
+                        # else:
+                        #     out[i][j] = get_cross(var1, var2, iteration_handlers[var1_idx], iteration_handlers[var2_idx], iter_id_map)
+                    else:
+                        out[i][j] = get_cross(var1, var2, iteration_handlers[var1_idx], iteration_handlers[var2_idx], iter_id_map)
+                    # print('check', var1, var2, var1_idx, var2_idx, out[i][j])
+                    # exit(0)
+    print(out)
+    # TODO Check that the transposes are correct
+    # TODO check what happens if the vars are the same with same idx -> use iterate_outerproduct_vars
+    return cp.bmat(out)
+
+
 def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):
+    # print(var1, var2, var1_handler, var2_handler)
     if var2.is_param:
         return var1_handler.iterate_param_vars[var1][var2]
     else:  # both are iterates, not parameters
@@ -154,6 +234,21 @@ def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):
                 return var1_handler.iterate_cross_vars[var1][var2]
             else:
                 return var2_handler.iterate_cross_vars[var2][var1].T
+
+
+def linstep_input_var_need_prev(step, iter_id_map):
+    '''
+        Use to check if a linstep for k relies on any iterates from k - 1
+    '''
+    y = step.get_output_var()
+    u = step.get_input_var()
+    # needs_prev = False
+    for x in u:
+        if not x.is_param:
+            if curr_or_prev(y, x, iter_id_map) == 0:
+                return True
+    else:
+        return False
 
 
 def linear_step_bound_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars):

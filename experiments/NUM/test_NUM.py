@@ -1,7 +1,5 @@
-# import cvxpy as cp
 import numpy as np
-
-# import pandas as pd
+import pandas as pd
 import scipy.sparse as spa
 
 # from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
@@ -96,6 +94,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     # step4 = LinearStep(z, [z, w, u], D=s4_D, A=s4_A, b=s4_b, Dinv=s4_D)
 
     steps = [step1, step2, step3, step4]
+    # steps = [step1, step2, step4]
 
     # for the iterate/parameter sets
     qset = BoxSet(q, q_l, q_u)
@@ -107,43 +106,46 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     CP = CertificationProblem(K, [zset], [qset], obj, steps)
     CP2 = CertificationProblem(K, [zset], [qset], obj, steps)
 
-    # out = []
-    # # K = 2
-    # for K_curr in range(1, K+1):
-    #     CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-    #     CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-    #     CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-    #     CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+    out = []
+    # K = 2
+    for K_curr in range(1, K+1):
+        # K_curr = 2
+        CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
 
-    #     (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
-    #     (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
-    #     (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
-    #     if glob_include:
-    #         (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
-    #     else:
-    #         glob, glob_time = 0, 0
+        (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
+        (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
+        (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+        if glob_include:
+            (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
+        else:
+            glob, glob_time = 0, 0
 
-    #     out.append(
-    #         pd.Series({
-    #             'K': K_curr,
-    #             'sdp': sdp,
-    #             'sdptime': sdptime,
-    #             'sdp_r': sdp_r,
-    #             'sdp_rtime': sdp_rtime,
-    #             'sdp_p': sdp_p,
-    #             'sdp_ptime': sdp_ptime,
-    #             'glob': glob,
-    #             'glob_time': glob_time,
-    #         })
-    #     )
-    # out_df = pd.DataFrame(out)
-    # print(out_df)
+        out.append(
+            pd.Series({
+                'K': K_curr,
+                'sdp': sdp,
+                'sdptime': sdptime,
+                'sdp_r': sdp_r,
+                'sdp_rtime': sdp_rtime,
+                'sdp_p': sdp_p,
+                'sdp_ptime': sdp_ptime,
+                'glob': glob,
+                'glob_time': glob_time,
+            })
+        )
+        # print(out)
+        # exit(0)
+    out_df = pd.DataFrame(out)
+    print(out_df)
 
-    res = CP.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+    # res = CP.solve(solver_type='SDP', add_RLT=True, add_planet=True)
 
-    resg = CP2.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
-    print('sdp', res)
-    print('global', resg)
+    # resg = CP2.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
+    # print('sdp', res)
+    # print('global', resg)
 
 
 def form_NUM_matrices(R):
@@ -165,10 +167,10 @@ def form_NUM_matrices(R):
 
 def main():
     np.random.seed(0)
-    m = 2
-    n = 3
+    m = 1
+    n = 2
     K = 2
-    NUM_single(m, n, K=K)
+    NUM_single(m, n, K=K, glob_include=True)
 
 
 if __name__ == '__main__':
