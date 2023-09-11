@@ -104,6 +104,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
         CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP4 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP5 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
 
         (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
@@ -112,6 +113,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
             glob, glob_time = 0, 0
+        (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
 
         # print('sdp:', sdp)
         # exit(0)
@@ -125,6 +127,8 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
                 'sdp_rtime': sdp_rtime,
                 'sdp_p': sdp_p,
                 'sdp_ptime': sdp_ptime,
+                'sdp_c': sdp_c,
+                'sdp_ctime': sdp_ctime,
                 'glob': glob,
                 'glob_time': glob_time,
             })
@@ -154,7 +158,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 8
+    K = 2
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)

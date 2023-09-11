@@ -134,7 +134,44 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
                                           iteration_handlers, iter_id_map, param_outerproduct_vars)
             # print((D @ yxT_var @ C.T).shape)
             constraints += [D @ yxT_var @ C.T == A @ uxT_var @ F.T + A @ u_var @ c.T + b @ z_var.T @ F.T + b @ c.T]
+            # TODO add PSD constraint to couple y with x
+            xxT_var = build_xxT(var_linstep_map[x].get_input_var(), x_handler_indices, iteration_handlers, iter_id_map, param_outerproduct_vars)
             # exit(0)
+            # constraints += [
+            #     cp.bmat([
+            #         [yyT_var, yxT_var, y_var],
+            #         [yxT_var.T, xxT_var, var_linstep_map[x].get_output_var()],
+            #         [y_var.T, var_linstep_map[x].get_output_var().T, np.array([[1]])]
+            #     ]) >> 0,
+            # ]
+            print(yyT_var.shape, yxT_var.shape, uxT_var.shape, xxT_var.shape, x, var_linstep_map[x].get_output_var().get_dim(), z_var.shape)
+            # if curr_or_prev(y, x, iter_id_map) == 0:
+            #     x_var = prev.iterate_vars[x].get_cp_var()
+            # else:
+            #     x_var = curr.iterate_vars[x].get_cp_var()
+            # # constraints += [
+            # #     cp.bmat([
+            # #         [yyT_var, yxT_var, y_var],
+            # #         [yxT_var.T, xxT_var, x_var],
+            # #         [y_var.T, x_var.T, np.array([[1]])]
+            # #     ]) >> 0,
+            # # ]
+            yzT_var = cp.Variable((yyT_var.shape[0], xxT_var.shape[0]))
+            print(yzT_var.shape)
+            constraints += [
+                cp.bmat([
+                    [yyT_var, yzT_var, y_var],
+                    [yzT_var.T, xxT_var, z_var],
+                    [y_var.T, z_var.T, np.array([[1]])]
+                ]) >> 0,
+                # D @ yzT_var @ F.T == yxT_var,
+            ]
+            print((D @ yzT_var @ F.T).shape)
+            print(yxT_var.shape)
+            print(C.shape)
+            print(A.shape)
+
+            exit(0)
 
 
     # exit(0)
@@ -215,6 +252,47 @@ def build_cross_var_mat(u, u_handler_indices, x, x_handler_indices, iteration_ha
     # TODO Check that the transposes are correct
     # TODO check what happens if the vars are the same with same idx -> use iterate_outerproduct_vars
     return cp.bmat(out)
+
+
+def build_xxT(x, x_handler_indices, iteration_handlers, iter_id_map, param_outerproduct_vars):
+    print(x)
+    print(x_handler_indices)
+    block_size = len(x_handler_indices)
+    xxT_blocks = [[None for i in range(block_size)] for j in range(block_size)]
+    for i in range(block_size):
+        var1 = x[i]
+        var1_idx = x_handler_indices[i]
+        for j in range(i, block_size):
+            var2 = x[j]
+            var2_idx = x_handler_indices[j]
+            if i == j:
+                if var1.is_param:
+                    xxT_blocks[i][i] = param_outerproduct_vars[var1]
+                else:
+                    xxT_blocks[i][i] = iteration_handlers[var1_idx].iterate_outerproduct_vars[var1]
+            else:
+                if var1.is_param:  # TODO cannot handle multiple params
+                    if var2.is_param:
+                        xxT_blocks[i][j] = param_outerproduct_vars[var1]
+                        xxT_blocks[j][i] = param_outerproduct_vars[var1].T
+                    else:
+                        xxT_blocks[i][j] = iteration_handlers[var2_idx].iterate_param_vars[var2][var1].T
+                        xxT_blocks[j][i] = iteration_handlers[var2_idx].iterate_param_vars[var2][var1]
+                else:
+                    if var2.is_param:
+                        xxT_blocks[i][j] = iteration_handlers[var1_idx].iterate_param_vars[var1][var2]
+                        xxT_blocks[j][i] = iteration_handlers[var1_idx].iterate_param_vars[var1][var2].T
+                    else:
+                        cvx_var = get_cross(var1, var2, iteration_handlers[var1_idx], iteration_handlers[var2_idx], iter_id_map)
+                        xxT_blocks[i][j] = cvx_var
+                        xxT_blocks[j][i] = cvx_var.T
+                # cvx_var = get_cross(var1, var2, iteration_handlers[var1_idx], iteration_handlers[var2_idx], iter_id_map)
+                # # print(var1, var2, cvx_var.shape)
+                # xxT_blocks[i][j] = cvx_var
+                # xxT_blocks[j][i] = cvx_var.T
+    print(xxT_blocks)
+    print(cp.bmat(xxT_blocks))
+    return cp.bmat(xxT_blocks)
 
 
 def get_cross(var1, var2, var1_handler, var2_handler, iter_id_map):

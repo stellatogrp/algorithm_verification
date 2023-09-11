@@ -140,6 +140,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         # exit(0)
     out_df = pd.DataFrame(out)
     print(out_df)
+    # out_df.to_csv('experiments/NUM/data/test_cross.csv')
 
     # res = CP.solve(solver_type='SDP', add_RLT=True, add_planet=True)
 

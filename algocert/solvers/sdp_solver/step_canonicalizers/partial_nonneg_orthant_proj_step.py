@@ -6,7 +6,7 @@ from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constrain
 
 
 def partial_nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
-                                      param_outerproduct_vars, add_RLT, kwargs):
+                                     param_outerproduct_vars, var_linstep_map, add_RLT, kwargs):
     step = steps[i]
     prev_step = steps[i-1]
 
