@@ -99,7 +99,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     out = []
     # K = 2
     for K_curr in range(1, K+1):
-        # K_curr = 1
+        K_curr = 1
         CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)

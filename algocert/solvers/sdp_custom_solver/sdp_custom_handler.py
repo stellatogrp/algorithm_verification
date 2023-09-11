@@ -1,11 +1,139 @@
+import scipy.sparse as spa
+
+from algocert.solvers.sdp_custom_solver import (
+    OBJ_CANON_METHODS,
+)
 
 
 class SDPCustomHandler(object):
 
     def __init__(self, CP, **kwargs):
         self.CP = CP
+        self.K = CP.K
+        self.alg_steps = CP.get_algorithm_steps()
+        self.iterate_list = []
+        self.param_list = []
+        self.iterate_to_id_map = {}
+        self.id_to_iterate_map = {}
+        self.iter_bound_map = {}
+        self.param_bound_map = {}
+        self.range_marker = 0
+        self.problem_dim = 0
+        self.A_matrices = []
+        self.A_norms = []
+        self.b_lowerbounds = []
+        self.b_upperbounds = []
+        self.C_matrix = None
+        if 'scale' in kwargs:
+            self.scale = kwargs['scale']
+        else:
+            self.scale = False
+
+    def convert_hl_to_basic_steps(self):
+        pass
+
+    def create_iterate_id_maps(self):
+        steps = self.CP.get_algorithm_steps()
+        for i, step in enumerate(steps):
+            iterate = step.get_output_var()
+            self.iterate_to_id_map[iterate] = i
+            self.id_to_iterate_map[i] = iterate
+            self.iterate_list.append(iterate)
+        print(self.iterate_to_id_map)
+
+    # def create_init_iterate_range_maps(self):
+    #     for init_set in self.CP.get_init_sets():
+    #         init_iter = init_set.get_iterate()
+    #         dim = init_iter.get_dim()
+    #         bounds = (self.range_marker, self.range_marker + dim)
+    #         self.range_marker += dim
+    #         self.init_iter_range_map[init_iter] = bounds
+    #     print(self.init_iter_range_map)
+
+    def create_param_range_maps(self):
+        for param_set in self.CP.get_parameter_sets():
+            param_var = param_set.get_iterate()
+            dim = param_var.get_dim()
+            bounds = (self.range_marker, self.range_marker + dim)
+            self.range_marker += dim
+            self.param_bound_map[param_var] = bounds
+        print(self.param_bound_map)
+
+    def create_iterate_range_maps(self):
+        for init_set in self.CP.get_init_sets():
+            init_iter = init_set.get_iterate()
+            dim = init_iter.get_dim()
+            bounds = (self.range_marker, self.range_marker + dim)
+            self.range_marker += dim
+            self.iter_bound_map[init_iter] = {0: bounds}
+
+        for k in range(1, self.K + 1):
+            for step in self.CP.get_algorithm_steps():
+                output_var = step.get_output_var()
+                if output_var not in self.iter_bound_map:
+                    self.iter_bound_map[output_var] = {}
+                iter_dict = self.iter_bound_map[output_var]
+                dim = output_var.get_dim()
+                bounds = (self.range_marker, self.range_marker + dim)
+                self.range_marker += dim
+                iter_dict[k] = bounds
+
+        print(self.iter_bound_map)
+
+    def set_problem_dim(self):
+        self.problem_dim = self.range_marker + 1
+        print('problem dim:', self.problem_dim)
+
+    def create_lower_right_constraint(self):
+        A = spa.lil_matrix((self.problem_dim, self.problem_dim))
+        # A = spa.csc_matrix((self.problem_dim, self.problem_dim))
+        A[-1, -1] = 1
+        self.A_matrices.append(A.tocsc())
+        self.b_lowerbounds.append(1)
+        self.b_upperbounds.append(1)
+
+    def canonicalize_objective(self):
+        # self.C_matrix = spa.lil_matrix((self.problem_dim, self.problem_dim))
+        self.C_matrix = spa.csc_matrix((self.problem_dim, self.problem_dim))
+        # if type(self.CP.objective) != list:
+        if not isinstance(self.CP.objective, list):
+            obj_list = [self.CP.objective]
+        else:
+            obj_list = self.CP.objective
+
+        for obj in obj_list:
+            obj_canon = OBJ_CANON_METHODS[type(obj)]
+            C_temp = obj_canon(obj, self)
+            # print(C_temp)
+            self.C_matrix += C_temp
+
+        # Flipping objective to make the problem a minimization
+        self.C_matrix = -self.C_matrix
+
+    def canonicalize_initial_sets(self):
+        for init_set in self.CP.get_init_sets():
+            # canon_method = SET_CANON_METHODS[type(init_set)]
+            # A, b_l, b_u = canon_method(init_set, self)
+            # self.A_matrices += A
+            # self.b_lowerbounds += b_l
+            # self.b_upperbounds += b_u
+            print(init_set)
 
     def canonicalize(self):
+        self.convert_hl_to_basic_steps()
+        self.create_iterate_id_maps()
+        # self.create_init_iterate_range_maps()
+        self.create_param_range_maps()
+        self.create_iterate_range_maps()
+        self.set_problem_dim()
+        self.create_lower_right_constraint()
+
+        self.canonicalize_objective()
+        self.canonicalize_initial_sets()
+
+        exit(0)
+
+    def get_cross_ranges(self):
         pass
 
     def solve(self):

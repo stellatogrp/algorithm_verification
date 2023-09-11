@@ -114,6 +114,11 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
         CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
         CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP5 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+
+        (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
+        print(sdp_c, sdp_ctime)
+        exit(0)
 
         (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
@@ -122,6 +127,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
             glob, glob_time = 0, 0
+
 
         out.append(
             pd.Series({
