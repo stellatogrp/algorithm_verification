@@ -1,7 +1,11 @@
+import cvxpy as cp
+import numpy as np
 import scipy.sparse as spa
 
 from algocert.solvers.sdp_custom_solver import (
     OBJ_CANON_METHODS,
+    SET_CANON_METHODS,
+    STEP_CANON_METHODS,
 )
 
 
@@ -112,12 +116,31 @@ class SDPCustomHandler(object):
 
     def canonicalize_initial_sets(self):
         for init_set in self.CP.get_init_sets():
-            # canon_method = SET_CANON_METHODS[type(init_set)]
-            # A, b_l, b_u = canon_method(init_set, self)
-            # self.A_matrices += A
-            # self.b_lowerbounds += b_l
-            # self.b_upperbounds += b_u
-            print(init_set)
+            # print(init_set)
+            canon_method = SET_CANON_METHODS[type(init_set)]
+            A, b_l, b_u = canon_method(init_set, self)
+            self.A_matrices += A
+            self.b_lowerbounds += b_l
+            self.b_upperbounds += b_u
+
+    def canonicalize_parameter_sets(self):
+        for param_set in self.CP.get_parameter_sets():
+            # print(param_set)
+            canon_method = SET_CANON_METHODS[type(param_set)]
+            A, b_l, b_u = canon_method(param_set, self)
+            self.A_matrices += A
+            self.b_lowerbounds += b_l
+            self.b_upperbounds += b_u
+
+    def canonicalize_steps(self):
+        steps = self.CP.get_algorithm_steps()
+        for k in range(1, self.K + 1):
+            for step in steps:
+                canon_method = STEP_CANON_METHODS[type(step)]
+                A, b_l, b_u = canon_method(step, k, self)
+                self.A_matrices += A
+                self.b_lowerbounds += b_l
+                self.b_upperbounds += b_u
 
     def canonicalize(self):
         self.convert_hl_to_basic_steps()
@@ -130,11 +153,39 @@ class SDPCustomHandler(object):
 
         self.canonicalize_objective()
         self.canonicalize_initial_sets()
+        self.canonicalize_parameter_sets()
 
-        exit(0)
+        self.canonicalize_steps()
 
-    def get_cross_ranges(self):
-        pass
+        # self.solve_with_cvxpy()
+
+    def solve_with_cvxpy(self):
+        # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        X = cp.Variable((self.problem_dim, self.problem_dim), symmetric=True)
+        obj = cp.trace(self.C_matrix @ X)
+        constraints = [X >> 0]
+        for i in range(len(self.A_matrices)):
+            Ai = self.A_matrices[i]
+            b_li = self.b_lowerbounds[i]
+            b_ui = self.b_upperbounds[i]
+            # if b_li == -np.inf:
+            #     b_li = -500
+            # if b_ui == np.inf:
+            #     b_ui = 500
+
+            if b_li > -np.inf:
+                constraints += [cp.trace(Ai @ X) >= b_li]
+            if b_ui < np.inf:
+                constraints += [cp.trace(Ai @ X) <= b_ui]
+            # constraints += [
+            #     cp.trace(Ai @ X) >= b_li,
+            #     cp.trace(Ai @ X) <= b_ui,
+            # ]
+
+        prob = cp.Problem(cp.Minimize(obj), constraints)
+        res = prob.solve(solver=cp.MOSEK, verbose=True)
+        # print(res)
+        return -res, prob.solver_stats.solve_time
 
     def solve(self):
-        return 0, 0
+        return self.solve_with_cvxpy()

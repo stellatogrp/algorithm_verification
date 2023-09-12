@@ -40,3 +40,6 @@ class RangeHandler1D(RangeHandler2D):
 
     def __init__(self, ranges):
         super().__init__(ranges, (-1, 0))
+
+    def index_matrix_horiz(self):
+        return RangeHandler2D((-1, 0), self.ranges1).index_matrix()

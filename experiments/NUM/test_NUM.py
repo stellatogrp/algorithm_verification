@@ -117,8 +117,8 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         CP5 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
 
         (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
-        print(sdp_c, sdp_ctime)
-        exit(0)
+        # print(sdp_c, sdp_ctime)
+        # exit(0)
 
         (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
@@ -138,6 +138,8 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
                 'sdp_rtime': sdp_rtime,
                 'sdp_p': sdp_p,
                 'sdp_ptime': sdp_ptime,
+                'sdp_c': sdp_c,
+                'sdp_ctime': sdp_ctime,
                 'glob': glob,
                 'glob_time': glob_time,
             })
@@ -176,7 +178,7 @@ def main():
     np.random.seed(0)
     m = 1
     n = 2
-    K = 2
+    K = 1
     NUM_single(m, n, K=K, glob_include=True)
 
 

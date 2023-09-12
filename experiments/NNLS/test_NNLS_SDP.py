@@ -62,7 +62,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # x_l = np.zeros((n, 1))
     # x_u = np.zeros((n, 1))
 
-    x_l = -1 * np.ones((n, 1))
+    x_l = 0.5 * np.ones((n, 1))
     x_u = np.ones((n, 1))
     # x_u[0] = -1
     xset = BoxSet(x, x_l, x_u)
@@ -94,12 +94,10 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # print(res_g)
 
     # out_fname = 'data/planet_test.csv'
-    # out_fname = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/
-    #  experiments/NNLS/data/planet_test.csv'
     out = []
     # K = 2
     for K_curr in range(1, K+1):
-        K_curr = 1
+        # K_curr = 1
         CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
@@ -158,7 +156,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 2
+    K = 5
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)
