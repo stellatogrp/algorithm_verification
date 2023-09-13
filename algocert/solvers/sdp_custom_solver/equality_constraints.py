@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as spa
 
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
+from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
 
 
 def equality1D_constraints(D, y, A, u, b, k, handler):
@@ -9,22 +10,11 @@ def equality1D_constraints(D, y, A, u, b, k, handler):
         Constraints for D^k = Au + b where u = [u1, u2, ..., ul]
     '''
     problem_dim = handler.problem_dim
-    iter_to_id_map = handler.iterate_to_id_map
     iter_bound_map = handler.iter_bound_map
-    param_bound_map = handler.param_bound_map
 
     n = y.get_dim()
     yrange = iter_bound_map[y][k]
-    uranges = []
-    for x in u:
-        if x.is_param:
-            uranges.append(param_bound_map[x])
-        else:
-            idx = curr_or_prev(y, x, k, iter_to_id_map)
-            uranges.append(iter_bound_map[x][idx])
-
-    # print(yrange)
-    # print(uranges)
+    uranges = map_linstep_to_ranges(y, u, k, handler)
 
     yrange_handler = RangeHandler1D(yrange)
     urange_handler = RangeHandler1D(uranges)
@@ -54,21 +44,13 @@ def equality1D_constraints(D, y, A, u, b, k, handler):
 def equality2D_constraints(D, y, A, u, b, k, handler):
 
     problem_dim = handler.problem_dim
-    iter_to_id_map = handler.iterate_to_id_map
     iter_bound_map = handler.iter_bound_map
-    param_bound_map = handler.param_bound_map
 
     n = y.get_dim()
     yrange = iter_bound_map[y][k]
-    uranges = []
-    for x in u:
-        if x.is_param:
-            uranges.append(param_bound_map[x])
-        else:
-            idx = curr_or_prev(y, x, k, iter_to_id_map)
-            uranges.append(iter_bound_map[x][idx])
+    uranges = map_linstep_to_ranges(y, u, k, handler)
 
-    RangeHandler1D(yrange)
+    # yrange1D_handler = RangeHandler1D(yrange)
     yrange2D_handler = RangeHandler2D(yrange, yrange)
     urange1D_handler = RangeHandler1D(uranges)
     urange2D_handler = RangeHandler2D(uranges, uranges)

@@ -78,6 +78,9 @@ class LinearStep(Step):
     def get_input_var(self):
         return self.u
 
+    def get_input_var_dim(self):
+        return self.u_dim
+
     def get_rhs_matrix(self):
         return self.A
 
