@@ -41,6 +41,11 @@ class SDPCustomHandler(object):
         else:
             self.add_RLT = True
 
+        if 'add_planet' in kwargs:
+            self.add_planet = kwargs['add_planet']
+        else:
+            self.add_planet = True
+
     def convert_hl_to_basic_steps(self):
         pass
 
@@ -115,8 +120,8 @@ class SDPCustomHandler(object):
                 # print(k, step)
                 canon_method = STEP_BOUND_CANON_METHODS[type(step)]
                 canon_method(step, k, self)
-        print(self.var_lowerbounds, self.var_upperbounds)
-        exit(0)
+        # print(self.var_lowerbounds, self.var_upperbounds)
+        # exit(0)
 
     def create_lower_right_constraint(self):
         A = spa.lil_matrix((self.problem_dim, self.problem_dim))
@@ -192,10 +197,9 @@ class SDPCustomHandler(object):
         self.set_problem_dim()
         self.create_lower_upper_bound_vecs()
 
-        if self.add_RLT:
-            self.initialize_set_bounds()
-            # self.propagate_lower_upper_bounds()
-            self.propagate_step_bounds()
+        # if self.add_RLT:
+        self.initialize_set_bounds()
+        self.propagate_step_bounds()
 
         self.create_lower_right_constraint()
 

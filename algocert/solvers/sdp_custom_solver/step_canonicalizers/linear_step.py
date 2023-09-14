@@ -69,8 +69,6 @@ def linear_step_bound_canon(step, k, handler):
     # print(u_lower, u_upper)
 
     y_lower, y_upper = lin_bound_map(u_lower, u_upper, DinvA)
-    # handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l
-    # handler.var_upperbounds[xrange1D_handler.index_matrix()] = u
     handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower + Dinvb
     handler.var_upperbounds[yrange_handler.index_matrix()] = y_upper + Dinvb
 
