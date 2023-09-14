@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 
 from algocert.basic_algorithm_steps.step import Step
 from algocert.variables.iterate import Iterate
@@ -26,6 +27,7 @@ class LinearStep(Step):
         self.A_boundaries = []
         self._test_dims()
         self._split_A()
+        self.D_factor = sp.linalg.lu_factor(D.todense())
 
     def _test_dims(self):
         # should be D: (n, k), y: (k, 1), A: (n, m), u: (m, 1), b: (n, 1)
@@ -130,6 +132,12 @@ class LinearStep(Step):
         #         iter_to_k_map[x] = k-1
         #     else:
         #         iter_to_k_map[x] = k
+
+    def solve_linear_system(self, b):
+        '''
+            solves D x = b, where b is a vector or matrix
+        '''
+        return sp.linalg.lu_solve(self.D_factor, b)
 
     def apply(self, k, iter_to_id_map, ranges, out):
         # TODO, this should really be handled in the cgal handler and not here

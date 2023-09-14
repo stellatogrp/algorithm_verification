@@ -6,6 +6,7 @@ from algocert.solvers.sdp_custom_solver import (
     OBJ_CANON_METHODS,
     SET_BOUND_CANON_METHODS,
     SET_CANON_METHODS,
+    STEP_BOUND_CANON_METHODS,
     STEP_CANON_METHODS,
 )
 
@@ -102,10 +103,20 @@ class SDPCustomHandler(object):
     def initialize_set_bounds(self):
         # print('init')
         for init_set in self.CP.get_init_sets() + self.CP.get_parameter_sets():
-            print(init_set)
+            # print(init_set)
             canon_method = SET_BOUND_CANON_METHODS[type(init_set)]
             canon_method(init_set, self)
+        # print(self.var_lowerbounds, self.var_upperbounds)
+
+    def propagate_step_bounds(self):
+        # print('step upper lower')
+        for k in range(1, self.K + 1):
+            for step in self.CP.get_algorithm_steps():
+                # print(k, step)
+                canon_method = STEP_BOUND_CANON_METHODS[type(step)]
+                canon_method(step, k, self)
         print(self.var_lowerbounds, self.var_upperbounds)
+        exit(0)
 
     def create_lower_right_constraint(self):
         A = spa.lil_matrix((self.problem_dim, self.problem_dim))
@@ -161,12 +172,6 @@ class SDPCustomHandler(object):
                 self.b_lowerbounds += b_l
                 self.b_upperbounds += b_u
 
-    # def propagate_lower_upper_bounds(self):
-    #     print('upper lower')
-    #     self.var_lowerbounds = np.zeros(self.problem_dim-1)
-    #     self.var_upperbounds = np.zeros(self.problem_dim-1)
-    #     exit(0)
-
     def single_mat_symmetric(self, M):
         return (abs(M - M.T) > 1e-7).nnz == 0
 
@@ -190,6 +195,7 @@ class SDPCustomHandler(object):
         if self.add_RLT:
             self.initialize_set_bounds()
             # self.propagate_lower_upper_bounds()
+            self.propagate_step_bounds()
 
         self.create_lower_right_constraint()
 

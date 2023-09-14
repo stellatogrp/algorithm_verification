@@ -78,3 +78,8 @@ def nonneg_orthant_proj_canon(step, k, handler):
     # exit(0)
 
     return A_vals, b_lvals, b_uvals
+
+
+def nonneg_orthant_proj_bound_canon(step, k, handler):
+    print('nonneg bound')
+    exit(0)
