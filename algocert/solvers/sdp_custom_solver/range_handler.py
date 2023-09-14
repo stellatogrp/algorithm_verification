@@ -26,6 +26,7 @@ class RangeHandler2D(object):
             ranges2_dim += (r[1] - r[0])
         self.ranges1_dim = ranges1_dim
         self.ranges2_dim = ranges2_dim
+        self.shape = (ranges1_dim, ranges2_dim)
 
     def _create_row_col_indices(self):
         row_indices = []

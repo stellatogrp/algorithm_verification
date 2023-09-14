@@ -171,7 +171,7 @@ def linear_step_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
             print(C.shape)
             print(A.shape)
 
-            exit(0)
+            # exit(0)
 
 
     # exit(0)

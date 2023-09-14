@@ -86,9 +86,10 @@ def nonneg_orthant_proj_canon(step, k, handler):
         y_lower = handler.var_lowerbounds[yrange1D_handler.index_matrix()]
         # print(x_lower, x_upper)
         gaps_vec = (x_upper - x_lower).reshape(-1,)
-        pos_gap_indices = np.argwhere(gaps_vec >= 1e-5).reshape(-1, )
+        pos_gap_indices = np.argwhere(gaps_vec >= 1e-6).reshape(-1, )
+        zero_gap_indices = np.argwhere(gaps_vec < 1e-6).reshape(-1, )
         np.argwhere(gaps_vec < 1e-5).reshape(-1, )
-        # print(pos_gap_indices, zero_gap_indices, gaps_vec)
+        print(pos_gap_indices, zero_gap_indices, gaps_vec)
         frac = np.divide((y_upper - y_lower)[pos_gap_indices], (x_upper - x_lower)[pos_gap_indices])
         # print(frac)
 
@@ -104,7 +105,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
             D[i, i] = frac[j]
         c = np.multiply(frac, -x_lower[pos_gap_indices]) + y_lower[pos_gap_indices]
         minusc_xupperT = -c @ x_upper.T
-        for i in pos_gap_indices:
+        for pos_idx, i in enumerate(pos_gap_indices):
             outmat = np.zeros((problem_dim, problem_dim))
             # Di = D[i].T.reshape((-1, 1))
             # DTj = D.T[:, j].T.reshape((1, -1))
@@ -122,13 +123,13 @@ def nonneg_orthant_proj_canon(step, k, handler):
             ITj = I.T[:, j].T.reshape((1, -1))
             outmat[xrange1D_handler.index_matrix()] = Di * x_upper[i, 0]
             outmat[xxTrange_handler.index_matrix()] = -Di @ ITj
-            outmat[xrange1D_handler.index_matrix_horiz()] = -c[i, 0] * ITj
+            outmat[xrange1D_handler.index_matrix_horiz()] = -c[pos_idx, 0] * ITj
             outmat[yrange1D_handler.index_matrix()] = -Ii * x_upper[i, 0]
             outmat[yxTrange_handler.index_matrix()] = Ii @ ITj
             outmat = (outmat + outmat.T) / 2
 
             A_vals.append(spa.csc_matrix(outmat))
-            b_lvals.append(minusc_xupperT[i, i])
+            b_lvals.append(minusc_xupperT[pos_idx, i])
             b_uvals.append(np.inf)
 
         # exit(0)

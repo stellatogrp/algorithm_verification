@@ -9,6 +9,7 @@ from algocert.solvers.sdp_custom_solver import (
     STEP_BOUND_CANON_METHODS,
     STEP_CANON_METHODS,
 )
+from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_vars
 
 
 class SDPCustomHandler(object):
@@ -121,6 +122,15 @@ class SDPCustomHandler(object):
                 canon_method = STEP_BOUND_CANON_METHODS[type(step)]
                 canon_method(step, k, self)
         # print(self.var_lowerbounds, self.var_upperbounds)
+
+    def add_RLT_constraints(self):
+        mat_dim = self.problem_dim - 1
+        # A, b_l, b_u = RLT_from_ranges(mat_range, mat_range, self)
+        A, b_l, b_u = RLT_all_vars(mat_dim, self)
+        self.A_matrices += A
+        self.b_lowerbounds += b_l
+        self.b_upperbounds += b_u
+
         # exit(0)
 
     def create_lower_right_constraint(self):
@@ -200,6 +210,9 @@ class SDPCustomHandler(object):
         # if self.add_RLT:
         self.initialize_set_bounds()
         self.propagate_step_bounds()
+
+        if self.add_RLT:
+            self.add_RLT_constraints()
 
         self.create_lower_right_constraint()
 
