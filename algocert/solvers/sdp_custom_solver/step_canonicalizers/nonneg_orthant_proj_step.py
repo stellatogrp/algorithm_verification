@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse as spa
 
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
 
@@ -33,7 +34,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
         insert_vec[i, 0] = 1
         output_mat[yrange1D_handler.index_matrix()] = insert_vec
         output_mat = (output_mat + output_mat.T) / 2
-        A_vals.append(output_mat)
+        A_vals.append(spa.csc_matrix(output_mat))
         b_lvals.append(0)
         b_uvals.append(np.inf)
 
@@ -45,7 +46,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
         output_mat[yrange1D_handler.index_matrix()] = insert_vec
         output_mat[xrange1D_handler.index_matrix()] = -insert_vec
         output_mat = (output_mat + output_mat.T) / 2
-        A_vals.append(output_mat)
+        A_vals.append(spa.csc_matrix(output_mat))
         b_lvals.append(0)
         b_uvals.append(np.inf)
         # print(output_mat)
@@ -59,9 +60,19 @@ def nonneg_orthant_proj_canon(step, k, handler):
         output_mat[yxTrange_handler.index_matrix()] = -insert_mat
         output_mat = (output_mat + output_mat.T) / 2
         # print(output_mat)
-        A_vals.append(output_mat)
+        A_vals.append(spa.csc_matrix(output_mat))
         b_lvals.append(0)
         b_uvals.append(0)
+
+
+    # TODO check trace again after adding in bounds/RLT
+    # outmat = np.zeros((problem_dim, problem_dim))
+    # output_mat[yyTrange_handler.index_matrix()] = np.eye(y_dim)
+    # output_mat[yxTrange_handler.index_matrix()] = -np.eye(y_dim)
+    # output_mat = (output_mat + output_mat.T) / 2
+    # A_vals.append(spa.csc_matrix(output_mat))
+    # b_lvals.append(0)
+    # b_uvals.append(0)
 
     # print(len(A_vals), len(b_lvals), len(b_uvals))
     # exit(0)

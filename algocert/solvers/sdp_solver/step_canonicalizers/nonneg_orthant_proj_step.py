@@ -22,7 +22,9 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
 
     yxT_var = curr.iterate_cross_vars[y][x]
 
-    constraints = [y_var >= 0, yyT_var >= 0, y_var >= x_var, cp.diag(yyT_var - yxT_var) == 0]
+    constraints = [y_var >= 0, yyT_var >= 0, y_var >= x_var,
+                #    cp.diag(yyT_var - yxT_var) == 0]
+                    cp.trace(yyT_var - yxT_var) == 0]
     constraints += [
         cp.bmat([
             [yyT_var, yxT_var, y_var],

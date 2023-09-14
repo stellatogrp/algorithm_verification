@@ -4,6 +4,7 @@ import scipy.sparse as spa
 
 from algocert.solvers.sdp_custom_solver import (
     OBJ_CANON_METHODS,
+    SET_BOUND_CANON_METHODS,
     SET_CANON_METHODS,
     STEP_CANON_METHODS,
 )
@@ -28,10 +29,16 @@ class SDPCustomHandler(object):
         self.b_lowerbounds = []
         self.b_upperbounds = []
         self.C_matrix = None
+
         if 'scale' in kwargs:
             self.scale = kwargs['scale']
         else:
             self.scale = False
+
+        if 'add_RLT' in kwargs:
+            self.add_RLT = kwargs['add_RLT']
+        else:
+            self.add_RLT = True
 
     def convert_hl_to_basic_steps(self):
         pass
@@ -88,6 +95,18 @@ class SDPCustomHandler(object):
         self.problem_dim = self.range_marker + 1
         print('problem dim:', self.problem_dim)
 
+    def create_lower_upper_bound_vecs(self):
+        self.var_lowerbounds = np.zeros((self.problem_dim - 1, 1))
+        self.var_upperbounds = np.zeros((self.problem_dim - 1, 1))
+
+    def initialize_set_bounds(self):
+        # print('init')
+        for init_set in self.CP.get_init_sets() + self.CP.get_parameter_sets():
+            print(init_set)
+            canon_method = SET_BOUND_CANON_METHODS[type(init_set)]
+            canon_method(init_set, self)
+        print(self.var_lowerbounds, self.var_upperbounds)
+
     def create_lower_right_constraint(self):
         A = spa.lil_matrix((self.problem_dim, self.problem_dim))
         # A = spa.csc_matrix((self.problem_dim, self.problem_dim))
@@ -142,6 +161,23 @@ class SDPCustomHandler(object):
                 self.b_lowerbounds += b_l
                 self.b_upperbounds += b_u
 
+    # def propagate_lower_upper_bounds(self):
+    #     print('upper lower')
+    #     self.var_lowerbounds = np.zeros(self.problem_dim-1)
+    #     self.var_upperbounds = np.zeros(self.problem_dim-1)
+    #     exit(0)
+
+    def single_mat_symmetric(self, M):
+        return (abs(M - M.T) > 1e-7).nnz == 0
+
+    def check_all_matrices_symmetric(self):
+        for A in self.A_matrices:
+            if not self.single_mat_symmetric(A):
+                print('mat not symmetric')
+                exit(0)
+        else:
+            print('all input matrices symmetric')
+
     def canonicalize(self):
         self.convert_hl_to_basic_steps()
         self.create_iterate_id_maps()
@@ -149,6 +185,12 @@ class SDPCustomHandler(object):
         self.create_param_range_maps()
         self.create_iterate_range_maps()
         self.set_problem_dim()
+        self.create_lower_upper_bound_vecs()
+
+        if self.add_RLT:
+            self.initialize_set_bounds()
+            # self.propagate_lower_upper_bounds()
+
         self.create_lower_right_constraint()
 
         self.canonicalize_objective()
@@ -157,6 +199,7 @@ class SDPCustomHandler(object):
 
         self.canonicalize_steps()
 
+        self.check_all_matrices_symmetric()
         # self.solve_with_cvxpy()
 
     def solve_with_cvxpy(self):
@@ -184,6 +227,7 @@ class SDPCustomHandler(object):
 
         prob = cp.Problem(cp.Minimize(obj), constraints)
         res = prob.solve(solver=cp.MOSEK, verbose=True)
+        # res = prob.solve(solver=cp.SCS, verbose=True, max_iters=10000)
         # print(res)
         return -res, prob.solver_stats.solve_time
 

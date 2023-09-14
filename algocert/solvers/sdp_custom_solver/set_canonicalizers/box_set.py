@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.sparse as spa
 
+from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D
+
 
 def box_set_canon(init_set, handler):
     '''
@@ -42,3 +44,19 @@ def box_set_canon(init_set, handler):
     # print(b_lvals, b_uvals)
 
     return A_vals, b_lvals, b_uvals
+
+
+def box_bound_canon(init_set, handler):
+    x = init_set.get_iterate()
+    #  n = x.get_dim()
+    l = init_set.l
+    u = init_set.u
+    if x.is_param:
+        xrange = handler.param_bound_map[x]
+    else:
+        xrange = handler.iter_bound_map[x][0]
+
+    xrange1D_handler = RangeHandler1D(xrange)
+    # print(handler.var_lowerbounds[xrange1D_handler.index_matrix()])
+    handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l
+    handler.var_upperbounds[xrange1D_handler.index_matrix()] = u

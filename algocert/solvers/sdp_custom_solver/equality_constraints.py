@@ -70,11 +70,11 @@ def equality2D_constraints(D, y, A, u, b, k, handler):
     for i in range(n):
         for j in range(i, n):
             outmat = np.zeros((problem_dim, problem_dim))
-            Di = D[i].T
-            DTj = D.T[:, j].T
+            Di = D[i].T.reshape((-1, 1))
+            DTj = D.T[:, j].T.reshape((1, -1))
             # print(Di.shape, DTj.shape)
-            Ai = A[i].T
-            ATj = A.T[:, j].T
+            Ai = A[i].T.reshape((-1, 1))
+            ATj = A.T[:, j].T.reshape((1, -1))
             # print(Ai.shape, ATj.shape)
 
             DiDTj = Di @ DTj
