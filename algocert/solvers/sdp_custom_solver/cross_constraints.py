@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as spa
 
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
+from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
 
 
 def cross_constraint_steps(step1, k1, step2, k2, handler):
@@ -49,6 +50,15 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     # print(x_range)
     # print(x)
 
+    if spa.issparse(D):
+        D = D.todense()
+    if spa.issparse(A):
+        A = A.todense()
+    if spa.issparse(C):
+        C = C.todense()
+    if spa.issparse(F):
+        F = F.todense()
+
     A_matrices = []
     b_lvals = []
     b_uvals = []
@@ -88,3 +98,66 @@ def cross_constraints_from_ranges(m, n, problem_dim,
             b_uvals.append(bcT[i, j])
 
     return A_matrices, b_lvals, b_uvals
+
+
+def cross_constraints_between_linsteps(y1, y2, k1, k2, handler):
+
+    if k1 == 0 or k2 == 0:
+        return [], [], []
+
+    var_linstep_map = handler.var_linstep_map
+    step1 = var_linstep_map[y1]
+    step2 = var_linstep_map[y2]
+
+    D1 = step1.get_lhs_matrix()
+    A1 = step1.get_rhs_matrix()
+    b1 = step1.get_rhs_const_vec()
+    u1 = step1.get_input_var()
+    u1ranges = map_linstep_to_ranges(y1, u1, k1, handler)
+    y1range = handler.iter_bound_map[y1][k1]
+    # print(u1ranges)
+
+    D2 = step2.get_lhs_matrix()
+    A2 = step2.get_rhs_matrix()
+    b2 = step2.get_rhs_const_vec()
+    u2 = step2.get_input_var()
+    u2ranges = map_linstep_to_ranges(y2, u2, k2, handler)
+    y2range = handler.iter_bound_map[y2][k2]
+    # print(u2ranges)
+
+    m = y1.get_dim()
+    n = y2.get_dim()
+
+    return cross_constraints_from_ranges(m, n, handler.problem_dim,
+                                         D1, y1range, A1, u1ranges, b1,
+                                         D2, y2range, A2, u2ranges, b2)
+
+
+def cross_constraints_linstep_to_not(y1, y2, k1, k2, handler):
+
+    if k1 == 0 or k2 == 0:
+        return [], [], []
+    var_linstep_map = handler.var_linstep_map
+    step1 = var_linstep_map[y1]
+
+    D1 = step1.get_lhs_matrix()
+    A1 = step1.get_rhs_matrix()
+    b1 = step1.get_rhs_const_vec()
+    u1 = step1.get_input_var()
+    u1ranges = map_linstep_to_ranges(y1, u1, k1, handler)
+    y1range = handler.iter_bound_map[y1][k1]
+
+    y2_dim = y2.get_dim()
+    if y2.is_param:
+        y2range = handler.param_bound_map[y2]
+    else:
+        y2range = handler.iter_bound_map[y2][k2]
+    C = np.eye(y2_dim)
+
+    # Across, blcross, bucross = cross_constraints_from_ranges(y.get_dim(), u_dim, handler.problem_dim,
+    #                                                          D.todense(), yrange, A.todense(), urange, b,
+    #                                                          C, urange, C, urange, np.zeros((u_dim, 1)))
+    # exit(0)
+    return cross_constraints_from_ranges(y1.get_dim(), y2_dim, handler.problem_dim,
+                                         D1, y1range, A1, u1ranges, b1,
+                                         C, y2range, C, y2range, np.zeros((y2_dim, 1)))

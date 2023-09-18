@@ -97,7 +97,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     out = []
     # K = 2
     for K_curr in range(1, K+1):
-        # K_curr = 1
+        # K_curr = 2
         CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
@@ -156,7 +156,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 8
+    K = 4
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)

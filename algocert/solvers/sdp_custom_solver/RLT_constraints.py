@@ -39,14 +39,14 @@ def RLT_all_vars(matrix_dim, handler):
     for i in range(matrix_dim):
         for j in range(i, matrix_dim):
 
-            output_mat2 = np.zeros((matrix_dim + 1, matrix_dim + 1))
-            output_mat2[i, j] = -1
-            output_mat2[j, -1] = l[i, 0]
-            output_mat2[-1, i] = u[j, 0]
-            output_mat2 = (output_mat2 + output_mat2.T) / 2
-            A_vals.append(spa.csc_matrix(output_mat2))
-            b_lvals.append(l[i, 0] * u[j, 0])
-            b_uvals.append(np.inf)
+            # output_mat2 = np.zeros((matrix_dim + 1, matrix_dim + 1))
+            # output_mat2[i, j] = -1
+            # output_mat2[j, -1] = l[i, 0]
+            # output_mat2[-1, i] = u[j, 0]
+            # output_mat2 = (output_mat2 + output_mat2.T) / 2
+            # A_vals.append(spa.csc_matrix(output_mat2))
+            # b_lvals.append(l[i, 0] * u[j, 0])
+            # b_uvals.append(np.inf)
 
             output_mat3 = np.zeros((matrix_dim + 1, matrix_dim + 1))
             output_mat3[i, j] = -1
@@ -57,14 +57,14 @@ def RLT_all_vars(matrix_dim, handler):
             b_lvals.append(u[i, 0] * l[j, 0])
             b_uvals.append(np.inf)
 
-            # output_mat4 = np.zeros((matrix_dim + 1, matrix_dim + 1))
-            # output_mat4[i, j] = 1
-            # output_mat4[j, -1] = -u[i, 0]
-            # output_mat4[-1, i] = -u[j, 0]
-            # output_mat4 = (output_mat4 + output_mat4.T) / 2
-            # A_vals.append(spa.csc_matrix(output_mat4))
-            # b_lvals.append(-u[i, 0] * u[j, 0])
-            # b_uvals.append(np.inf)
+            output_mat4 = np.zeros((matrix_dim + 1, matrix_dim + 1))
+            output_mat4[i, j] = 1
+            output_mat4[j, -1] = -u[i, 0]
+            output_mat4[-1, i] = -u[j, 0]
+            output_mat4 = (output_mat4 + output_mat4.T) / 2
+            A_vals.append(spa.csc_matrix(output_mat4))
+            b_lvals.append(-u[i, 0] * u[j, 0])
+            b_uvals.append(np.inf)
 
     # exit(0)
     return A_vals, b_lvals, b_uvals

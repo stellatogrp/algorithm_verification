@@ -1,7 +1,11 @@
 import numpy as np
 import scipy.sparse as spa
 
+from algocert.solvers.sdp_custom_solver.cross_constraints import (
+    cross_constraints_from_ranges,
+)
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
+from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
 
 
 def nonneg_orthant_proj_canon(step, k, handler):
@@ -65,6 +69,26 @@ def nonneg_orthant_proj_canon(step, k, handler):
         b_lvals.append(0)
         b_uvals.append(0)
 
+    # yxT_var @ D.T == yuT_var @ A.T + y_var @ b.T,
+    if x in handler.linstep_output_vars:
+        xstep = handler.var_linstep_map[x]
+        D = xstep.get_lhs_matrix()
+        A = xstep.get_rhs_matrix()
+        b = xstep.get_rhs_const_vec()
+        u = xstep.get_input_var()
+        ubounds = map_linstep_to_ranges(x, u, k, handler)
+        # print(uranges)
+        C = np.eye(y.get_dim())
+        # A_cross, b_lcross, b_ucross = cross_constraints_linstep_to_not(y.get_dim(), x.get_dim(), problem_dim,
+        #                                                                C, ybounds, C, ybounds, np.zeros((y.get_dim(), 1)),
+        #                                                                D, xbounds, A, ubounds, b)
+        A_cross, b_lcross, b_ucross = cross_constraints_from_ranges(y.get_dim(), x.get_dim(), problem_dim,
+                                                                    C, ybounds, C, ybounds, np.zeros((y.get_dim(), 1)),
+                                                                    D, xbounds, A, ubounds, b)
+        A_vals += A_cross
+        b_lvals += b_lcross
+        b_uvals += b_ucross
+    #     # exit(0)
 
     # TODO check trace again after adding in bounds/RLT
     # outmat = np.zeros((problem_dim, problem_dim))

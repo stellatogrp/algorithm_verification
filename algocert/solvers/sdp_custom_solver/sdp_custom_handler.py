@@ -9,6 +9,10 @@ from algocert.solvers.sdp_custom_solver import (
     STEP_BOUND_CANON_METHODS,
     STEP_CANON_METHODS,
 )
+from algocert.solvers.sdp_custom_solver.cross_constraints import (
+    cross_constraints_between_linsteps,
+    cross_constraints_linstep_to_not,
+)
 from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_vars
 
 
@@ -20,6 +24,8 @@ class SDPCustomHandler(object):
         self.alg_steps = CP.get_algorithm_steps()
         self.iterate_list = []
         self.param_list = []
+        self.linstep_output_vars = []
+        self.var_linstep_map = {}
         self.iterate_to_id_map = {}
         self.id_to_iterate_map = {}
         self.iter_bound_map = {}
@@ -47,6 +53,11 @@ class SDPCustomHandler(object):
         else:
             self.add_planet = True
 
+        if 'lookback_t' in kwargs:
+            self.lookback_t = kwargs['lookback_t']
+        else:
+            self.lookback_t = None
+
     def convert_hl_to_basic_steps(self):
         pass
 
@@ -71,6 +82,7 @@ class SDPCustomHandler(object):
     def create_param_range_maps(self):
         for param_set in self.CP.get_parameter_sets():
             param_var = param_set.get_iterate()
+            self.param_list.append(param_var)
             dim = param_var.get_dim()
             bounds = (self.range_marker, self.range_marker + dim)
             self.range_marker += dim
@@ -122,6 +134,16 @@ class SDPCustomHandler(object):
                 canon_method = STEP_BOUND_CANON_METHODS[type(step)]
                 canon_method(step, k, self)
         # print(self.var_lowerbounds, self.var_upperbounds)
+
+    def extract_lin_step_output_vars(self):
+        steps = self.CP.get_algorithm_steps()
+        for step in steps:
+            if step.is_linstep:
+                # self.linstep_output_vars.add(step.get_output_var())
+                self.linstep_output_vars.append(step.get_output_var())
+                self.var_linstep_map[step.get_output_var()] = step
+        # print(self.linstep_output_vars)
+        # print(self.var_linstep_map)
 
     def add_RLT_constraints(self):
         mat_dim = self.problem_dim - 1
@@ -187,6 +209,49 @@ class SDPCustomHandler(object):
                 self.b_lowerbounds += b_l
                 self.b_upperbounds += b_u
 
+    def canonicalize_linstep_cross_constraints(self):
+        print(self.linstep_output_vars)
+        print(self.var_linstep_map)
+        print(self.iterate_list)
+        print(self.param_list)
+        if self.lookback_t is not None:
+            lookback_t = self.lookback_t
+        else:
+            lookback_t = self.K
+            # lookback_t = 1
+        print('lookback_t:', lookback_t)
+        print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        for linstep_var in self.linstep_output_vars:
+            for other_var in self.iterate_list:
+                for k1 in range(1, self.K + 1):
+                    for k2 in range(k1, max(0, k1 - lookback_t) - 1, -1):
+                        if linstep_var == other_var and k1 == k2:
+                            continue
+                        print(linstep_var, other_var, 'k1:', k1, 'k2:', k2)
+                        if other_var in self.linstep_output_vars:
+                            print('other also linstep')
+                            A, b_l, b_u = cross_constraints_between_linsteps(linstep_var, other_var, k1, k2, self)
+                            self.A_matrices += A
+                            self.b_lowerbounds += b_l
+                            self.b_upperbounds += b_u
+                        else:
+                            print('other is not linstep')
+                            A, b_l, b_u = cross_constraints_linstep_to_not(linstep_var, other_var, k1, k2, self)
+                            self.A_matrices += A
+                            self.b_lowerbounds += b_l
+                            self.b_upperbounds += b_u
+        # TODO: add linsteps cross with params?
+        for linstep_var in self.linstep_output_vars:
+            for param_var in self.param_list:
+                for k in range(1, self.K + 1):
+                    A, b_l, b_u = cross_constraints_linstep_to_not(linstep_var, param_var, k, None, self)
+                    self.A_matrices += A
+                    self.b_lowerbounds += b_l
+                    self.b_upperbounds += b_u
+
+        print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        # exit(0)
+
     def single_mat_symmetric(self, M):
         return (abs(M - M.T) > 1e-7).nnz == 0
 
@@ -211,6 +276,8 @@ class SDPCustomHandler(object):
         self.initialize_set_bounds()
         self.propagate_step_bounds()
 
+        self.extract_lin_step_output_vars()
+
         if self.add_RLT:
             self.add_RLT_constraints()
 
@@ -221,6 +288,8 @@ class SDPCustomHandler(object):
         self.canonicalize_parameter_sets()
 
         self.canonicalize_steps()
+
+        self.canonicalize_linstep_cross_constraints()
 
         self.check_all_matrices_symmetric()
         # self.solve_with_cvxpy()
@@ -239,10 +308,13 @@ class SDPCustomHandler(object):
             # if b_ui == np.inf:
             #     b_ui = 500
 
-            if b_li > -np.inf:
-                constraints += [cp.trace(Ai @ X) >= b_li]
-            if b_ui < np.inf:
-                constraints += [cp.trace(Ai @ X) <= b_ui]
+            if b_li == b_ui:
+                constraints += [cp.trace(Ai @ X) == b_li]
+            else:
+                if b_li > -np.inf:
+                    constraints += [cp.trace(Ai @ X) >= b_li]
+                if b_ui < np.inf:
+                    constraints += [cp.trace(Ai @ X) <= b_ui]
             # constraints += [
             #     cp.trace(Ai @ X) >= b_li,
             #     cp.trace(Ai @ X) <= b_ui,
