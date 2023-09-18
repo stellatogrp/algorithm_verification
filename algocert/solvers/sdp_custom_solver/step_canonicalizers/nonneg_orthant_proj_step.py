@@ -115,13 +115,6 @@ def nonneg_orthant_proj_canon(step, k, handler):
         np.argwhere(gaps_vec < 1e-5).reshape(-1, )
         print(pos_gap_indices, zero_gap_indices, gaps_vec)
         frac = np.divide((y_upper - y_lower)[pos_gap_indices], (x_upper - x_lower)[pos_gap_indices])
-        # print(frac)
-
-        # A = np.zeros((n_pos, n_pos))
-        #             # print(A)
-        # for i in range(n_pos):
-        #     A[i, i] = frac[i, 0]
-        # b = np.multiply(frac, -lower_x[pos_gap_indices]) + lower_y[pos_gap_indices]
 
         D = np.zeros((y_dim, y_dim))
         I = np.eye(y_dim)
@@ -130,17 +123,9 @@ def nonneg_orthant_proj_canon(step, k, handler):
         c = np.multiply(frac, -x_lower[pos_gap_indices]) + y_lower[pos_gap_indices]
         minusc_xupperT = -c @ x_upper.T
         for pos_idx, i in enumerate(pos_gap_indices):
+            # print(pos_idx, i, j)
+            j = pos_idx
             outmat = np.zeros((problem_dim, problem_dim))
-            # Di = D[i].T.reshape((-1, 1))
-            # DTj = D.T[:, j].T.reshape((1, -1))
-            # # print(Di.shape, DTj.shape)
-            # Ai = A[i].T.reshape((-1, 1))
-            # ATj = A.T[:, j].T.reshape((1, -1))
-            # outmat[yrange2D_handler.index_matrix()] = DiDTj
-            # outmat[urange2D_handler.index_matrix()] = -AiATj
-            # outmat[urange1D_handler.index_matrix()] = -Ai * b[j, 0]
-            # # print(urange1D_handler.index_matrix_horiz())
-            # outmat[urange1D_handler.index_matrix_horiz()] = -b[i, 0] * ATj
 
             Di = D[i].T.reshape((-1, 1))
             Ii = I[i].T.reshape((-1, 1))
@@ -156,6 +141,39 @@ def nonneg_orthant_proj_canon(step, k, handler):
             b_lvals.append(minusc_xupperT[pos_idx, i])
             b_uvals.append(np.inf)
 
+    # if handler.add_planet:
+    #     n = y.get_dim()
+    #     x_upper = handler.var_upperbounds[xrange1D_handler.index_matrix()]
+    #     x_lower = handler.var_lowerbounds[xrange1D_handler.index_matrix()]
+    #     y_upper = handler.var_upperbounds[yrange1D_handler.index_matrix()]
+    #     y_lower = handler.var_lowerbounds[yrange1D_handler.index_matrix()]
+    #     print(x_lower, y_lower, x_upper, y_upper)
+    #     # frac = np.divide(upper_y - lower_y, upper_x - lower_x)
+    #     frac = np.divide(y_upper - y_lower, x_upper - x_lower)
+    #     # print(frac)
+    #     A = np.zeros((n, n))
+    #     # print(A)
+    #     b = np.multiply(frac, -x_lower) + y_lower
+    #     # print(b)
+    #     I = np.eye(n)
+    #     minusb_xupperT = -b @ x_upper.T
+    #     for i in range(n):
+    #         for j in range(n):
+    #             print(i, j)
+    #             outmat = np.zeros((problem_dim, problem_dim))
+    #             Ai = A[i].T.reshape((-1, 1))
+    #             Ii = I[i].T.reshape((-1, 1))
+    #             ITj = I.T[:, j].T.reshape((1, -1))
+    #             outmat[xrange1D_handler.index_matrix()] = Ai * x_upper[j, 0]
+    #             outmat[xxTrange_handler.index_matrix()] = -Ai @ ITj
+    #             outmat[xrange1D_handler.index_matrix_horiz()] = -b[i, 0] * ITj
+    #             outmat[yrange1D_handler.index_matrix()] = -Ii * x_upper[j, 0]
+    #             outmat[yxTrange_handler.index_matrix()] = Ii @ ITj
+    #             outmat = (outmat + outmat.T) / 2
+
+    #             A_vals.append(spa.csc_matrix(outmat))
+    #             b_lvals.append(minusb_xupperT[i, j])
+    #             b_uvals.append(np.inf)
         # exit(0)
 
     return A_vals, b_lvals, b_uvals

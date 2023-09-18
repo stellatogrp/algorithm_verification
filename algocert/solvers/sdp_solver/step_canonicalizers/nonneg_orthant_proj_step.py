@@ -121,6 +121,7 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                     # exit(0)
                 else:
                     # frac = np.divide((upper_y - lower_y)[pos_gap_indices], (upper_x - lower_x)[pos_gap_indices])
+                    # exit(0)
                     frac = np.divide(upper_y - lower_y, upper_x - lower_x)
                     # n = pos_gap_indices.shape[0]
                     A = np.zeros((n, n))
@@ -129,8 +130,6 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                         # to work as desired
                         A[i, i] = frac[i, 0]
                     b = np.multiply(frac, -lower_x) + lower_y
-
-                    # exit(0)
 
                     # constraints += [
                     #     y_var <= A @ x_var + b,

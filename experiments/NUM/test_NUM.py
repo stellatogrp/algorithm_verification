@@ -179,7 +179,7 @@ def main():
     np.random.seed(0)
     m = 1
     n = 2
-    K = 3
+    K = 2
     NUM_single(m, n, K=K, glob_include=True)
 
 
