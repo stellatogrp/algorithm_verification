@@ -156,7 +156,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 4
+    K = 3
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)

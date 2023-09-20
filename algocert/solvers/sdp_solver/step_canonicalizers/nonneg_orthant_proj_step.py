@@ -103,8 +103,22 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                         y_var[pos_gap_indices] @ upper_x[pos_gap_indices].T + \
                         yxT_var[pos_gap_indices][:, pos_gap_indices]
 
+                    constr2 = A @ xxT_var[pos_gap_indices][:, pos_gap_indices] @ A.T + \
+                        A @ x_var[pos_gap_indices] @ b.T - \
+                        A @ yxT_var.T[pos_gap_indices][:, pos_gap_indices] + \
+                        b @ x_var[pos_gap_indices].T @ A.T + \
+                        b @ b.T - \
+                        b @ y_var[pos_gap_indices].T - \
+                        yxT_var[pos_gap_indices][:, pos_gap_indices] @ A.T - \
+                        y_var[pos_gap_indices] @ b.T + \
+                        yyT_var[pos_gap_indices][:, pos_gap_indices]
+
+                    # constr2 = A @ xxT_var @ A.T - A @ x_var @ b.T - A @ yxT_var.T + b @ x_var.T @ A.T + b @ b.T \
+                    #         - b @ y_var.T - yxT_var @ A.T - y_var @ b.T + yyT_var
+
+                    # exit(0)
                     # print(constr, constr.shape)
-                    constraints += [constr >= 0]
+                    constraints += [constr >= 0, constr2 >= 0]
                     # print(lower_x[zero_gap_indices])
                     # exit(0)
 
@@ -118,6 +132,13 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                     #     constraints += [yyT_var[idx, idx] == (np.maximum(upper_x[idx], 0)) ** 2]
 
                     # TODO: only planet for pos_gap_indices, for the rest, we should just be able to leave them alone?
+                    for idx in zero_gap_indices:
+                        print(idx)
+                        constraints += [
+                            y_var[idx, 0] == lower_y[idx, 0],
+                            yyT_var[idx, idx] == (lower_y[idx, 0]) ** 2,
+                        ]
+                        # exit(0)
                     # exit(0)
                 else:
                     # frac = np.divide((upper_y - lower_y)[pos_gap_indices], (upper_x - lower_x)[pos_gap_indices])
@@ -137,10 +158,8 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                     # ]
 
                     constraints += [
-                        cp.diag(A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
-                                b @ x_var.T - y_var @ upper_x.T + yxT_var) >= 0,
-
-                        # cp.diag()
+                        # cp.diag(A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
+                        #         b @ x_var.T - y_var @ upper_x.T + yxT_var) >= 0,
 
                         # cp.diag(A @ xxT_var - A @ x_var @ lower_x.T + b @ x_var.T - b @ lower_x.T \
                         # - yxT_var + y_var @ lower_x.T) >= 0,
@@ -148,6 +167,10 @@ def nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, para
                         #     A @ xxT_var + A @ x_var @ b.T - A @ yxT_var.T + b @ x_var.T @ A.T + b @ b.T \
                         #  - b @ y_var.T - yxT_var @ A.T - y_var @ b.T + yyT_var
                         # ) >= 0,
+                        A @ x_var @ upper_x.T - A @ xxT_var + b @ upper_x.T -
+                                b @ x_var.T - y_var @ upper_x.T + yxT_var >= 0,
+                        A @ xxT_var @ A.T - A @ x_var @ b.T - A @ yxT_var.T + b @ x_var.T @ A.T + b @ b.T \
+                            - b @ y_var.T - yxT_var @ A.T - y_var @ b.T + yyT_var >= 0,
                     ]
     return constraints
 

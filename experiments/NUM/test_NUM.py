@@ -23,10 +23,12 @@ from algocert.variables.parameter import Parameter
 
 
 def NUM_single(m_orig, n, K=1, glob_include=True):
-    R = np.random.binomial(n=2, p=0.25, size=(m_orig, n))
+    R = np.random.binomial(n=1, p=0.25, size=(m_orig, n))
     print(R)
 
     A, M = form_NUM_matrices(R)
+    # print(A)
+    # exit(0)
     m, n = A.shape
     k = m + n
     Ik = spa.eye(k)
@@ -39,6 +41,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     c_l = .5 * np.ones(m_orig)
     c_u = 1.5 * np.ones(m_orig)
 
+    # q_l = np.hstack([w - 1, c_l, np.zeros(n) - .1, t])
     q_l = np.hstack([w, c_l, np.zeros(n), t])
     q_u = np.hstack([w, c_u, np.zeros(n), t])
     print(q_l.shape)
@@ -84,6 +87,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     nonneg_ranges = (n, m + n)
     step3 = PartialNonNegProjStep(u_tilde, w, nonneg_ranges)
     step3 = NonNegProjStep(u_tilde, w)
+    # step3 = LinearStep(u_tilde, [w], D=Ik, A=Ik, b=s2_b, Dinv=Ik)
 
     # step 4
     s4_D = Ik
@@ -176,10 +180,10 @@ def form_NUM_matrices(R):
 
 
 def main():
-    np.random.seed(0)
+    np.random.seed(4)
     m = 1
     n = 2
-    K = 2
+    K = 3
     NUM_single(m, n, K=K, glob_include=True)
 
 
