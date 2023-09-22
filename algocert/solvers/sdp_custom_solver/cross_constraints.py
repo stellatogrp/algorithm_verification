@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.sparse as spa
 
+from algocert.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
 from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
 
@@ -24,12 +25,12 @@ def cross_constraint_steps(step1, k1, step2, k2, handler):
     step2.get_output_var()
     step2.get_input_var()
 
-    return [], [], []
+    return [], [], [], []
 
 
 def cross_constraints(D, y, A, u, b, C, z, F, x, c, k1, k2):
     print(D)
-    return [], [], []
+    return [], [], [], []
 
 
 def cross_constraints_from_ranges(m, n, problem_dim,
@@ -62,6 +63,7 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     A_matrices = []
     b_lvals = []
     b_uvals = []
+    psd_cone_handlers = []  # use to create PSD cone objects
 
     bcT = b @ c.T
     # print(bcT.shape, m, n)
@@ -70,8 +72,19 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     uxrange_handler = RangeHandler2D(u_range, x_range)
     urange_handler = RangeHandler1D(u_range)
     xrange_handler = RangeHandler1D(x_range)
-    # yrange_handler = RangeHandler1D(y_range)
-    # zrange_handler = RangeHandler1D(z_range)
+    RangeHandler1D(y_range)
+    RangeHandler1D(z_range)
+
+    if not isinstance(y_range, list):
+        yrange_list = [y_range]
+    else:
+        yrange_list = y_range
+    if not isinstance(z_range, list):
+        zrange_list = [z_range]
+    else:
+        zrange_list = z_range
+
+    psd_cone_handlers.append(PSDConeHandler(yrange_list + zrange_list))
 
     for i in range(m):
         for j in range(n):
@@ -97,13 +110,13 @@ def cross_constraints_from_ranges(m, n, problem_dim,
             b_lvals.append(bcT[i, j])
             b_uvals.append(bcT[i, j])
 
-    return A_matrices, b_lvals, b_uvals
+    return A_matrices, b_lvals, b_uvals, psd_cone_handlers
 
 
 def cross_constraints_between_linsteps(y1, y2, k1, k2, handler):
 
     if k1 == 0 or k2 == 0:
-        return [], [], []
+        return [], [], [], []
 
     var_linstep_map = handler.var_linstep_map
     step1 = var_linstep_map[y1]
@@ -136,7 +149,7 @@ def cross_constraints_between_linsteps(y1, y2, k1, k2, handler):
 def cross_constraints_linstep_to_not(y1, y2, k1, k2, handler):
 
     if k1 == 0 or k2 == 0:
-        return [], [], []
+        return [], [], [], []
     var_linstep_map = handler.var_linstep_map
     step1 = var_linstep_map[y1]
 

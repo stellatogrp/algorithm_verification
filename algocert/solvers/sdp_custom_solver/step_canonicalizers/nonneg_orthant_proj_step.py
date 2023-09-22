@@ -1,6 +1,7 @@
 import numpy as np
 import scipy.sparse as spa
 
+from algocert.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
 
 
@@ -15,6 +16,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
     A_vals = []
     b_lvals = []
     b_uvals = []
+    psd_cone_handlers = []
 
     # NOTE assums that y^{k+1} = (x^{k+1})_+ (i.e. that proj does not happen first in alg)
 
@@ -27,6 +29,10 @@ def nonneg_orthant_proj_canon(step, k, handler):
     yyTrange_handler = RangeHandler2D(ybounds, ybounds)
     yxTrange_handler = RangeHandler2D(ybounds, xbounds)
     xxTrange_handler = RangeHandler2D(xbounds, xbounds)
+
+    psd_cone_handlers.append(PSDConeHandler([ybounds, xbounds]))
+    # print(ybounds, xbounds, PSDConeHandler([ybounds, xbounds]).ranges_dim)
+    # exit(0)
 
     # First, y >= 0 TODO after looking at RLT, see if this can be removed
     for i in range(y_dim):
@@ -125,7 +131,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
 
             Di = D[i].T.reshape((-1, 1))
             Ii = I[i].T.reshape((-1, 1))
-            ITj = I.T[:, j].T.reshape((1, -1))
+            ITj = I.T[:, i].T.reshape((1, -1))
             outmat[xrange1D_handler.index_matrix()] = Di * x_upper[i, 0]
             outmat[xxTrange_handler.index_matrix()] = -Di @ ITj
             outmat[xrange1D_handler.index_matrix_horiz()] = -c[pos_idx, 0] * ITj
@@ -172,7 +178,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
     #             b_uvals.append(np.inf)
         # exit(0)
 
-    return A_vals, b_lvals, b_uvals
+    return A_vals, b_lvals, b_uvals, psd_cone_handlers
 
 
 def nonneg_orthant_proj_bound_canon(step, k, handler):

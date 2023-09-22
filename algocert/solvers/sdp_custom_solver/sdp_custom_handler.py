@@ -36,8 +36,12 @@ class SDPCustomHandler(object):
         self.A_norms = []
         self.b_lowerbounds = []
         self.b_upperbounds = []
+        self.psd_cone_handlers = []
         self.C_matrix = None
 
+        self._process_kwargs(**kwargs)
+
+    def _process_kwargs(self, **kwargs):
         if 'scale' in kwargs:
             self.scale = kwargs['scale']
         else:
@@ -57,6 +61,11 @@ class SDPCustomHandler(object):
             self.lookback_t = kwargs['lookback_t']
         else:
             self.lookback_t = None
+
+        if 'couple_single_psd_cone' in kwargs:
+            self.couple_single_psd_cone = kwargs['couple_single_psd_cone']
+        else:
+            self.couple_single_psd_cone = False
 
     def convert_hl_to_basic_steps(self):
         pass
@@ -204,10 +213,11 @@ class SDPCustomHandler(object):
         for k in range(1, self.K + 1):
             for step in steps:
                 canon_method = STEP_CANON_METHODS[type(step)]
-                A, b_l, b_u = canon_method(step, k, self)
+                A, b_l, b_u, psd_cones = canon_method(step, k, self)
                 self.A_matrices += A
                 self.b_lowerbounds += b_l
                 self.b_upperbounds += b_u
+                self.psd_cone_handlers += psd_cones
 
     def canonicalize_linstep_cross_constraints(self):
         print(self.linstep_output_vars)
@@ -217,8 +227,8 @@ class SDPCustomHandler(object):
         if self.lookback_t is not None:
             lookback_t = self.lookback_t
         else:
-            lookback_t = self.K
-            # lookback_t = 1
+            # lookback_t = self.K
+            lookback_t = 1
         print('lookback_t:', lookback_t)
         print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         for linstep_var in self.linstep_output_vars:
@@ -227,27 +237,30 @@ class SDPCustomHandler(object):
                     for k2 in range(k1, max(0, k1 - lookback_t) - 1, -1):
                         if linstep_var == other_var and k1 == k2:
                             continue
-                        print(linstep_var, other_var, 'k1:', k1, 'k2:', k2)
+                        # print(linstep_var, other_var, 'k1:', k1, 'k2:', k2)
                         if other_var in self.linstep_output_vars:
-                            print('other also linstep')
-                            A, b_l, b_u = cross_constraints_between_linsteps(linstep_var, other_var, k1, k2, self)
+                            # print('other also linstep')
+                            A, b_l, b_u, psd_cones = cross_constraints_between_linsteps(linstep_var, other_var, k1, k2, self)
                             self.A_matrices += A
                             self.b_lowerbounds += b_l
                             self.b_upperbounds += b_u
+                            self.psd_cone_handlers += psd_cones
                         else:
-                            print('other is not linstep')
-                            A, b_l, b_u = cross_constraints_linstep_to_not(linstep_var, other_var, k1, k2, self)
+                            # print('other is not linstep')
+                            A, b_l, b_u, psd_cones = cross_constraints_linstep_to_not(linstep_var, other_var, k1, k2, self)
                             self.A_matrices += A
                             self.b_lowerbounds += b_l
                             self.b_upperbounds += b_u
+                            self.psd_cone_handlers += psd_cones
         # TODO: add linsteps cross with params?
         for linstep_var in self.linstep_output_vars:
             for param_var in self.param_list:
                 for k in range(1, self.K + 1):
-                    A, b_l, b_u = cross_constraints_linstep_to_not(linstep_var, param_var, k, None, self)
+                    A, b_l, b_u, psd_cones = cross_constraints_linstep_to_not(linstep_var, param_var, k, None, self)
                     self.A_matrices += A
                     self.b_lowerbounds += b_l
                     self.b_upperbounds += b_u
+                    self.psd_cone_handlers += psd_cones
 
         print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         # exit(0)
@@ -298,7 +311,22 @@ class SDPCustomHandler(object):
         # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         X = cp.Variable((self.problem_dim, self.problem_dim), symmetric=True)
         obj = cp.trace(self.C_matrix @ X)
-        constraints = [X >> 0]
+        constraints = []
+        if self.couple_single_psd_cone:
+            constraints += [X >> 0]
+            # Z = cp.Variable((self.problem_dim, self.problem_dim), symmetric=True)
+            # ranges = (0, self.problem_dim - 1)
+            # h = PSDConeHandler(ranges)
+            # E = h.get_E_mat(self.problem_dim)
+            # constraints = [Z == E @ X @ E.T, Z >> 0]
+        else:
+            for h in self.psd_cone_handlers:
+                Z = cp.Variable((h.ranges_dim, h.ranges_dim), symmetric=True)
+                E = spa.csc_matrix(h.get_E_mat(self.problem_dim))
+                # print(E)
+                constraints += [Z == E @ X @ E.T, Z >> 0]
+            # constraints = [X >> 0]
+            # exit(0)
         for i in range(len(self.A_matrices)):
             Ai = self.A_matrices[i]
             b_li = self.b_lowerbounds[i]

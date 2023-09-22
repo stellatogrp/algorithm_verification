@@ -38,8 +38,8 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
 
     w = -np.random.uniform(0, 1, size=n)
     t = 1 * np.ones(n)
-    c_l = .5 * np.ones(m_orig)
-    c_u = 1.5 * np.ones(m_orig)
+    c_l = .75 * np.ones(m_orig)
+    c_u = 1 * np.ones(m_orig)
 
     # q_l = np.hstack([w - 1, c_l, np.zeros(n) - .1, t])
     q_l = np.hstack([w, c_l, np.zeros(n), t])
@@ -106,6 +106,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     # zset = BoxSet(z, -np.ones((k, 1)), np.ones((k, 1)))
 
     obj = [ConvergenceResidual(z)]
+    # obj = [ConvergenceResidual(u_tilde)]
 
     CP = CertificationProblem(K, [zset], [qset], obj, steps)
     CP2 = CertificationProblem(K, [zset], [qset], obj, steps)
@@ -153,7 +154,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         # exit(0)
     out_df = pd.DataFrame(out)
     print(out_df)
-    # out_df.to_csv('experiments/NUM/data/test_cross.csv')
+    # out_df.to_csv('experiments/NUM/data/test_custom_cross.csv', index=False)
 
     # res = CP.solve(solver_type='SDP', add_RLT=True, add_planet=True)
 
@@ -183,7 +184,7 @@ def main():
     np.random.seed(4)
     m = 1
     n = 2
-    K = 3
+    K = 2
     NUM_single(m, n, K=K, glob_include=True)
 
 
