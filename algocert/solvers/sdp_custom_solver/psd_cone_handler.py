@@ -14,16 +14,31 @@ class PSDConeHandler(object):
         self._process_ranges()
 
     def _process_ranges(self):
-        row_indices = []
-        ranges_dim = 0
-        for r in self.ranges:
-            row_indices += list(range(r[0], r[1]))
-            ranges_dim += (r[1] - r[0])
-        row_indices.append(-1)
-        ranges_dim += 1
+        debug = True
+        if not debug:
+            row_indices = []
+            ranges_dim = 0
+            for r in self.ranges:
+                row_indices += list(range(r[0], r[1]))
+                ranges_dim += (r[1] - r[0])
+            row_indices.append(-1)
+            ranges_dim += 1
 
-        self.row_indices = row_indices
-        self.ranges_dim = ranges_dim
+            self.row_indices = list(set(row_indices))
+            # self.ranges_dim = ranges_dim
+            self.ranges_dim = len(self.row_indices)
+        else:
+            row_indices = []
+            used_indices = set([])
+            for r in self.ranges:
+                curr_indices = list(range(r[0], r[1]))
+                for c in curr_indices:
+                    if c in used_indices:
+                        continue
+                    row_indices.append(c)
+                    used_indices.add(c)
+            self.row_indices = row_indices + [-1]
+            self.ranges_dim = len(self.row_indices)
 
     def get_H_mat(self, n):
         '''

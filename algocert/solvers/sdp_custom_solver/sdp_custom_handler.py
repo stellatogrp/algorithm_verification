@@ -244,7 +244,7 @@ class SDPCustomHandler(object):
                             self.A_matrices += A
                             self.b_lowerbounds += b_l
                             self.b_upperbounds += b_u
-                            self.psd_cone_handlers += psd_cones
+                            # self.psd_cone_handlers += psd_cones
                         else:
                             # print('other is not linstep')
                             A, b_l, b_u, psd_cones = cross_constraints_linstep_to_not(linstep_var, other_var, k1, k2, self)
@@ -260,7 +260,7 @@ class SDPCustomHandler(object):
                     self.A_matrices += A
                     self.b_lowerbounds += b_l
                     self.b_upperbounds += b_u
-                    self.psd_cone_handlers += psd_cones
+                    # self.psd_cone_handlers += psd_cones
 
         print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         # exit(0)
@@ -354,5 +354,10 @@ class SDPCustomHandler(object):
         # print(res)
         return -res, prob.solver_stats.solve_time
 
+    def solve_with_scs_directly(self):
+        int(self.problem_dim * (self.problem_dim + 1) / 2)
+        return 0, 0
+
     def solve(self):
         return self.solve_with_cvxpy()
+        # return self.solve_with_scs_directly()

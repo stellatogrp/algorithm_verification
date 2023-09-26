@@ -37,6 +37,8 @@ def linear_step_canon(step, k, handler):
     Across, blcross, bucross, psd_cross = cross_constraints_from_ranges(y.get_dim(), u_dim, handler.problem_dim,
                                                              D.todense(), yrange, A.todense(), urange, b,
                                                              C, urange, C, urange, np.zeros((u_dim, 1)))
+    # print([(h.ranges, h.row_indices) for h in psd_cross])
+    # exit(0)
 
     A_matrices += Across
     b_lvals += blcross

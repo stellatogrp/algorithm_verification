@@ -1,5 +1,4 @@
 #  import certification_problem.init_set as cpi
-import cvxpy as cp
 import numpy as np
 import pandas as pd
 import scipy.sparse as spa
@@ -98,15 +97,15 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # K = 2
     for K_curr in range(1, K+1):
         # K_curr = 2
-        CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        # CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        # CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        # CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP4 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP5 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
 
-        (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
-        (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
-        (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+        # (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
+        # (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
+        # (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
         if glob_include:
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
@@ -119,12 +118,12 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
         out.append(
             pd.Series({
                 'K': K_curr,
-                'sdp': sdp,
-                'sdptime': sdptime,
-                'sdp_r': sdp_r,
-                'sdp_rtime': sdp_rtime,
-                'sdp_p': sdp_p,
-                'sdp_ptime': sdp_ptime,
+                # 'sdp': sdp,
+                # 'sdptime': sdptime,
+                # 'sdp_r': sdp_r,
+                # 'sdp_rtime': sdp_rtime,
+                # 'sdp_p': sdp_p,
+                # 'sdp_ptime': sdp_ptime,
                 'sdp_c': sdp_c,
                 'sdp_ctime': sdp_ctime,
                 'glob': glob,
@@ -134,22 +133,6 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     out_df = pd.DataFrame(out)
     print(out_df)
     # out_df.to_csv(out_fname, index=False)
-
-
-def cp_test(A):
-    m, n = A.shape
-    b = 20 * np.ones(m)
-
-    x = cp.Variable(n)
-    obj = .5 * cp.sum_squares(A @ x - b)
-    constraints = [x >= 0]
-
-    prob = cp.Problem(cp.Minimize(obj), constraints)
-    res = prob.solve()
-    print(res)
-    print(np.round(x.value, 4))
-
-    exit(0)
 
 
 def main():

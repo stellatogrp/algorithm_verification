@@ -1,7 +1,6 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
 from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
 
@@ -55,13 +54,15 @@ def equality2D_constraints(D, y, A, u, b, k, handler):
     yrange2D_handler = RangeHandler2D(yrange, yrange)
     urange1D_handler = RangeHandler1D(uranges)
     urange2D_handler = RangeHandler2D(uranges, uranges)
-    psd_cone_handlers = [PSDConeHandler([yrange] + uranges)]
 
     # print(yrange2D_handler.index_matrix(), urange2D_handler.index_matrix())
 
     A_matrices = []
     b_lvals = []
     b_uvals = []
+    psd_cone_handlers = []
+
+    # psd_cone_handlers += [PSDConeHandler([yrange] + uranges)]
 
     n = y.get_dim()
 

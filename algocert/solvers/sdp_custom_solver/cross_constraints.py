@@ -33,6 +33,13 @@ def cross_constraints(D, y, A, u, b, C, z, F, x, c, k1, k2):
     return [], [], [], []
 
 
+def range_to_list(ranges):
+    if not isinstance(ranges, list):
+        return [ranges]
+    else:
+        return ranges
+
+
 def cross_constraints_from_ranges(m, n, problem_dim,
                                   D, y_range, A, u_range, b,
                                   C, z_range, F, x_range, c):
@@ -75,16 +82,25 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     RangeHandler1D(y_range)
     RangeHandler1D(z_range)
 
-    if not isinstance(y_range, list):
-        yrange_list = [y_range]
-    else:
-        yrange_list = y_range
-    if not isinstance(z_range, list):
-        zrange_list = [z_range]
-    else:
-        zrange_list = z_range
+    # if not isinstance(y_range, list):
+    #     yrange_list = [y_range]
+    # else:
+    #     yrange_list = y_range
+    # if not isinstance(z_range, list):
+    #     zrange_list = [z_range]
+    # else:
+    #     zrange_list = z_range
+    yrange_list = range_to_list(y_range)
+    zrange_list = range_to_list(z_range)
+    urange_list = range_to_list(u_range)
+    range_to_list(x_range)
 
-    psd_cone_handlers.append(PSDConeHandler(yrange_list + zrange_list))
+    h = PSDConeHandler(yrange_list + urange_list + zrange_list)
+    psd_cone_handlers.append(h)
+    # print(yrange_list, zrange_list, urange_list, xrange_list)
+    # print(h.row_indices)
+    # print(list(set(h.row_indices)))
+    # exit(0)
 
     for i in range(m):
         for j in range(n):

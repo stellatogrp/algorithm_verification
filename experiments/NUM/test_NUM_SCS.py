@@ -87,6 +87,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     # nonneg_ranges = (m + n - 1, m + n)
     # step3 = PartialNonNegProjStep(u_tilde, w, nonneg_ranges)
     step3 = NonNegProjStep(u_tilde, w, nonneg_ranges=nonneg_ranges)
+    # step3 = NonNegProjStep(u_tilde, w, nonneg_ranges=None)
     # step3 = LinearStep(u_tilde, [w], D=Ik, A=Ik, b=s2_b, Dinv=Ik)
 
     # step 4
@@ -108,16 +109,16 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     obj = [ConvergenceResidual(z)]
     # obj = [ConvergenceResidual(u_tilde)]
 
-    CP = CertificationProblem(K, [zset], [qset], obj, steps)
-    CP2 = CertificationProblem(K, [zset], [qset], obj, steps)
+    CertificationProblem(K, [zset], [qset], obj, steps)
+    CertificationProblem(K, [zset], [qset], obj, steps)
 
     out = []
     # K = 2
-    for K_curr in range(1, K+1):
+    for K_curr in range(4, K+1):
         # K_curr = 2
-        CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-        CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-        CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        # CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        # CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        # CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
         CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
 
         CP5 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
@@ -126,9 +127,9 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         # print(sdp_c, sdp_ctime)
         # exit(0)
 
-        (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
-        (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
-        (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+        # (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
+        # (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
+        # (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
         if glob_include:
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
@@ -138,12 +139,12 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         out.append(
             pd.Series({
                 'K': K_curr,
-                'sdp': sdp,
-                'sdptime': sdptime,
-                'sdp_r': sdp_r,
-                'sdp_rtime': sdp_rtime,
-                'sdp_p': sdp_p,
-                'sdp_ptime': sdp_ptime,
+                # 'sdp': sdp,
+                # 'sdptime': sdptime,
+                # 'sdp_r': sdp_r,
+                # 'sdp_rtime': sdp_rtime,
+                # 'sdp_p': sdp_p,
+                # 'sdp_ptime': sdp_ptime,
                 'sdp_c': sdp_c,
                 'sdp_ctime': sdp_ctime,
                 'glob': glob,
@@ -184,7 +185,7 @@ def main():
     np.random.seed(4)
     m = 1
     n = 2
-    K = 2
+    K = 4
     NUM_single(m, n, K=K, glob_include=True)
 
 
