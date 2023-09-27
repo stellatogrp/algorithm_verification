@@ -27,6 +27,27 @@ def RLT_from_ranges(yrange, xrange, handler, upper_triangle_only=True):
     return A_vals, b_lvals, b_uvals
 
 
+def RLT_diagonal_vars(matrix_dim, handler):
+    A_vals = []
+    b_lvals = []
+    b_uvals = []
+
+    u = handler.var_upperbounds
+
+    for i in range(matrix_dim):
+        j = i
+        output_mat4 = np.zeros((matrix_dim + 1, matrix_dim + 1))
+        output_mat4[i, j] = 1
+        output_mat4[j, -1] = -u[i, 0]
+        output_mat4[-1, i] = -u[j, 0]
+        output_mat4 = (output_mat4 + output_mat4.T) / 2
+        A_vals.append(spa.csc_matrix(output_mat4))
+        b_lvals.append(-u[i, 0] * u[j, 0])
+        b_uvals.append(np.inf)
+
+    return A_vals, b_lvals, b_uvals
+
+
 def RLT_all_vars(matrix_dim, handler):
     print('adding mat RLT')
     A_vals = []

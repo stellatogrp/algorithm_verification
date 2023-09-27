@@ -18,7 +18,7 @@ from algocert.variables.parameter import Parameter
 #  from joblib import Parallel, delayed
 
 
-def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True):
+def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True, glob_include=True):
     '''
         Set up and solve certification problem for:
         min (1/2) || Ax - b ||_2^2 s.t. x >= 0
@@ -106,11 +106,14 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
         # (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         # (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
         # (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
+        if mosek_include:
+            (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
+        else:
+            sdp_c, sdp_ctime = 0, 0
         if glob_include:
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
             glob, glob_time = 0, 0
-        (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
 
         # print('sdp:', sdp)
         # exit(0)
@@ -139,11 +142,11 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 5
+    K = 2
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)
-    NNLS_cert_prob(n, m, A, K=K, t=.05, glob_include=True)
+    NNLS_cert_prob(n, m, A, K=K, t=.01, mosek_include=True, glob_include=True)
 
 
 if __name__ == '__main__':

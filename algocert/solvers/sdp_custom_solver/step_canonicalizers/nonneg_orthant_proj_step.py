@@ -175,7 +175,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
     b_lvals += real_bl
     b_uvals += real_bu
 
-    print(len(A_vals), len(b_lvals), len(b_uvals))
+    # print(len(A_vals), len(b_lvals), len(b_uvals))
     # exit(0)
     return A_vals, b_lvals, b_uvals, psd_cone_handlers
 

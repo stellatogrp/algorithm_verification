@@ -37,6 +37,7 @@ class PSDConeHandler(object):
                         continue
                     row_indices.append(c)
                     used_indices.add(c)
+            row_indices.sort()
             self.row_indices = row_indices + [-1]
             self.ranges_dim = len(self.row_indices)
 
@@ -59,7 +60,7 @@ class PSDConeHandler(object):
         r = E.shape[0]
         H = np.kron(E, E)
         a = np.arange(n ** 2).reshape(n, n)
-        a[np.diag_indices(n)]
+        # a[np.diag_indices(n)]
         triu_n_cols = a[np.triu_indices(n)]
 
         # H_symm = H / np.sqrt(2)
@@ -79,6 +80,8 @@ class PSDConeHandler(object):
 
         H_symm = H_symm[triu_r_rows[:, np.newaxis], triu_n_cols]
 
+        # print(H_symm)
+        # exit(0)
         return H_symm
 
     def get_E_mat(self, n):
@@ -144,7 +147,7 @@ def mat(s):
 
 
 def main():
-    ranges = [(0, 2), (3, 4)]
+    ranges = [(3, 4), (0, 2)]
     # ranges = [(0, 4)]
     n = 5
     h = PSDConeHandler(ranges)
@@ -162,13 +165,14 @@ def main():
     print(E @ X @ E.T)
 
     print('----')
-    print(vec(X))
+    print(vec(X), vec(X).shape)
+    print(spa.csc_matrix(vec(X)))
     print(mat(vec(X)))
 
     print('----')
     H_symm = h.get_Hsymm_mat(n)
     print(H_symm)
-    print(h.get_sparse_Hsymm_mat(n))
+    print(h.get_sparse_Hsymm_mat(n).todense())
     print(mat(H_symm @ vec(X)))
 
 if __name__ == '__main__':

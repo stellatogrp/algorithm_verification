@@ -13,7 +13,10 @@ from algocert.solvers.sdp_custom_solver.cross_constraints import (
     cross_constraints_between_linsteps,
     cross_constraints_linstep_to_not,
 )
-from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_vars
+from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_vars, RLT_diagonal_vars
+from algocert.solvers.sdp_custom_solver.solve_via_custom_admm import solve_via_custom_admm
+from algocert.solvers.sdp_custom_solver.solve_via_mosek import solve_via_mosek
+from algocert.solvers.sdp_custom_solver.solve_via_scs import solve_via_scs
 
 
 class SDPCustomHandler(object):
@@ -51,6 +54,11 @@ class SDPCustomHandler(object):
             self.add_RLT = kwargs['add_RLT']
         else:
             self.add_RLT = True
+
+        if 'add_RLT_diag' in kwargs:
+            self.add_RLT_diag = kwargs['add_RLT_diag']
+        else:
+            self.add_RLT_diag = False
 
         if 'add_planet' in kwargs:
             self.add_planet = kwargs['add_planet']
@@ -154,6 +162,14 @@ class SDPCustomHandler(object):
         # print(self.linstep_output_vars)
         # print(self.var_linstep_map)
 
+    def create_lower_right_constraint(self):
+        A = spa.lil_matrix((self.problem_dim, self.problem_dim))
+        # A = spa.csc_matrix((self.problem_dim, self.problem_dim))
+        A[-1, -1] = 1
+        self.A_matrices.append(A.tocsc())
+        self.b_lowerbounds.append(1)
+        self.b_upperbounds.append(1)
+
     def add_RLT_constraints(self):
         mat_dim = self.problem_dim - 1
         # A, b_l, b_u = RLT_from_ranges(mat_range, mat_range, self)
@@ -162,15 +178,12 @@ class SDPCustomHandler(object):
         self.b_lowerbounds += b_l
         self.b_upperbounds += b_u
 
-        # exit(0)
-
-    def create_lower_right_constraint(self):
-        A = spa.lil_matrix((self.problem_dim, self.problem_dim))
-        # A = spa.csc_matrix((self.problem_dim, self.problem_dim))
-        A[-1, -1] = 1
-        self.A_matrices.append(A.tocsc())
-        self.b_lowerbounds.append(1)
-        self.b_upperbounds.append(1)
+    def add_RLT_diag_constraints(self):
+        mat_dim = self.problem_dim - 1
+        A, b_l, b_u = RLT_diagonal_vars(mat_dim, self)
+        self.A_matrices += A
+        self.b_lowerbounds += b_l
+        self.b_upperbounds += b_u
 
     def canonicalize_objective(self):
         # self.C_matrix = spa.lil_matrix((self.problem_dim, self.problem_dim))
@@ -229,8 +242,8 @@ class SDPCustomHandler(object):
         else:
             # lookback_t = self.K
             lookback_t = 1
-        print('lookback_t:', lookback_t)
-        print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        # print('lookback_t:', lookback_t)
+        # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         for linstep_var in self.linstep_output_vars:
             for other_var in self.iterate_list:
                 for k1 in range(1, self.K + 1):
@@ -253,16 +266,16 @@ class SDPCustomHandler(object):
                             self.b_upperbounds += b_u
                             self.psd_cone_handlers += psd_cones
         # TODO: add linsteps cross with params?
-        for linstep_var in self.linstep_output_vars:
-            for param_var in self.param_list:
-                for k in range(1, self.K + 1):
-                    A, b_l, b_u, psd_cones = cross_constraints_linstep_to_not(linstep_var, param_var, k, None, self)
-                    self.A_matrices += A
-                    self.b_lowerbounds += b_l
-                    self.b_upperbounds += b_u
+        # for linstep_var in self.linstep_output_vars:
+        #     for param_var in self.param_list:
+        #         for k in range(1, self.K + 1):
+        #             A, b_l, b_u, psd_cones = cross_constraints_linstep_to_not(linstep_var, param_var, k, None, self)
+        #             self.A_matrices += A
+        #             self.b_lowerbounds += b_l
+        #             self.b_upperbounds += b_u
                     # self.psd_cone_handlers += psd_cones
 
-        print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
+        # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         # exit(0)
 
     def single_mat_symmetric(self, M):
@@ -291,10 +304,13 @@ class SDPCustomHandler(object):
 
         self.extract_lin_step_output_vars()
 
+        self.create_lower_right_constraint()
+
         if self.add_RLT:
             self.add_RLT_constraints()
 
-        self.create_lower_right_constraint()
+        if self.add_RLT_diag:
+            self.add_RLT_diag_constraints()
 
         self.canonicalize_objective()
         self.canonicalize_initial_sets()
@@ -354,10 +370,24 @@ class SDPCustomHandler(object):
         # print(res)
         return -res, prob.solver_stats.solve_time
 
+    def solve_with_admm(self):
+        out = solve_via_custom_admm(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
+                                    self.psd_cone_handlers, self.problem_dim)
+        return out
+
     def solve_with_scs_directly(self):
-        int(self.problem_dim * (self.problem_dim + 1) / 2)
-        return 0, 0
+        # int(self.problem_dim * (self.problem_dim + 1) / 2)
+        out = solve_via_scs(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
+                            self.psd_cone_handlers, self.problem_dim)
+        return out
+
+    def solve_with_mosek_directly(self):
+        out = solve_via_mosek(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
+                              self.psd_cone_handlers, self.problem_dim)
+        return out
 
     def solve(self):
-        return self.solve_with_cvxpy()
+        # return self.solve_with_cvxpy()
         # return self.solve_with_scs_directly()
+        # return self.solve_with_mosek_directly()
+        return self.solve_with_admm()

@@ -114,7 +114,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
 
     out = []
     # K = 2
-    for K_curr in range(4, K+1):
+    for K_curr in range(1, K+1):
         # K_curr = 2
         # CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
         # CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
@@ -185,7 +185,7 @@ def main():
     np.random.seed(4)
     m = 1
     n = 2
-    K = 4
+    K = 1
     NUM_single(m, n, K=K, glob_include=True)
 
 
