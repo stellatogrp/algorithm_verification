@@ -146,7 +146,7 @@ def main():
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)
-    NNLS_cert_prob(n, m, A, K=K, t=.01, mosek_include=True, glob_include=True)
+    NNLS_cert_prob(n, m, A, K=K, t=.05, mosek_include=True, glob_include=True)
 
 
 if __name__ == '__main__':

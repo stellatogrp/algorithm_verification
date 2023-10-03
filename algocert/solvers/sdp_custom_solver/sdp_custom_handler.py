@@ -254,10 +254,10 @@ class SDPCustomHandler(object):
                         if other_var in self.linstep_output_vars:
                             # print('other also linstep')
                             A, b_l, b_u, psd_cones = cross_constraints_between_linsteps(linstep_var, other_var, k1, k2, self)
-                            self.A_matrices += A
-                            self.b_lowerbounds += b_l
-                            self.b_upperbounds += b_u
-                            # self.psd_cone_handlers += psd_cones
+                            # self.A_matrices += A
+                            # self.b_lowerbounds += b_l
+                            # self.b_upperbounds += b_u
+                            self.psd_cone_handlers += psd_cones
                         else:
                             # print('other is not linstep')
                             A, b_l, b_u, psd_cones = cross_constraints_linstep_to_not(linstep_var, other_var, k1, k2, self)
@@ -389,5 +389,5 @@ class SDPCustomHandler(object):
     def solve(self):
         # return self.solve_with_cvxpy()
         # return self.solve_with_scs_directly()
-        # return self.solve_with_mosek_directly()
-        return self.solve_with_admm()
+        return self.solve_with_mosek_directly()
+        # return self.solve_with_admm()

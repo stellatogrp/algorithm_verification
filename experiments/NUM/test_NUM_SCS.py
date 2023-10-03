@@ -37,7 +37,7 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
 
     w = -np.random.uniform(0, 1, size=n)
     t = 1 * np.ones(n)
-    c_l = .8 * np.ones(m_orig)
+    c_l = .9 * np.ones(m_orig)
     c_u = 1 * np.ones(m_orig)
 
     # q_l = np.hstack([w - 1, c_l, np.zeros(n) - .1, t])
@@ -185,7 +185,7 @@ def main():
     np.random.seed(4)
     m = 1
     n = 2
-    K = 1
+    K = 4
     NUM_single(m, n, K=K, glob_include=True)
 
 

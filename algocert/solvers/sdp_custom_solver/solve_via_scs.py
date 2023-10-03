@@ -230,12 +230,12 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     for cone in PSD_cones:
         # H = cone.get_Hsymm_mat(problem_dim)
         H = cone.get_sparse_Hsymm_mat(problem_dim)
-        print(H.shape)
+        # print(H.shape)
         # print(cone.row_indices)
         # A.append(H)
         cone_dim = int((np.sqrt(8 * H.shape[0] + 1) - 1) / 2)
         # cone_dims.append(cone_dim)
-        print(H.shape[0], cone_dim)
+        # print(H.shape[0], cone_dim)
 
         Hp_mats.append(-H)
         bp_dims.append(H.shape[0])
@@ -247,7 +247,7 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         # exit(0)
 
 
-    print(cone_dims)
+    # print(cone_dims)
     # exit(0)
     # print(len(Aeq), len(beq), len(Au), len(bu), len(Al), len(bl))
     zero_cone_dim = len(Aeq)
@@ -268,7 +268,8 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     data = dict(A=A, b=b, c=c)
     # cones = dict(z=zero_cone_dim, l=nonneg_cone_dim)
     cones = dict(z=zero_cone_dim, l=nonneg_cone_dim, s=cone_dims)
-    solver = scs.SCS(data, cones, eps_abs=1e-5, eps_rel=1e-5, max_iters=int(1e6))
+    solver = scs.SCS(data, cones, eps_abs=1e-3, eps_rel=1e-3, max_iters=int(1e6),
+                     use_indirect=True, acceleration_lookback=0)
     sol = solver.solve()
 
     # print(sol)
