@@ -38,7 +38,7 @@ def l2_ball_set_canon(init_set, handler):
     return [spa.csc_matrix(outmat)], [-np.inf], [float(r ** 2 - c.T @ c)]
 
 
-def l2_ball_set_bound_canon(init_set, handler):
+def l2_ball_bound_canon(init_set, handler):
     r = init_set.r
     c = init_set.c
     u = c + r

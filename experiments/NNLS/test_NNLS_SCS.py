@@ -11,6 +11,8 @@ from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
 
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algocert.init_set.l2_ball_set import L2BallSet
+from algocert.init_set.zero_set import ZeroSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
@@ -65,6 +67,10 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
     x_u = np.ones((n, 1))
     # x_u[0] = -1
     xset = BoxSet(x, x_l, x_u)
+    x_c = np.zeros((n, 1))
+    x_r = 0
+    xset = L2BallSet(x, x_c, x_r)
+    xset = ZeroSet(x)
 
     # bset = CenteredL2BallSet(b, r=r)
     # b_l = np.zeros((m, 1))
@@ -142,7 +148,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 2
+    K = 4
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)

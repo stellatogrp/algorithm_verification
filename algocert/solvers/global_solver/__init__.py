@@ -16,6 +16,7 @@ from algocert.init_set.ellipsoidal_set import EllipsoidalSet
 from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.vec_span_set import VecSpanSet
+from algocert.init_set.zero_set import ZeroSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.objectives.l1_conv_resid import L1ConvResid
 from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
@@ -74,6 +75,7 @@ SET_CANON_METHODS = {
     LInfBallSet: linf_ball_set_canon,
     L2BallSet: l2_ball_set_canon,
     VecSpanSet: vec_span_set_canon,
+    ZeroSet: l2_ball_set_canon,
 }
 
 BOUND_SET_CANON_METHODS = {
@@ -82,6 +84,7 @@ BOUND_SET_CANON_METHODS = {
     ConstSet: const_set_bound_canon,
     ControlExampleSet: control_example_set_bound_canon,
     L2BallSet: l2_ball_set_bound_canon,
+    ZeroSet: l2_ball_set_bound_canon,
 }
 
 STEP_CANON_METHODS = {
