@@ -185,7 +185,7 @@ def main():
     np.random.seed(4)
     m = 1
     n = 2
-    K = 4
+    K = 2
     NUM_single(m, n, K=K, glob_include=True)
 
 

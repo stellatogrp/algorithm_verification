@@ -1,7 +1,7 @@
 import scipy.sparse as spa
 
 
-def off_center_l2_ball_set_canon(init_set, model, var_to_gp_var_map):
+def l2_ball_set_canon(init_set, model, var_to_gp_var_map):
     x = init_set.get_iterate()
     n = x.get_dim()
     r = init_set.r
@@ -24,7 +24,7 @@ def off_center_l2_ball_set_canon(init_set, model, var_to_gp_var_map):
     #     model.addConstr(x_var[0] @ Q @ x_var[0] - 2 * (c.T @ Q) @ x_var[0] + c.T @ Q @ c <= 1)
 
 
-def off_center_l2_ball_set_bound_canon(init_set):
+def l2_ball_set_bound_canon(init_set):
     r = init_set.r
     c = init_set.c
     u = c + r

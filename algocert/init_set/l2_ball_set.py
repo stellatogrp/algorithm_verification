@@ -1,7 +1,7 @@
 from algocert.init_set.init_set import InitSet
 
 
-class OffCenterL2BallSet(InitSet):
+class L2BallSet(InitSet):
 
     def __init__(self, x, c, r=1):
         super().__init__(x)
