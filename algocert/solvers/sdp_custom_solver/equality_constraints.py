@@ -25,7 +25,8 @@ def equality1D_constraints(D, y, A, u, b, k, handler):
     b_uvals = []
 
     for i in range(n):
-        outmat = np.zeros((problem_dim, problem_dim))
+        # outmat = np.zeros((problem_dim, problem_dim))
+        outmat = spa.lil_matrix((problem_dim, problem_dim))
         Di = D.todense()[i]
         Ai = A.todense()[i]
         # print(Di, Ai)
@@ -72,7 +73,8 @@ def equality2D_constraints(D, y, A, u, b, k, handler):
     A = A.todense()
     for i in range(n):
         for j in range(i, n):
-            outmat = np.zeros((problem_dim, problem_dim))
+            # outmat = np.zeros((problem_dim, problem_dim))
+            outmat = spa.lil_matrix((problem_dim, problem_dim))
             Di = D[i].T.reshape((-1, 1))
             DTj = D.T[:, j].T.reshape((1, -1))
             # print(Di.shape, DTj.shape)

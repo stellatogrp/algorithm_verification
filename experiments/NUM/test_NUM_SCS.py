@@ -7,6 +7,7 @@ from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjSt
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
+from algocert.init_set.zero_set import ZeroSet
 
 # from algocert.init_set.box_stack_set import BoxStackSet
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
@@ -103,7 +104,9 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
 
     # for the iterate/parameter sets
     qset = BoxSet(q, q_l, q_u)
-    zset = BoxSet(z, np.zeros((k, 1)), np.zeros((k, 1)))
+    # zset = BoxSet(z, np.zeros((k, 1)), np.zeros((k, 1)))
+    zset = ZeroSet(z)
+
     # zset = BoxSet(z, -np.ones((k, 1)), np.ones((k, 1)))
 
     obj = [ConvergenceResidual(z)]
@@ -185,7 +188,7 @@ def main():
     np.random.seed(4)
     m = 1
     n = 2
-    K = 2
+    K = 4
     NUM_single(m, n, K=K, glob_include=True)
 
 

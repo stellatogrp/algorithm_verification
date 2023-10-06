@@ -128,11 +128,68 @@ def test_double_holder(m, n):
     print('u_diff:', np.linalg.norm(uadd - u_cp))
 
 
+def lin_bound_map(l, u, A):
+    # A = A.toarray()
+    (m, n) = A.shape
+    l_out = np.zeros(m)
+    u_out = np.zeros(m)
+    for i in range(m):
+        lower = 0
+        upper = 0
+        for j in range(n):
+            if A[i][j] >= 0:
+                lower += A[i][j] * l[j]
+                upper += A[i][j] * u[j]
+            else:
+                lower += A[i][j] * u[j]
+                upper += A[i][j] * l[j]
+        l_out[i] = lower
+        u_out[i] = upper
+
+    return np.reshape(l_out, (m, 1)), np.reshape(u_out, (m, 1))
+
+
+def box_bound_lin_map(c, r, A, b):
+    l = c - r
+    u = c + r
+
+    # print('c:', c)
+    # print(l, u)
+
+    ltemp, utemp = lin_bound_map(l, u, A)
+
+    lb = ltemp + b
+    ub = utemp + b
+
+    # print(lb, ub)
+
+    return lb, ub
+
+
+def test_holder_vs_box(m, n):
+    np.random.seed(0)
+    print(m, n)
+    A1 = np.random.randn(m, n)
+    b1 = np.random.randn(m, 1)
+    x1 = np.random.randn(n, 1)
+    r1 = 1
+    p1 = np.inf
+
+    lh, uh = holder_bounds(p1, x1, r1, A1, b1)
+    lb, ub = box_bound_lin_map(x1, r1, A1, b1)
+    print(lh, uh)
+    print(lb, ub)
+
+    print('l diff:', np.linalg.norm(lh - lb))
+    print('u diff:', np.linalg.norm(uh - ub))
+
+
 def main():
     m = 5
     n = 3
     # test_holder(m, n)
-    test_double_holder(m, n)
+    # test_double_holder(m, n)
+    test_holder_vs_box(m, n)
 
 
 if __name__ == '__main__':

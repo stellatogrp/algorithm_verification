@@ -42,7 +42,8 @@ def range_to_list(ranges):
 
 def cross_constraints_from_ranges(m, n, problem_dim,
                                   D, y_range, A, u_range, b,
-                                  C, z_range, F, x_range, c):
+                                  C, z_range, F, x_range, c,
+                                  only_include_psd_cones=False):
     '''
         Assumes D, A, C, F are dense
     '''
@@ -102,10 +103,14 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     # print(list(set(h.row_indices)))
     # exit(0)
 
+    if only_include_psd_cones:
+        return A_matrices, b_lvals, b_uvals, psd_cone_handlers
+
     for i in range(m):
         for j in range(n):
             # print(i, j)
-            outmat = np.zeros((problem_dim, problem_dim))
+            # outmat = np.zeros((problem_dim, problem_dim))
+            outmat = spa.lil_matrix((problem_dim, problem_dim))
             Di = D[i].T.reshape((-1, 1))
             CTj = C.T[:, j].T.reshape((1, -1))
             # print(Di, CTj)
@@ -129,7 +134,8 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     return A_matrices, b_lvals, b_uvals, psd_cone_handlers
 
 
-def cross_constraints_between_linsteps(y1, y2, k1, k2, handler):
+def cross_constraints_between_linsteps(y1, y2, k1, k2, handler,
+                                       only_include_psd_cones=False):
 
     if k1 == 0 or k2 == 0:
         return [], [], [], []
@@ -159,7 +165,8 @@ def cross_constraints_between_linsteps(y1, y2, k1, k2, handler):
 
     return cross_constraints_from_ranges(m, n, handler.problem_dim,
                                          D1, y1range, A1, u1ranges, b1,
-                                         D2, y2range, A2, u2ranges, b2)
+                                         D2, y2range, A2, u2ranges, b2,
+                                         only_include_psd_cones=only_include_psd_cones)
 
 
 def cross_constraints_linstep_to_not(y1, y2, k1, k2, handler):

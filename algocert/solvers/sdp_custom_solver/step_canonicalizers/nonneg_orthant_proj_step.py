@@ -47,7 +47,8 @@ def nonneg_orthant_proj_canon(step, k, handler):
         for i in range(y_dim):
             if i not in nonneg_indices:
                 continue
-            output_mat = np.zeros((problem_dim, problem_dim))
+            # output_mat = np.zeros((problem_dim, problem_dim))
+            output_mat = spa.lil_matrix((problem_dim, problem_dim))
             insert_vec = np.zeros((y_dim, 1))
             insert_vec[i, 0] = 1
             output_mat[yrange1D_handler.index_matrix()] = insert_vec
@@ -60,12 +61,15 @@ def nonneg_orthant_proj_canon(step, k, handler):
     for i in range(y_dim):
         if i not in nonneg_indices:
             continue
-        output_mat = np.zeros((problem_dim, problem_dim))
+        # output_mat = np.zeros((problem_dim, problem_dim))
+        output_mat = spa.lil_matrix((problem_dim, problem_dim))
         insert_vec = np.zeros((y_dim, 1))
         insert_vec[i, 0] = 1
         output_mat[yrange1D_handler.index_matrix()] = insert_vec
         output_mat[xrange1D_handler.index_matrix()] = -insert_vec
         output_mat = (output_mat + output_mat.T) / 2
+        # print(output_mat, spa.csc_matrix(output_mat))
+        # exit(0)
         A_vals.append(spa.csc_matrix(output_mat))
         b_lvals.append(0)
         # if i in nonneg_indices:
@@ -79,7 +83,8 @@ def nonneg_orthant_proj_canon(step, k, handler):
     for i in range(y_dim):
         if i not in nonneg_indices:
             continue
-        output_mat = np.zeros((problem_dim, problem_dim))
+        # output_mat = np.zeros((problem_dim, problem_dim))
+        output_mat = spa.lil_matrix((problem_dim, problem_dim))
         insert_mat = np.zeros((y_dim, y_dim))
         insert_mat[i, i] = 1
         output_mat[yyTrange_handler.index_matrix()] = insert_mat
@@ -117,6 +122,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
 
     # TODO check trace again after adding in bounds/RLT
     # outmat = np.zeros((problem_dim, problem_dim))
+    # output_mat = spa.lil_matrix((problem_dim, problem_dim))
     # output_mat[yyTrange_handler.index_matrix()] = np.eye(y_dim)
     # output_mat[yxTrange_handler.index_matrix()] = -np.eye(y_dim)
     # output_mat = (output_mat + output_mat.T) / 2
@@ -128,7 +134,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
     # exit(0)
 
     if handler.add_planet:
-        print('planet')
+        # print('planet')
         x_upper = handler.var_upperbounds[xrange1D_handler.index_matrix()]
         x_lower = handler.var_lowerbounds[xrange1D_handler.index_matrix()]
         y_upper = handler.var_upperbounds[yrange1D_handler.index_matrix()]
@@ -154,7 +160,8 @@ def nonneg_orthant_proj_canon(step, k, handler):
             # j = pos_idx
             # if i not in nonneg_indices:
             #     continue
-            outmat = np.zeros((problem_dim, problem_dim))
+            # outmat = np.zeros((problem_dim, problem_dim))
+            outmat = spa.lil_matrix((problem_dim, problem_dim))
 
             Di = D[i].T.reshape((-1, 1))
             Ii = I[i].T.reshape((-1, 1))
@@ -195,7 +202,8 @@ def handle_real_indices(n, ybounds, xbounds, real_indices, problem_dim):
         # print(i, j)
 
         # first yiyj - xixj = 0
-        output_mat1 = np.zeros((problem_dim, problem_dim))
+        # output_mat1 = np.zeros((problem_dim, problem_dim))
+        output_mat1 = spa.lil_matrix((problem_dim, problem_dim))
         output_mat1[yyTrange_handler.index_matrix()] = insert_mat
         output_mat1[xxTrange_handler.index_matrix()] = -insert_mat
         output_mat1 = (output_mat1 + output_mat1.T) / 2
@@ -205,7 +213,8 @@ def handle_real_indices(n, ybounds, xbounds, real_indices, problem_dim):
         b_uvals.append(0)
 
         # second yiyj - yixj = 0
-        output_mat2 = np.zeros((problem_dim, problem_dim))
+        # output_mat2 = np.zeros((problem_dim, problem_dim))
+        output_mat2 = spa.lil_matrix((problem_dim, problem_dim))
         output_mat2[yyTrange_handler.index_matrix()] = insert_mat
         output_mat2[yxTrange_handler.index_matrix()] = -insert_mat
         output_mat2 = (output_mat2 + output_mat2.T) / 2
@@ -216,6 +225,7 @@ def handle_real_indices(n, ybounds, xbounds, real_indices, problem_dim):
 
         # third yiyj - yjxi = 0 (maybe?) TODO see if needed
         # output_mat3 = np.zeros((problem_dim, problem_dim))
+        # output_mat = spa.lil_matrix((problem_dim, problem_dim))
         # output_mat3[yyTrange_handler.index_matrix()] = insert_mat
         # output_mat3[yxTrange_handler.index_matrix()] = -insert_mat.T
         # output_mat3 = (output_mat3 + output_mat3.T) / 2
@@ -230,7 +240,7 @@ def nonneg_orthant_proj_bound_canon(step, k, handler):
     # print('nonneg bound')
     y = step.get_output_var()
     x = step.get_input_var()
-    y.get_dim()
+    # y.get_dim()
     nonneg_indices = step.nonneg_indices
 
     # NOTE: assumes x update happens before proj

@@ -5,6 +5,7 @@ import scipy.sparse as spa
 
 # from algocert.basic_algorithm_steps.block_step import BlockStep
 # from algocert.basic_algorithm_steps.linear_step import LinearStep
+from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_step import LinearStep
@@ -12,7 +13,6 @@ from algocert.init_set.box_set import BoxSet
 
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.l2_ball_set import L2BallSet
-from algocert.init_set.zero_set import ZeroSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
@@ -54,6 +54,19 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
     step1 = LinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
     step2 = NonNegProjStep(x, y)
 
+    np.zeros((n, 1)) + 1
+    u = np.zeros((n, 1)) + .5
+
+    # l = Parameter(n, name='l')
+    # # lset = ZeroSet(l)
+    # lset = L2BallSet(l, np.ones((n, 1)), 0)
+
+    # u = Parameter(n, name='u')
+    # uset = L2BallSet(u, .5 * np.ones((n, 1)), 0)
+
+    # step2 = MaxWithVecStep(x, y, l=l)
+    step2 = MinWithVecStep(x, y, u=u)
+
     steps = [step1, step2]
 
     # xset = CenteredL2BallSet(x, r=r)
@@ -70,13 +83,13 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
     x_c = np.zeros((n, 1))
     x_r = 0
     xset = L2BallSet(x, x_c, x_r)
-    xset = ZeroSet(x)
+    # xset = ZeroSet(x)
 
     # bset = CenteredL2BallSet(b, r=r)
     # b_l = np.zeros((m, 1))
     # b_u = np.ones((m, 1))
-    b_l = 20 + np.zeros((m, 1))
-    b_u = 20 + np.ones((m, 1))
+    b_l = 12 + np.zeros((m, 1))
+    b_u = 13 + np.ones((m, 1))
     bset = BoxSet(b, b_l, b_u)
 
     obj = ConvergenceResidual(x)
@@ -100,14 +113,17 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
 
     # out_fname = 'data/planet_test.csv'
     out = []
+    param_sets = [bset]
+    # param_sets = [bset, lset]
+    # param_sets = [bset, uset]
     # K = 2
     for K_curr in range(1, K+1):
         # K_curr = 2
         # CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         # CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         # CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP4 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP5 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP4 = CertificationProblem(K_curr, [xset], param_sets, obj, steps)
+        CP5 = CertificationProblem(K_curr, [xset], param_sets, obj, steps)
 
         # (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         # (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
@@ -148,7 +164,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 4
+    K = 6
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)

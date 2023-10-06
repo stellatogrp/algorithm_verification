@@ -33,6 +33,7 @@ class SDPCustomHandler(object):
         self.id_to_iterate_map = {}
         self.iter_bound_map = {}
         self.param_bound_map = {}
+        self.param_set_map = {}
         self.range_marker = 0
         self.problem_dim = 0
         self.A_matrices = []
@@ -75,6 +76,11 @@ class SDPCustomHandler(object):
         else:
             self.couple_single_psd_cone = False
 
+        if 'use_holder' in kwargs:
+            self.use_holder = kwargs['use_holder']
+        else:
+            self.use_holder = True
+
     def convert_hl_to_basic_steps(self):
         pass
 
@@ -104,7 +110,11 @@ class SDPCustomHandler(object):
             bounds = (self.range_marker, self.range_marker + dim)
             self.range_marker += dim
             self.param_bound_map[param_var] = bounds
+            self.param_set_map[param_var] = param_set
         print(self.param_bound_map)
+
+    # def create_param_set_holder_map(self):
+    #     pass
 
     def create_iterate_range_maps(self):
         for init_set in self.CP.get_init_sets():
@@ -253,7 +263,8 @@ class SDPCustomHandler(object):
                         # print(linstep_var, other_var, 'k1:', k1, 'k2:', k2)
                         if other_var in self.linstep_output_vars:
                             # print('other also linstep')
-                            A, b_l, b_u, psd_cones = cross_constraints_between_linsteps(linstep_var, other_var, k1, k2, self)
+                            A, b_l, b_u, psd_cones = cross_constraints_between_linsteps(linstep_var, other_var, k1, k2, self,
+                                                                                        only_include_psd_cones=True)
                             # self.A_matrices += A
                             # self.b_lowerbounds += b_l
                             # self.b_upperbounds += b_u
