@@ -240,16 +240,6 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         Hp_mats.append(-H)
         bp_dims.append(H.shape[0])
         cone_dims.append(cone_dim)
-        # print(H.shape)
-        # print(H)
-        # print(H.todense())
-        # print(cone.get_E_mat(problem_dim))
-        # exit(0)
-
-
-    # print(cone_dims)
-    # exit(0)
-    # print(len(Aeq), len(beq), len(Au), len(bu), len(Al), len(bl))
     zero_cone_dim = len(Aeq)
     nonneg_cone_dim = len(Au) + len(Al)
 
@@ -257,18 +247,11 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     A = spa.vstack(Aeq + Au + Al + Hp_mats, format='csc')
     b = np.array(beq + bu + bl)
     b = np.hstack([b, np.zeros(np.sum(bp_dims))])
-    # print(A.shape)
-    # print(np.round(b, 4))
-
-    # test with single psd constraint
-
-    # A = spa.vstack([A, -spa.eye(x_dim)], format='csc')
-    # b = np.hstack([b, np.zeros(x_dim)])
 
     data = dict(A=A, b=b, c=c)
     # cones = dict(z=zero_cone_dim, l=nonneg_cone_dim)
     cones = dict(z=zero_cone_dim, l=nonneg_cone_dim, s=cone_dims)
-    solver = scs.SCS(data, cones, eps_abs=1e-3, eps_rel=1e-3, max_iters=int(1e6),
+    solver = scs.SCS(data, cones, eps_abs=1e-3, eps_rel=1e-3, max_iters=int(1e7),
                      use_indirect=True, acceleration_lookback=0)
     sol = solver.solve()
 

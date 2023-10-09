@@ -16,6 +16,22 @@ def map_linstep_to_ranges(y, u, k, handler):
     return uranges
 
 
+def map_linstep_to_iters(y, u, k, handler):
+    iter_to_id_map = handler.iterate_to_id_map
+    iter_bound_map = handler.iter_bound_map
+
+    y.get_dim()
+    iter_bound_map[y][k]
+    uranges = []
+    for x in u:
+        if x.is_param:
+            uranges.append(None)
+        else:
+            idx = curr_or_prev(y, x, k, iter_to_id_map)
+            uranges.append(idx)
+    return uranges
+
+
 def curr_or_prev(var1, var2, k, iter_id_map):
     """
     Returning which step of var2 to use

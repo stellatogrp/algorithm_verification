@@ -33,6 +33,7 @@ class SDPCustomHandler(object):
         self.id_to_iterate_map = {}
         self.iter_bound_map = {}
         self.param_bound_map = {}
+        self.iterate_init_set_map = {}
         self.param_set_map = {}
         self.range_marker = 0
         self.problem_dim = 0
@@ -123,6 +124,7 @@ class SDPCustomHandler(object):
             bounds = (self.range_marker, self.range_marker + dim)
             self.range_marker += dim
             self.iter_bound_map[init_iter] = {0: bounds}
+            self.iterate_init_set_map[init_iter] = init_set
 
         for k in range(1, self.K + 1):
             for step in self.CP.get_algorithm_steps():

@@ -16,7 +16,7 @@ def box_set_canon(init_set, model, var_to_gp_var_map):
         model.addConstr(x_var[0] <= u_vec)
 
 
-def box_set_bound_canon(init_set):
+def box_set_bound_canon(init_set, handler):
     #  x = init_set.get_iterate()
     l = init_set.l
     u = init_set.u

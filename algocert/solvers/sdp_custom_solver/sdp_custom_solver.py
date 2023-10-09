@@ -1,3 +1,5 @@
+import time
+
 from algocert.solvers.sdp_custom_solver.sdp_custom_handler import SDPCustomHandler
 from algocert.solvers.solver import Solver
 
@@ -15,10 +17,14 @@ class SDPCustomSolver(Solver):
     def solve(self, **kwargs):
         # Create SDP relaxation and solve
         res = self.handler.solve(**kwargs)
+        res['sdp_canontime'] = self.canon_time
         return res
 
     def canonicalize(self, **kwargs):
         # Iterate through steps and canonicalize them
         handler = SDPCustomHandler(self.CP, **kwargs)
         self.handler = handler
+        start = time.time()
         handler.canonicalize()
+        end = time.time()
+        self.canon_time = end - start

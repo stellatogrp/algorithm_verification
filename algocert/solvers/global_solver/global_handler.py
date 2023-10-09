@@ -120,7 +120,7 @@ class GlobalHandler(object):
                         lb = np.zeros((K + 1, n))
                         ub = np.zeros((K + 1, n))
                         canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
-                        l, u = canon_method(init_set)
+                        l, u = canon_method(init_set, self)
                         lb[0] = l
                         ub[0] = u
                         self.iterate_to_lower_bound_map[(iterate, param_var, i)] = lb
@@ -131,7 +131,7 @@ class GlobalHandler(object):
                 lb = np.zeros((K + 1, n))
                 ub = np.zeros((K + 1, n))
                 canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
-                l, u = canon_method(init_set)
+                l, u = canon_method(init_set, self)
                 lb[0] = l
                 ub[0] = u
                 self.iterate_to_lower_bound_map[iterate] = lb
@@ -169,13 +169,13 @@ class GlobalHandler(object):
                 for i, single_param_set in enumerate(param_set):
                     param = single_param_set.get_iterate()
                     canon_method = BOUND_SET_CANON_METHODS[type(single_param_set)]
-                    l, u = canon_method(single_param_set)
+                    l, u = canon_method(single_param_set, self)
                     self.param_to_lower_bound_map[(param, i)] = l
                     self.param_to_upper_bound_map[(param, i)] = u
             else:
                 param = param_set.get_iterate()
                 canon_method = BOUND_SET_CANON_METHODS[type(param_set)]
-                l, u = canon_method(param_set)
+                l, u = canon_method(param_set, self)
                 self.param_to_lower_bound_map[param] = l
                 self.param_to_upper_bound_map[param] = u
 

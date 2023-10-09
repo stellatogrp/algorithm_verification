@@ -117,6 +117,28 @@ class LinearStep(Step):
             self.A_boundaries.append((left, right))
             left = right
 
+    def split_matrix_boundaries(self):
+        left = 0
+        right = 0
+        A_bounds = []
+        for x in self.u:
+            n = x.get_dim()
+            right = left + n
+            A_bounds.append((left, right))
+            left = right
+        return A_bounds
+
+    def split_matrix(self, A):
+        left = 0
+        right = 0
+        A_list = []
+        for x in self. u:
+            n = x.get_dim()
+            right = left + n
+            A_list.append(A[:, left: right])
+            left = right
+        return A_list
+
     def map_overall_dim_to_x(self, i):
         assert 0 <= i and i < self.u_dim
         curr_dim = 0

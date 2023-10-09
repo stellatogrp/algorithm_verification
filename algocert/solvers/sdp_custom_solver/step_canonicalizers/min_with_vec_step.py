@@ -161,16 +161,17 @@ def canon_with_u_const(step, k, handler):
     yxTrange_handler = RangeHandler2D(ybounds, xbounds)
 
     # y <= u
-    for i in range(n):
-        output_mat = spa.lil_matrix((problem_dim, problem_dim))
-        insert_vec = np.zeros((n, 1))
-        insert_vec[i, 0] = 1
-        output_mat[yrange1D_handler.index_matrix()] = insert_vec
-        # output_mat[urange1D_handler.index_matrix()] = -insert_vec
-        output_mat = (output_mat + output_mat.T) / 2
-        A_vals.append(spa.csc_matrix(output_mat))
-        b_lvals.append(-np.inf)
-        b_uvals.append(u[i, 0])
+    if not handler.add_RLT:
+        for i in range(n):
+            output_mat = spa.lil_matrix((problem_dim, problem_dim))
+            insert_vec = np.zeros((n, 1))
+            insert_vec[i, 0] = 1
+            output_mat[yrange1D_handler.index_matrix()] = insert_vec
+            # output_mat[urange1D_handler.index_matrix()] = -insert_vec
+            output_mat = (output_mat + output_mat.T) / 2
+            A_vals.append(spa.csc_matrix(output_mat))
+            b_lvals.append(-np.inf)
+            b_uvals.append(u[i, 0])
 
     # y - x <= 0
     for i in range(n):

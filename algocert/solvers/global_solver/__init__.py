@@ -15,6 +15,7 @@ from algocert.init_set.control_example_set import ControlExampleSet
 from algocert.init_set.ellipsoidal_set import EllipsoidalSet
 from algocert.init_set.linf_ball_set import LInfBallSet
 from algocert.init_set.l2_ball_set import L2BallSet
+from algocert.init_set.stack_set import StackSet
 from algocert.init_set.vec_span_set import VecSpanSet
 from algocert.init_set.zero_set import ZeroSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
@@ -50,6 +51,8 @@ from algocert.solvers.global_solver.set_canonicalizers.linf_ball_set import \
     linf_ball_set_canon
 from algocert.solvers.global_solver.set_canonicalizers.l2_ball_set import (
     l2_ball_set_bound_canon, l2_ball_set_canon)
+from algocert.solvers.global_solver.set_canonicalizers.stack_set import (
+    stack_set_bound_canon, stack_set_canon)
 from algocert.solvers.global_solver.set_canonicalizers.vec_span_set import \
     vec_span_set_canon
 from algocert.solvers.global_solver.step_canonicalizers.linear_step import (
@@ -74,6 +77,7 @@ SET_CANON_METHODS = {
     ControlExampleSet: control_example_set_canon,
     LInfBallSet: linf_ball_set_canon,
     L2BallSet: l2_ball_set_canon,
+    StackSet: stack_set_canon,
     VecSpanSet: vec_span_set_canon,
     ZeroSet: l2_ball_set_canon,
 }
@@ -84,6 +88,7 @@ BOUND_SET_CANON_METHODS = {
     ConstSet: const_set_bound_canon,
     ControlExampleSet: control_example_set_bound_canon,
     L2BallSet: l2_ball_set_bound_canon,
+    StackSet: stack_set_bound_canon,
     ZeroSet: l2_ball_set_bound_canon,
 }
 

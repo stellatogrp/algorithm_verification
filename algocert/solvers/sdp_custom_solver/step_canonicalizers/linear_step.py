@@ -6,7 +6,10 @@ from algocert.solvers.sdp_custom_solver.equality_constraints import (
     equality2D_constraints,
 )
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D
-from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
+from algocert.solvers.sdp_custom_solver.step_canonicalizers.linear_step_propagation import (
+    SET_LINPROP_MAP,
+)
+from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_iters, map_linstep_to_ranges
 
 
 def linear_step_canon(step, k, handler):
@@ -52,6 +55,66 @@ def linear_step_canon(step, k, handler):
 
 
 def linear_step_bound_canon(step, k, handler):
+    u = step.get_input_var()  # remember this is a list of vars
+    y = step.get_output_var()
+    A = step.get_rhs_matrix()
+    b = step.get_rhs_const_vec()
+
+    DinvA = step.solve_linear_system(A.todense())
+    Dinvb = step.solve_linear_system(b)
+
+    uranges = map_linstep_to_ranges(y, u, k, handler)
+    iter_map = map_linstep_to_iters(y, u, k, handler)
+    # print(iter_map)
+    # print(handler.iterate_init_set_map)
+
+    # if thing is iterate 0 or param, use its function, otherwise use lin_bound_map
+    DinvA_split = step.split_matrix(DinvA)
+    boundaries = step.split_matrix_boundaries()
+    # print(step.split_matrix(DinvA))
+
+    yrange = handler.iter_bound_map[y][k]
+    yrange_handler = RangeHandler1D(yrange)
+    urange_handler = RangeHandler1D(uranges)
+    handler.var_lowerbounds[urange_handler.index_matrix()]
+    handler.var_upperbounds[urange_handler.index_matrix()]
+    l_out = Dinvb
+    u_out = Dinvb
+    full_index_mat = urange_handler.index_matrix()
+
+    # for curr_mat, curr_bounds in zip(DinvA_split, boundaries):
+    for i in range(len(u)):
+        curr_mat = DinvA_split[i]
+        curr_bounds = boundaries[i]
+        x = u[i]
+        curr_index_mat = (full_index_mat[0][curr_bounds[0]: curr_bounds[1], :], full_index_mat[1])
+        l_bound = None
+        u_bound = None
+        if x.is_param:
+            x_set = handler.param_set_map[x]
+            if type(x_set) in SET_LINPROP_MAP:
+                l_bound, u_bound = SET_LINPROP_MAP[type(x_set)](handler, x, curr_mat)
+        else:
+            if iter_map[i] == 0:
+                x_set = handler.iterate_init_set_map[x]
+                if type(x_set) in SET_LINPROP_MAP:
+                    l_bound, u_bound = SET_LINPROP_MAP[type(x_set)](handler, x, curr_mat)
+
+        if l_bound is None and u_bound is None:
+            l_curr = handler.var_lowerbounds[curr_index_mat]
+            u_curr = handler.var_upperbounds[curr_index_mat]
+            l_bound, u_bound = lin_bound_map(l_curr, u_curr, curr_mat)
+        l_out = l_out + l_bound
+        u_out = u_out + u_bound
+
+    # print(l_out, u_out)
+
+    # exit(0)
+    handler.var_lowerbounds[yrange_handler.index_matrix()] = l_out
+    handler.var_upperbounds[yrange_handler.index_matrix()] = u_out
+
+
+def linear_step_bound_canon_old(step, k, handler):
     # print('lin step bound')
     # D = step.get_lhs_matrix()
     u = step.get_input_var()  # remember this is a list of vars
@@ -76,6 +139,9 @@ def linear_step_bound_canon(step, k, handler):
     y_lower, y_upper = lin_bound_map(u_lower, u_upper, DinvA)
     handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower + Dinvb
     handler.var_upperbounds[yrange_handler.index_matrix()] = y_upper + Dinvb
+
+    # print(y_lower)
+    # print(y_upper)
 
 
 def lin_bound_map(l, u, A):

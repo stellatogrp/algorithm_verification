@@ -5,7 +5,6 @@ import scipy.sparse as spa
 
 # from algocert.basic_algorithm_steps.block_step import BlockStep
 # from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_step import LinearStep
@@ -54,18 +53,18 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
     step1 = LinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
     step2 = NonNegProjStep(x, y)
 
-    np.zeros((n, 1)) + 1
-    u = np.zeros((n, 1)) + .5
+    np.zeros((n, 1))
+    # u = np.zeros((n, 1)) + .5
 
     # l = Parameter(n, name='l')
     # # lset = ZeroSet(l)
-    # lset = L2BallSet(l, np.ones((n, 1)), 0)
+    # lset = L2BallSet(l, np.zeros((n, 1)), .2)
 
     # u = Parameter(n, name='u')
     # uset = L2BallSet(u, .5 * np.ones((n, 1)), 0)
 
     # step2 = MaxWithVecStep(x, y, l=l)
-    step2 = MinWithVecStep(x, y, u=u)
+    # step2 = MinWithVecStep(x, y, u=u)
 
     steps = [step1, step2]
 
@@ -88,9 +87,12 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
     # bset = CenteredL2BallSet(b, r=r)
     # b_l = np.zeros((m, 1))
     # b_u = np.ones((m, 1))
-    b_l = 12 + np.zeros((m, 1))
-    b_u = 13 + np.ones((m, 1))
-    bset = BoxSet(b, b_l, b_u)
+    # b_l = 22 + np.zeros((m, 1))
+    # b_u = 22.5 + np.zeros((m, 1))
+    # bset = BoxSet(b, b_l, b_u)
+    b_c = 22.25 * np.ones((m, 1))
+    b_r = .25
+    bset = L2BallSet(b, b_c, b_r)
 
     obj = ConvergenceResidual(x)
     # CP = CertificationProblem(K, [xset], [bset], obj, steps)
@@ -164,7 +166,7 @@ def main():
     np.random.seed(1)
     m = 5
     n = 3
-    K = 6
+    K = 4
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)
