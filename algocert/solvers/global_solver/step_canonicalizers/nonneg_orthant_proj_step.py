@@ -21,8 +21,8 @@ def nonneg_orthant_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_va
     else:
         x_var = x_varmatrix[k]
 
-    model.addConstr(y_var >= 0)
-    model.addConstr(y_var >= x_var)
+    # model.addConstr(y_var >= 0)
+    # model.addConstr(y_var >= x_var)
     # print(y_var.shape)
 
     # z = model.addMVar(y_var.shape,
@@ -36,6 +36,8 @@ def nonneg_orthant_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_va
     nonneg_indices = np.array(step.nonneg_indices)
 
     z_dim = len(nonneg_indices)
+
+    print(real_indices, nonneg_indices)
 
     z = model.addMVar(z_dim,
                       ub=gp.GRB.INFINITY * np.ones(z_dim),

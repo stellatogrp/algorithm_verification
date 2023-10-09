@@ -22,7 +22,7 @@ from algocert.variables.iterate import Iterate
 from algocert.variables.parameter import Parameter
 
 
-def NUM_single(m_orig, n, K=1, glob_include=True):
+def NUM_single(m_orig, n, K=1, sdp_include=False, glob_include=True):
     R = np.random.binomial(n=1, p=0.25, size=(m_orig, n))
     print(R)
 
@@ -125,7 +125,11 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
         CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
 
         CP5 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-        (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
+        if sdp_include:
+            out_sdp = CP5.solve(solver_type='SDP_CUSTOM')
+            sdp_c, sdp_ctime = out_sdp['sdp_objval'], out_sdp['sdp_solvetime']
+        else:
+            sdp_c, sdp_ctime = 0, 0
         # sdp_c, sdp_ctime = 0, 0
         # print(sdp_c, sdp_ctime)
         # exit(0)
@@ -185,11 +189,11 @@ def form_NUM_matrices(R):
 
 
 def main():
-    np.random.seed(4)
+    np.random.seed(1)
     m = 1
     n = 2
-    K = 4
-    NUM_single(m, n, K=K, glob_include=True)
+    K = 2
+    NUM_single(m, n, K=K, sdp_include=True, glob_include=True)
 
 
 if __name__ == '__main__':

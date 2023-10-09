@@ -35,7 +35,7 @@ def l2_ball_set_canon(init_set, handler):
     outmat[xrange1D_handler.index_matrix_horiz()] = -c.T
 
     # note the float() is used to turn the 1x1 c^Tc to a scalar
-    return [spa.csc_matrix(outmat)], [-np.inf], [float(r ** 2 - c.T @ c)]
+    return [spa.csc_matrix(outmat)], [-np.inf], [float(r ** 2 - c.T @ c)], []
 
 
 def l2_ball_bound_canon(init_set, handler):

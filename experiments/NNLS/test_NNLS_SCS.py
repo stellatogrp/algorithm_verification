@@ -131,7 +131,8 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, mosek_include=True
         # (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
         # (sdp_p, sdp_ptime) = CP3.solve(solver_type='SDP', add_RLT=True, add_planet=True)
         if mosek_include:
-            (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
+            out_sdp = CP5.solve(solver_type='SDP_CUSTOM')
+            (sdp_c, sdp_ctime) = out_sdp['sdp_objval'], out_sdp['sdp_solvetime']
         else:
             sdp_c, sdp_ctime = 0, 0
         if glob_include:

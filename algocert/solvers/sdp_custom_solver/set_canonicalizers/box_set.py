@@ -43,7 +43,7 @@ def box_set_canon(init_set, handler):
 
     # print(b_lvals, b_uvals)
 
-    return A_vals, b_lvals, b_uvals
+    return A_vals, b_lvals, b_uvals, []
 
 
 def box_bound_canon(init_set, handler):

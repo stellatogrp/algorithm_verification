@@ -1,5 +1,6 @@
-# import gurobipy as gp
+import numpy as np
 
+# import gurobipy as gp
 # from algocert.init_set.init_set import InitSet
 from algocert.variables.parameter import Parameter
 
@@ -35,6 +36,7 @@ def stack_set_canon(init_set, model, var_to_gp_var_map):
         x_constr = x_var
     else:
         x_constr = x_var[0]
+
     curr_dim = 0
     for curr_var in var_stack:
         if isinstance(curr_var, Parameter):
@@ -42,20 +44,15 @@ def stack_set_canon(init_set, model, var_to_gp_var_map):
             gp_var = var_to_gp_var_map[curr_var]
             model.addConstr(x_constr[curr_dim: curr_dim + n] == gp_var)
         else:
-            val = curr_var.reshape(-1, )
-            model.addConstr(x_constr[curr_dim: curr_dim + n] == val)
+            l_val = curr_var[0].reshape(-1, )
+            u_val = curr_var[1].reshape(-1, )
+            n = l_val.shape[0]
+            model.addConstr(x_constr[curr_dim: curr_dim + n] <= u_val)
+            model.addConstr(l_val <= x_constr[curr_dim: curr_dim + n])
+
+            # model.addConstr(l.reshape(-1, ) <= x_constr[curr_dim: curr_dim + n])
+            # model.addConstr(x_constr[curr_dim: curr_dim + n] <= u.reshape(-1, ))
         curr_dim += n
-
-    # print(issubclass(type(bset), InitSet))
-
-    # if x.is_param:
-    #     # print(l.shape, x_var.shape)
-    #     model.addConstr(l_vec <= x_var)
-    #     model.addConstr(x_var <= u_vec)
-    # else:
-    #     # print(l.shape, x_var[0].shape)
-    #     model.addConstr(l_vec <= x_var[0])
-    #     model.addConstr(x_var[0] <= u_vec)
 
 
 def stack_set_bound_canon(init_set, handler):
@@ -76,4 +73,17 @@ def stack_set_bound_canon(init_set, handler):
     # l_ret = np.vstack(l_new)
     # u_ret = np.vstack(u_new)
     # return l_ret.reshape(-1, ), u_ret.reshape(-1, )
-    init_set.get_iterate()
+    var_stack = init_set.stack
+    print(var_stack)
+    l_new = []
+    u_new = []
+    for x in var_stack:
+        if isinstance(x, Parameter):
+            l_new.append(handler.param_to_lower_bound_map[x])
+            u_new.append(handler.param_to_upper_bound_map[x])
+        else:
+            l_new.append(x[0])
+            u_new.append(x[1])
+    l_ret = np.hstack(l_new)
+    u_ret = np.hstack(u_new)
+    return l_ret.reshape(-1, ), u_ret.reshape(-1, )

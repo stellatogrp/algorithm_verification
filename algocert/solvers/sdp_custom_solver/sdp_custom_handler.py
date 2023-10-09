@@ -219,19 +219,21 @@ class SDPCustomHandler(object):
         for init_set in self.CP.get_init_sets():
             # print(init_set)
             canon_method = SET_CANON_METHODS[type(init_set)]
-            A, b_l, b_u = canon_method(init_set, self)
+            A, b_l, b_u, psd_cones = canon_method(init_set, self)
             self.A_matrices += A
             self.b_lowerbounds += b_l
             self.b_upperbounds += b_u
+            self.psd_cone_handlers += psd_cones
 
     def canonicalize_parameter_sets(self):
         for param_set in self.CP.get_parameter_sets():
             # print(param_set)
             canon_method = SET_CANON_METHODS[type(param_set)]
-            A, b_l, b_u = canon_method(param_set, self)
+            A, b_l, b_u, psd_cones = canon_method(param_set, self)
             self.A_matrices += A
             self.b_lowerbounds += b_l
             self.b_upperbounds += b_u
+            self.psd_cone_handlers += psd_cones
 
     def canonicalize_steps(self):
         steps = self.CP.get_algorithm_steps()
@@ -245,10 +247,10 @@ class SDPCustomHandler(object):
                 self.psd_cone_handlers += psd_cones
 
     def canonicalize_linstep_cross_constraints(self):
-        print(self.linstep_output_vars)
-        print(self.var_linstep_map)
-        print(self.iterate_list)
-        print(self.param_list)
+        # print(self.linstep_output_vars)
+        # print(self.var_linstep_map)
+        # print(self.iterate_list)
+        # print(self.param_list)
         if self.lookback_t is not None:
             lookback_t = self.lookback_t
         else:
