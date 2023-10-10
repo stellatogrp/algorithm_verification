@@ -252,12 +252,15 @@ def nonneg_orthant_proj_bound_canon(step, k, handler):
 
     x_lower = handler.var_lowerbounds[xrange_handler.index_matrix()]
     x_upper = handler.var_upperbounds[xrange_handler.index_matrix()]
+    x_ws = handler.var_upperbounds[xrange_handler.index_matrix()]
 
     zeros = np.zeros((len(nonneg_indices), 1))
     y_lower = x_lower.copy()
     y_upper = x_upper.copy()
+    y_ws = x_ws.copy()
     y_lower[nonneg_indices] = np.maximum(y_lower[nonneg_indices], zeros)
     y_upper[nonneg_indices] = np.maximum(y_upper[nonneg_indices], zeros)
+    y_ws[nonneg_indices] = np.maximum(y_ws[nonneg_indices], zeros)
 
     # zeros = np.zeros((n, 1))
     # y_lower = np.maximum(x_lower, zeros)
@@ -265,5 +268,6 @@ def nonneg_orthant_proj_bound_canon(step, k, handler):
 
     handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower
     handler.var_upperbounds[yrange_handler.index_matrix()] = y_upper
+    handler.var_warmstart[yrange_handler.index_matrix()] = y_ws
     # print(x_lower, x_upper, y_lower, y_upper)
     # exit(0)

@@ -60,3 +60,4 @@ def box_bound_canon(init_set, handler):
     # print(handler.var_lowerbounds[xrange1D_handler.index_matrix()])
     handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l
     handler.var_upperbounds[xrange1D_handler.index_matrix()] = u
+    handler.var_warmstart[xrange1D_handler.index_matrix()] = init_set.sample_point()

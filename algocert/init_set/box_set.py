@@ -1,4 +1,3 @@
-import numpy as np
 
 from algocert.init_set.init_set import InitSet
 
@@ -19,7 +18,8 @@ class BoxSet(InitSet):
         return to_string
 
     def sample_point(self):
-        n = self.x.get_dim()
-        sample = np.random.uniform(size=(n, 1))
-        # print(sample)
-        return np.multiply((self.u - self.l), sample) + self.l
+        # n = self.x.get_dim()
+        # sample = np.random.uniform(size=(n, 1))
+        # # print(sample)
+        # return np.multiply((self.u - self.l), sample) + self.l
+        return (self.u - self.l) / 2

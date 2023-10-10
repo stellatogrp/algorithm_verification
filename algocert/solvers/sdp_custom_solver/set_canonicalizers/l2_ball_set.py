@@ -53,3 +53,4 @@ def l2_ball_bound_canon(init_set, handler):
     xrange1D_handler = RangeHandler1D(xrange)
     handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l.reshape(-1, 1)
     handler.var_upperbounds[xrange1D_handler.index_matrix()] = u.reshape(-1, 1)
+    handler.var_warmstart[xrange1D_handler.index_matrix()] = init_set.sample_point()

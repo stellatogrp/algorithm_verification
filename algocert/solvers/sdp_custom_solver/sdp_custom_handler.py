@@ -82,6 +82,12 @@ class SDPCustomHandler(object):
         else:
             self.use_holder = True
 
+        if 'sdp_solver' in kwargs:
+            self.sdp_solver = kwargs['sdp_solver']
+        else:
+            self.sdp_solver = 'scs'
+            # self.sdp_solver = 'mosek'
+
     def convert_hl_to_basic_steps(self):
         pass
 
@@ -146,6 +152,7 @@ class SDPCustomHandler(object):
     def create_lower_upper_bound_vecs(self):
         self.var_lowerbounds = np.zeros((self.problem_dim - 1, 1))
         self.var_upperbounds = np.zeros((self.problem_dim - 1, 1))
+        self.var_warmstart = np.zeros((self.problem_dim - 1, 1))
 
     def initialize_set_bounds(self):
         # print('init')
@@ -393,7 +400,7 @@ class SDPCustomHandler(object):
     def solve_with_scs_directly(self):
         # int(self.problem_dim * (self.problem_dim + 1) / 2)
         out = solve_via_scs(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
-                            self.psd_cone_handlers, self.problem_dim)
+                            self.psd_cone_handlers, self.problem_dim, self)
         return out
 
     def solve_with_mosek_directly(self):
@@ -404,5 +411,8 @@ class SDPCustomHandler(object):
     def solve(self):
         # return self.solve_with_cvxpy()
         # return self.solve_with_scs_directly()
-        return self.solve_with_mosek_directly()
+        if self.sdp_solver == 'mosek':
+            return self.solve_with_mosek_directly()
+        if self.sdp_solver == 'scs':
+            return self.solve_with_scs_directly()
         # return self.solve_with_admm()

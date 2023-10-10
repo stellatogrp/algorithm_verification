@@ -230,7 +230,7 @@ def main():
     K = 1
     ws = True
     c_c = np.ones((m, 1))
-    instance = NUM(m, n, c_c, seed=0)
+    instance = NUM(m, n, c_c, seed=4)
     # print(instance.R)
     # print(instance.M.shape)
     test_pd = instance.test_cp_prob()
@@ -244,6 +244,7 @@ def main():
     out_sdp = CP2.solve(solver_type='SDP_CUSTOM')
     print(out_sdp)
 
+    print(instance.R)
     print(sdp_g, out_sdp['sdp_objval'])
 
     # instance.sample_c()

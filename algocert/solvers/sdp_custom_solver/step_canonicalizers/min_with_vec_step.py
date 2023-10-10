@@ -222,23 +222,28 @@ def min_with_vec_bound_canon(step, k, handler):
         u_vec = u.reshape((-1, 1))
         u_lower = u_vec
         u_upper = u_vec
+        u_ws = u_vec
     else:
         urange = handler.param_bound_map[u]
         urange_handler = RangeHandler1D(urange)
         u_lower = handler.var_lowerbounds[urange_handler.index_matrix()]
         u_upper = handler.var_upperbounds[urange_handler.index_matrix()]
+        u_ws = handler.var_warmstart[urange_handler.index_matrix()]
 
     x_lower = handler.var_lowerbounds[xrange_handler.index_matrix()]
     x_upper = handler.var_upperbounds[xrange_handler.index_matrix()]
+    handler.var_warmstart[xrange_handler.index_matrix()]
 
     # y_lower = np.minimum(x_lower, zeros)
     # y_upper = np.minimum(x_upper, zeros)
 
     y_lower = np.minimum(x_lower, u_lower)
     y_upper = np.minimum(x_upper, u_upper)
+    y_ws = np.minimum(x_upper, u_ws)
 
     # print('lower:', x_lower, u_lower, y_lower)
     # print('upper:', x_upper, u_upper, y_upper)
 
     handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower
     handler.var_upperbounds[yrange_handler.index_matrix()] = y_upper
+    handler.var_warmstart[yrange_handler.index_matrix()] = y_ws

@@ -289,23 +289,28 @@ def max_with_vec_bound_canon(step, k, handler):
         l_vec = l.reshape((-1, 1))
         l_lower = l_vec
         l_upper = l_vec
+        l_ws = l_vec
     else:
         lrange = handler.param_bound_map[l]
         lrange_handler = RangeHandler1D(lrange)
         l_lower = handler.var_lowerbounds[lrange_handler.index_matrix()]
         l_upper = handler.var_upperbounds[lrange_handler.index_matrix()]
+        l_ws = handler.var_warmstart[lrange_handler.index_matrix()]
 
     x_lower = handler.var_lowerbounds[xrange_handler.index_matrix()]
     x_upper = handler.var_upperbounds[xrange_handler.index_matrix()]
+    x_ws = handler.var_warmstart[xrange_handler.index_matrix()]
 
     # y_lower = np.maximum(x_lower, zeros)
     # y_upper = np.maximum(x_upper, zeros)
 
     y_lower = np.maximum(x_lower, l_lower)
     y_upper = np.maximum(x_upper, l_upper)
+    y_ws = np.maximum(x_ws, l_ws)
 
     # print(x_lower, l_lower, y_lower)
     # print(x_upper, l_upper, y_upper)
 
     handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower
     handler.var_upperbounds[yrange_handler.index_matrix()] = y_upper
+    handler.var_warmstart[yrange_handler.index_matrix()] = y_ws

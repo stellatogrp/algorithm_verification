@@ -76,8 +76,9 @@ def linear_step_bound_canon(step, k, handler):
     yrange = handler.iter_bound_map[y][k]
     yrange_handler = RangeHandler1D(yrange)
     urange_handler = RangeHandler1D(uranges)
-    handler.var_lowerbounds[urange_handler.index_matrix()]
-    handler.var_upperbounds[urange_handler.index_matrix()]
+    # handler.var_lowerbounds[urange_handler.index_matrix()]
+    # handler.var_upperbounds[urange_handler.index_matrix()]
+    u_ws = handler.var_warmstart[urange_handler.index_matrix()]
     l_out = Dinvb
     u_out = Dinvb
     full_index_mat = urange_handler.index_matrix()
@@ -108,10 +109,10 @@ def linear_step_bound_canon(step, k, handler):
         u_out = u_out + u_bound
 
     # print(l_out, u_out)
-
-    # exit(0)
+    y_ws = DinvA @ u_ws + Dinvb
     handler.var_lowerbounds[yrange_handler.index_matrix()] = l_out
     handler.var_upperbounds[yrange_handler.index_matrix()] = u_out
+    handler.var_warmstart[yrange_handler.index_matrix()] = y_ws
 
 
 def linear_step_bound_canon_old(step, k, handler):

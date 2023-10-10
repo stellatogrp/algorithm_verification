@@ -196,7 +196,15 @@ def solve_via_scs_nosdp(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     exit(0)
     return 0, 0
 
-def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
+
+def sample_x(handler):
+    # print(handler.var_lowerbounds)
+    # exit(0)
+    l = handler.var_lowerbounds
+    return vec(l @ l.T)
+
+
+def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler):
     print('----solving via scs directly----')
     print('problem dim n:', problem_dim)
     c = vec(C.todense())
@@ -216,16 +224,19 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     cone_dims = []
 
     for Ai, bli, bui in zip(A_vals, b_lvals, b_uvals):
+        Ai_norm = spa.linalg.norm(Ai)
+        # Ai_norm = 1
         if bli == bui:
-            Aeq.append(spa_vec(Ai))
-            beq.append(bli)
+            Aeq.append(spa_vec(Ai) / Ai_norm)
+            beq.append(bli / Ai_norm)
         else:
             if bui < np.inf:
-                Au.append(spa_vec(Ai))
-                bu.append(bui)
+                Au.append(spa_vec(Ai) / Ai_norm)
+                bu.append(bui / Ai_norm)
             if bli > -np.inf:
-                Al.append(-spa_vec(Ai))
-                bl.append(-bli)
+                Al.append(-spa_vec(Ai) / Ai_norm)
+                bl.append(-bli / Ai_norm)
+        # print(Ai_norm)
 
     for cone in PSD_cones:
         # H = cone.get_Hsymm_mat(problem_dim)
@@ -251,10 +262,51 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     data = dict(A=A, b=b, c=c)
     # cones = dict(z=zero_cone_dim, l=nonneg_cone_dim)
     cones = dict(z=zero_cone_dim, l=nonneg_cone_dim, s=cone_dims)
-    solver = scs.SCS(data, cones, eps_abs=1e-3, eps_rel=1e-3, max_iters=int(1e7),
-                     use_indirect=True, acceleration_lookback=0)
-    sol = solver.solve()
+    solver = scs.SCS(data,
+                    cones,
+                    eps_abs=1e-4,
+                    eps_rel=1e-4,
+                    max_iters=int(1e6),
+                    use_indirect=True,
+                    acceleration_lookback=0,
+                    )
+    # xfull_ws = np.zeros(x_dim)
+    # xpart_ws = sample_x(handler)
+    # # print(A.shape, x_dim, xpart_ws.shape)
+    # xfull_ws[:xpart_ws.shape[0]] = xpart_ws
+    # # print(xfull_ws)
+    # # exit(0)
+    # # sol = solver.solve(warm_start=True, x=xfull_ws)
+    # print(handler.var_warmstart)
+    x_ws = handler.var_warmstart
+    mat_X_ws = np.bmat([
+        [x_ws @ x_ws.T, x_ws],
+        [x_ws.T, np.array([[1]])]
+    ])
+    mat_X_ws = vec(mat_X_ws)
+    # print(mat_X_ws.shape)
+    s_ws = b - A @ mat_X_ws
+    # print(s_ws.shape)
+    # exit(0)
+    sol = solver.solve(warm_start=True, x=mat_X_ws, s=s_ws)
+    # sol = solver.solve(warm_start=True, x=mat_X_ws)
+    # sol = solver.solve()
 
     # print(sol)
     # exit(0)
-    return -sol['info']['pobj'], sol['info']['solve_time'] / 1000
+    out = dict(
+        sdp_objval=-sol['info']['pobj'],
+        sdp_solvetime=sol['info']['solve_time'] / 1000,
+        num_cones=len(PSD_cones),
+        x_dim=x_dim,
+        num_Aeq=len(Aeq),
+        # Aeq_nnz=Aeq.count_nonzero(),
+        num_Au=len(Au),
+        # Au_nnz=Au.count_nonzero(),
+        num_Al=len(Al),
+        # Al_nnz=Al.count_nonzero(),
+        A_nnz = A.count_nonzero(),
+    )
+
+    # return -sol['info']['pobj'], sol['info']['solve_time'] / 1000
+    return out

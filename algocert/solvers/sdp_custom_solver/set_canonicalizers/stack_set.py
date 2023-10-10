@@ -106,6 +106,7 @@ def stack_bound_canon(init_set, handler):
     xrange1D_handler = RangeHandler1D(xrange)
     l_new = []
     u_new = []
+    ws_new = []
 
     for val in val_stack:
         if isinstance(val, Parameter):
@@ -117,13 +118,18 @@ def stack_bound_canon(init_set, handler):
             # l_new.ap
             l_new.append(handler.var_lowerbounds[valrange1D_handler.index_matrix()])
             u_new.append(handler.var_upperbounds[valrange1D_handler.index_matrix()])
+            ws_new.append(handler.param_set_map[val].sample_point())
         else:
             l_new.append(val[0].reshape(-1, 1))
             u_new.append(val[1].reshape(-1, 1))
+            ws_newval = (val[1] - val[0]) / 2
+            ws_new.append(ws_newval.reshape(-1, 1))
 
     # print(l_new, u_new)
     l_new = np.vstack(l_new)
     u_new = np.vstack(u_new)
+    ws_newval = np.vstack(ws_new)
     # print(l_new, u_new)
     handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l_new
     handler.var_upperbounds[xrange1D_handler.index_matrix()] = u_new
+    handler.var_warmstart[xrange1D_handler.index_matrix()] = ws_newval

@@ -11,3 +11,6 @@ class L2BallSet(InitSet):
     def __str__(self):
         to_string = f'SET({self.x.name}): l2 ball of radius {self.r} centered at {self.c}'
         return to_string
+
+    def sample_point(self):
+        return self.c
