@@ -16,8 +16,9 @@ from algocert.variables.parameter import Parameter
 
 class NUM(object):
 
-    def __init__(self, orig_m, orig_n, c_c, c_r=.05, seed=0):
+    def __init__(self, orig_m, orig_n, c_c, c_r=.1, seed=0, c_seed=1):
         self.seed = seed
+        self.c_seed = c_seed
         self.orig_m = orig_m
         self.orig_n = orig_n
         self.c_c = c_c
@@ -43,6 +44,7 @@ class NUM(object):
         t = 1 * np.ones(n)
         self.w = w
         self.t = t
+        self.c_samp = self.sample_c()
 
     def generate_CP(self, K):
         m, n = self.A.shape
@@ -115,7 +117,7 @@ class NUM(object):
 
         return CertificationProblem(K, init_sets, param_sets, obj, steps)
 
-    def generate_CP_ball(self, K):
+    def generate_CP_ball(self, K, warm_start=False):
         m, n = self.A.shape
         obj_w = self.w
         M = self.M
@@ -172,7 +174,11 @@ class NUM(object):
 
         steps = [step1, step2, step3, step4]
 
-        z_set = ZeroSet(z)
+        if warm_start:
+            ws_sol = self.test_cp_prob()
+            z_set = L2BallSet(z, ws_sol, 0)
+        else:
+            z_set = ZeroSet(z)
 
         init_sets = [z_set]
         param_sets = [c_set, q_set]
@@ -182,37 +188,65 @@ class NUM(object):
 
     def test_cp_prob(self):
         w = self.w
-        t = self.t
-        R = self.R
-        c = self.c_c - self.c_r
+        c = self.c_samp
 
-        f = cp.Variable(R.shape[1])
+        # f = cp.Variable(R.shape[1])
+        # # print('w:', w)
+        # obj = cp.Minimize(w @ f)
+        # constraints = [R @ f <= c.reshape(-1, ), f >= 0, f <= t]
+        # problem = cp.Problem(obj, constraints)
+        # problem.solve()
+        # print(np.round(f.value, 4))
+
+        A = self.A
+        rhs = np.hstack([c.reshape(-1, ), np.zeros(self.orig_n), self.t])
+        f = cp.Variable(A.shape[1])
         # print('w:', w)
         obj = cp.Minimize(w @ f)
-        constraints = [R @ f <= c.reshape(-1, ), f >= 0, f <= t]
+        constraints = [A @ f <= rhs]
         problem = cp.Problem(obj, constraints)
         problem.solve()
-        print(np.round(f.value, 4))
+        # print(np.round(f.value, 4))
+        # print('dual var:', np.round(constraints[0].dual_value, 4))
+
+        pd_sol = np.hstack([f.value, constraints[0].dual_value])
+        # print(np.round(pd_sol, 4))
+        return np.round(pd_sol, 4).reshape(-1, 1)
+
+    def sample_c(self):
+        np.random.seed(self.c_seed)
+        c = self.c_c
+        r = self.c_r
+        sample = np.random.normal(0, 1, c.shape[0])
+        sample = np.random.uniform(0, r) * sample / np.linalg.norm(sample)
+        # print(np.linalg.norm(sample))
+        # print(sample.reshape(-1, 1) + c)
+        return sample.reshape(-1, 1) + c
+
 
 def main():
     m = 2
     n = 3
     K = 1
+    ws = True
     c_c = np.ones((m, 1))
-    instance = NUM(m, n, c_c, seed=1)
-    print(instance.R)
-    print(instance.M.shape)
-    instance.test_cp_prob()
+    instance = NUM(m, n, c_c, seed=0)
+    # print(instance.R)
+    # print(instance.M.shape)
+    test_pd = instance.test_cp_prob()
+    print(test_pd)
     # instance.generate_CP(1)
 
-    CP = instance.generate_CP_ball(K)
+    CP = instance.generate_CP_ball(K, warm_start=ws)
     sdp_g, sdp_gtime = CP.solve(solver_type='GLOBAL', add_bounds=True)
 
-    CP2 = instance.generate_CP_ball(K)
+    CP2 = instance.generate_CP_ball(K, warm_start=ws)
     out_sdp = CP2.solve(solver_type='SDP_CUSTOM')
     print(out_sdp)
 
     print(sdp_g, out_sdp['sdp_objval'])
+
+    # instance.sample_c()
 
 
 if __name__ == '__main__':
