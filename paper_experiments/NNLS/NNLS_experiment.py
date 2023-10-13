@@ -25,12 +25,13 @@ def main():
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
-    m, n = 10, 5
+    m, n = 30, 15
     b_c = 10 * np.ones((m, 1))
     b_r = .1
     # K = 5
-    # K_vals = [1, 2, 3, 4, 6]
-    K_vals = [1]
+    K_vals = [9, 10]
+    # K_vals = [7, 8]
+    # K_vals = [1, 2, 3, 4, 5, 6]
 
     instance = NNLS(m, n, b_c, b_r, seed=1)
 

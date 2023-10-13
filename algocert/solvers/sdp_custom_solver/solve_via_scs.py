@@ -278,19 +278,21 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler):
     # # exit(0)
     # # sol = solver.solve(warm_start=True, x=xfull_ws)
     # print(handler.var_warmstart)
-    x_ws = handler.var_warmstart
-    mat_X_ws = np.bmat([
-        [x_ws @ x_ws.T, x_ws],
-        [x_ws.T, np.array([[1]])]
-    ])
-    mat_X_ws = vec(mat_X_ws)
-    # print(mat_X_ws.shape)
-    s_ws = b - A @ mat_X_ws
-    # print(s_ws.shape)
-    # exit(0)
-    sol = solver.solve(warm_start=True, x=mat_X_ws, s=s_ws)
+
+    # x_ws = handler.var_warmstart
+    # mat_X_ws = np.bmat([
+    #     [x_ws @ x_ws.T, x_ws],
+    #     [x_ws.T, np.array([[1]])]
+    # ])
+    # mat_X_ws = vec(mat_X_ws)
+    # # print(mat_X_ws.shape)
+    # s_ws = b - A @ mat_X_ws
+    # # print(s_ws.shape)
+    # # exit(0)
+    # sol = solver.solve(warm_start=True, x=mat_X_ws, s=s_ws)
     # sol = solver.solve(warm_start=True, x=mat_X_ws)
-    # sol = solver.solve()
+
+    sol = solver.solve()
 
     # print(sol)
     # exit(0)

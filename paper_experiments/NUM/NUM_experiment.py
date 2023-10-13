@@ -14,6 +14,7 @@ def main():
     outf = outf_prefix + f'paper_experiments/NUM/data/{curr_time}.csv'
     print(outf)
 
+<<<<<<< HEAD
     m, n = 3, 5
     c_c = np.ones((m, 1))
     c_r = .1
@@ -22,9 +23,25 @@ def main():
     K_vals = [1]
 
     instance = NUM(m, n, c_c, c_r=c_r, seed=1)
+=======
+    m, n = 3, 4
+    c_c = np.ones((m, 1))
+    c_r = .1
+    # K = 5
+    K_vals = [1, 2, 3, 4]
+    # K_vals = [3, 4, 5]
+    # K_vals = [5]
+
+    instance = NUM(m, n, c_c, c_r=c_r, seed=3)
+>>>>>>> 7f95bb1 (updated experiments with lower mosek tol)
 
     out_res = []
     for K in K_vals:
+        CP = instance.generate_CP_ball(K, warm_start=False)
+        print(instance.R)
+        # print(CP.solve(solver_type='GLOBAL', add_bounds=True))
+        # exit(0)
+
         CP = instance.generate_CP_ball(K, warm_start=False)
         out = CP.solve(solver_type='SDP_CUSTOM')
         out['orig_m'] = m

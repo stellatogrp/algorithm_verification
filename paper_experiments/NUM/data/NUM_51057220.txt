@@ -1,0 +1,4 @@
+/home/vranjan/algorithm-certification/paper_experiments/NUM/data/101123_060635.csv
+[[1 0 1 1]
+ [0 0 1 1]
+ [1 1 1 1]]

@@ -417,7 +417,9 @@ class SDPCustomHandler(object):
         # return self.solve_with_cvxpy()
         # return self.solve_with_scs_directly()
         if self.sdp_solver == 'mosek':
+            print('solving via mosek')
             return self.solve_with_mosek_directly()
         if self.sdp_solver == 'scs':
+            print('solving via scs')
             return self.solve_with_scs_directly()
         # return self.solve_with_admm()

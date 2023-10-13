@@ -1,0 +1,86 @@
+/home/vranjan/algorithm-certification/paper_experiments/NUM/data/100923_222337.csv
+1 steps of algorithm
+----Initial set----
+ZEROSET(z)
+----Parameter set----
+SET(c): l2 ball of radius 0.1 centered at [[1.]
+ [1.]
+ [1.]
+ [1.]
+ [1.]]
+SET(q): StackSet = 
+----Algorithm steps----
+u = LINSTEP(z, q, )
+w = LINSTEP(u, z, )
+u_tilde = NONNEG_PROJ(w)
+z = LINSTEP(z, u_tilde, u, )
+----Objective----
+OBJ: CONVERGENCE_RESIDUAL(z)
+{ITERATE(u): 0, ITERATE(w): 1, ITERATE(u_tilde): 2, ITERATE(z): 3}
+{PARAMETER(c): (0, 5), PARAMETER(q): (5, 40)}
+{ITERATE(z): {0: (40, 75), 1: (180, 215)}, ITERATE(u): {1: (75, 110)}, ITERATE(w): {1: (110, 145)}, ITERATE(u_tilde): {1: (145, 180)}}
+problem dim: 216
+adding mat RLT
+[ 0  1  2  3  4  5  6  7  9 10 11 12 13 14 15 16 17 18 19 20 21 22 24 25
+ 26 27 28 29 30 31 32 34] [ 8 23 33] [0.08269046 0.09394873 0.05630767 0.07157184 0.06878003 0.07957631
+ 0.08800867 0.05630767 0.         0.06878003 0.32410893 0.27245202
+ 0.20982744 0.16892302 0.22285774 0.08269046 0.09394873 0.05630767
+ 0.07157184 0.06878003 0.07957631 0.08800867 0.05630767 0.
+ 0.06878003 0.08269046 0.09394873 0.05630767 0.07157184 0.06878003
+ 0.07957631 0.08800867 0.05630767 0.         0.06878003]
+all input matrices symmetric
+----solving via mosek directly----
+problem dim n: 216
+x_dim: 23436
+Problem
+  Name                   :                 
+  Objective sense        : minimize        
+  Type                   : CONIC (conic optimization problem)
+  Constraints            : 176915          
+  Affine conic cons.     : 14 (116094 rows)
+  Disjunctive cons.      : 0               
+  Cones                  : 0               
+  Scalar variables       : 139531          
+  Matrix variables       : 0               
+  Integer variables      : 0               
+
+Optimizer started.
+Presolve started.
+Linear dependency checker started.
+Linear dependency checker terminated.
+Eliminator started.
+Freed constraints in eliminator : 103842
+Eliminator terminated.
+Eliminator started.
+Freed constraints in eliminator : 1183
+Eliminator terminated.
+Eliminator - tries                  : 2                 time                   : 0.00            
+Lin. dep.  - tries                  : 1                 time                   : 0.16            
+Lin. dep.  - primal attempts        : 1                 successes              : 1               
+Lin. dep.  - dual attempts          : 0                 successes              : 0               
+Lin. dep.  - primal deps.           : 455               dual deps.             : 0               
+Presolve terminated. Time: 0.49    
+GP based matrix reordering started.
+GP based matrix reordering terminated.
+Optimizer  - threads                : 4               
+Optimizer  - solved problem         : the primal      
+Optimizer  - Constraints            : 137940          
+Optimizer  - Cones                  : 1               
+Optimizer  - Scalar variables       : 25780             conic                  : 2352            
+Optimizer  - Semi-definite variables: 14                scalarized             : 116094          
+Factor     - setup time             : 173.57          
+Factor     - dense det. time        : 76.37             GP order time          : 6.47            
+Factor     - nonzeros before factor : 5.79e+08          after factor           : 7.67e+08        
+Factor     - dense dim.             : 3058              flops                  : 5.81e+12        
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME  
+0   5.0e+00  2.0e+00  1.0e+00  0.00e+00   7.824270053e-01   7.824270053e-01   1.0e+00  174.19
+1   2.8e+00  1.1e+00  6.8e-01  -8.22e-01  -2.026507463e-01  3.591554585e-01   5.6e-01  202.66
+2   1.5e+00  6.0e-01  3.9e-01  -5.68e-01  -1.151360946e+00  -2.094558010e-01  3.0e-01  228.43
+3   9.1e-01  3.7e-01  2.0e-01  1.37e-02   -3.132752557e+00  -2.480991047e+00  1.8e-01  256.75
+4   5.8e-01  2.3e-01  8.4e-02  7.27e-01   -5.076569228e+00  -4.846973990e+00  1.2e-01  284.46
+5   4.6e-01  1.8e-01  4.8e-02  1.57e+00   -6.078888027e+00  -5.989249238e+00  9.2e-02  311.99
+6   3.6e-01  1.4e-01  2.5e-02  2.08e+00   -6.902836213e+00  -6.884789162e+00  7.2e-02  339.47
+7   2.9e-01  1.1e-01  1.2e-02  2.84e+00   -7.485904040e+00  -7.490483968e+00  5.7e-02  367.41
+8   2.4e-01  9.6e-02  6.7e-03  3.49e+00   -7.786742572e+00  -7.792077896e+00  4.8e-02  395.06
+9   2.0e-01  1.5e-01  3.8e-03  3.57e+00   -7.927090285e+00  -7.930420244e+00  4.0e-02  422.92
+slurmstepd: error: *** JOB 51030812 ON della-h12n17 CANCELLED AT 2023-10-09T22:35:10 ***
