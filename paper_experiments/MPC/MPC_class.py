@@ -53,7 +53,8 @@ class ModelPredictiveControl(object):
         self.QN = spa.csc_matrix(QN.dot(QN.T))
 
         # Control diff penalty (used to penalize u_{k+1} - u_k)
-        self.CR = .05 * spa.eye(self.nu)
+        self.CR = .01 * spa.eye(self.nu)
+        # self.CR = 0 * spa.eye(self.nu)
 
         # # Constants for angle penalty:
         # self.m = 1
@@ -77,19 +78,33 @@ class ModelPredictiveControl(object):
         # Input ad state bounds
         self.umin = - 1.0 * np.random.rand(self.nu)
         self.umax = -self.umin
-        self.xmin = -1.0 - np.random.rand(self.nx)
-        self.xmax = -self.xmin
-        self.xmin = -.1 * np.ones(n)
-        self.xmin = -.1 * np.ones(n)
-        self.xmax = .1 * np.ones(n)
+        self.umin = -1
+        self.umax = 1
+        # self.xmin = -1.0 - np.random.rand(self.nx)
+        # self.xmax = -self.xmin
+        # self.xmin = -.1 * np.ones(n)
+        # self.xmax = .1 * np.ones(n)
+        self.xmin = - 1.1 * np.ones(n)
+        self.xmax = 0.1 * np.ones(n)
 
         # Initial state (constrain to be within lower and upper bound)
-        self.x0 = np.random.rand(self.nx)
-        min_x0 = .5 * self.xmin
-        max_x0 = .5 * self.xmax
-        for i in range(self.nx):
-            self.x0[i] = min_x0[i] + \
-                self.x0[i] * (max_x0[i] - min_x0[i])
+        # self.x0 = np.random.rand(self.nx)
+        # min_x0 = .5 * self.xmin
+        # max_x0 = .5 * self.xmax
+
+        # for i in range(self.nx):
+        #    self.x0[i] = min_x0[i] + \
+        #        self.x0[i] * (max_x0[i] - min_x0[i])
+
+        self.x0 = np.zeros(self.nx)
+        self.x0[0] = -.5
+        min_x0 = np.zeros(self.nx)
+        min_x0[0] = -1.5
+        max_x0 = np.zeros(self.nx)
+        max_x0[0] = -.5
+
+        self.min_x0 = min_x0
+        self.max_x0 = max_x0
 
         # Horizon length
         self.T = T
@@ -306,10 +321,13 @@ class ModelPredictiveControl(object):
 
 
 def main():
-    mpc = ModelPredictiveControl(n=2, T=4)
+    mpc = ModelPredictiveControl(n=5, T=5)
     print(mpc.qp_problem)
+    P = mpc.qp_problem['P']
     A = mpc.qp_problem['A']
-    print(A.shape)
+    l = mpc.qp_problem['l']
+    u = mpc.qp_problem['u']
+    print(P.shape, A.shape, l.shape, u.shape)
 
 
 if __name__ == '__main__':

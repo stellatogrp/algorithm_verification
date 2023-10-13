@@ -9,18 +9,19 @@ def main():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    outf_prefix = '/home/vranjan/algorithm-certification/'
+    # outf_prefix = '/home/vranjan/algorithm-certification/'
+    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     outf = outf_prefix + f'paper_experiments/NUM/data/{curr_time}.csv'
     print(outf)
 
-    m, n = 1, 2
+    m, n = 3, 5
     c_c = np.ones((m, 1))
     c_r = .1
     # K = 5
     # K_vals = [1, 2, 3, 4, 5]
-    K_vals = [1, 2]
+    K_vals = [1]
 
-    instance = NUM(m, n, c_c, c_r=c_r, seed=0)
+    instance = NUM(m, n, c_c, c_r=c_r, seed=1)
 
     out_res = []
     for K in K_vals:

@@ -62,6 +62,11 @@ class SDPCustomHandler(object):
         else:
             self.add_RLT_diag = False
 
+        if 'add_indiv_RLT' in kwargs:
+            self.add_indiv_RLT = kwargs['add_indiv_RLT']
+        else:
+            self.add_indiv_RLT = False
+
         if 'add_planet' in kwargs:
             self.add_planet = kwargs['add_planet']
         else:
@@ -85,8 +90,8 @@ class SDPCustomHandler(object):
         if 'sdp_solver' in kwargs:
             self.sdp_solver = kwargs['sdp_solver']
         else:
-            self.sdp_solver = 'scs'
-            # self.sdp_solver = 'mosek'
+            # self.sdp_solver = 'scs'
+            self.sdp_solver = 'mosek'
 
     def convert_hl_to_basic_steps(self):
         pass
@@ -261,8 +266,8 @@ class SDPCustomHandler(object):
         if self.lookback_t is not None:
             lookback_t = self.lookback_t
         else:
-            # lookback_t = self.K
-            lookback_t = 1
+            lookback_t = self.K
+            # lookback_t = 1
         # print('lookback_t:', lookback_t)
         # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         for linstep_var in self.linstep_output_vars:

@@ -98,6 +98,11 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         Al_mat = spa_to_mosek_mat(Al)
         M.constraint(Expr.mul(Al_mat, x), Domain.greaterThan(bl))
 
+        tol = 1e-5
+        M.setSolverParam('intpntCoTolDfeas', tol)
+        M.setSolverParam('intpntCoTolPfeas', tol)
+        M.setSolverParam('intpntCoTolRelGap', tol)
+
         M.solve()
         # M->setSolverParam("intpntMaxIterations", 400)
         # res = x.level()

@@ -3,6 +3,7 @@ import scipy.sparse as spa
 
 from algocert.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
+from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_ranges
 
 
 def nonneg_orthant_proj_canon(step, k, handler):
@@ -132,6 +133,14 @@ def nonneg_orthant_proj_canon(step, k, handler):
 
     # print(len(A_vals), len(b_lvals), len(b_uvals))
     # exit(0)
+
+    if handler.add_indiv_RLT:
+        # print(yrange1D_handler.ranges1[0], xrange1D_handler.ranges1[0])
+        A_rlt, bl_rlt, bu_rlt = RLT_ranges(yrange1D_handler.ranges1[0], xrange1D_handler.ranges1[0], handler)
+        # print(len(bl_rlt))
+        A_vals += A_rlt
+        b_lvals += bl_rlt
+        b_uvals += bu_rlt
 
     if handler.add_planet:
         # print('planet')

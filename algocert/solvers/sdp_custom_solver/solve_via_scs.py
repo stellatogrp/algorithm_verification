@@ -264,8 +264,8 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler):
     cones = dict(z=zero_cone_dim, l=nonneg_cone_dim, s=cone_dims)
     solver = scs.SCS(data,
                     cones,
-                    eps_abs=1e-4,
-                    eps_rel=1e-4,
+                    eps_abs=1e-3,
+                    eps_rel=1e-3,
                     max_iters=int(1e6),
                     use_indirect=True,
                     acceleration_lookback=0,
@@ -297,6 +297,8 @@ def solve_via_scs(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler):
     out = dict(
         sdp_objval=-sol['info']['pobj'],
         sdp_solvetime=sol['info']['solve_time'] / 1000,
+        sdp_setuptime=sol['info']['setup_time'] / 1000,
+        scs_iter=sol['info']['iter'],
         num_cones=len(PSD_cones),
         x_dim=x_dim,
         num_Aeq=len(Aeq),

@@ -28,7 +28,7 @@ class NUM(object):
     def _generate_NUM_data(self):
         m, n = self.orig_m, self.orig_n
         np.random.seed(self.seed)
-        R = np.random.binomial(n=1, p=0.4, size=(m, n))
+        R = np.random.binomial(n=1, p=0.6, size=(m, n))
         # R = np.random.binomial(n=1, p=1, size=(m, n))
         # print(R)
         # exit(0)
@@ -225,13 +225,15 @@ class NUM(object):
 
 
 def main():
-    m = 2
-    n = 3
-    K = 1
+    m = 3
+    n = 5
+    K = 5
+    c_r = .1
     ws = True
     c_c = np.ones((m, 1))
-    instance = NUM(m, n, c_c, seed=4)
+    instance = NUM(m, n, c_c, c_r=c_r, seed=3)
     # print(instance.R)
+    # exit(0)
     # print(instance.M.shape)
     test_pd = instance.test_cp_prob()
     print(test_pd)
