@@ -1,4 +1,4 @@
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -7,7 +7,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 1 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -16,7 +16,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 2 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -25,7 +25,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 3 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -34,7 +34,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 4 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -43,7 +43,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 5 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -52,7 +52,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 6 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -61,7 +61,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 7 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -70,7 +70,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 8 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -79,7 +79,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 9 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -88,7 +88,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 10 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -97,7 +97,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 11 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -106,7 +106,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 12 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -115,7 +115,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 13 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -124,7 +124,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 14 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -133,7 +133,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 15 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -142,7 +142,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 16 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -151,7 +151,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 17 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -160,7 +160,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 18 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -169,7 +169,7 @@ Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
 This code path has been hit 19 times so far.
 
   warnings.warn(msg, UserWarning)
-/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning: 
+/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/cvxpy/expressions/expression.py:593: UserWarning:
 This use of ``*`` has resulted in matrix multiplication.
 Using ``*`` for matrix multiplication has been deprecated since CVXPY 1.1.
     Use ``*`` for matrix-scalar and vector-scalar multiplication.
@@ -193,8 +193,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-1.43069857 -1.93912779] and u = [1.43069857 1.93912779]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -272,8 +272,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [ 0.86630945 -1.57922254] and u = [ 0.86630945 -1.57922254]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -332,7 +332,7 @@ Cutting planes:
 Explored 1393 nodes (7735 simplex iterations) in 0.35 seconds (0.06 work units)
 Thread count was 32 (of 32 available processors)
 
-Solution count 1: 23.2171 
+Solution count 1: 23.2171
 
 Optimal solution found (tolerance 1.00e-02)
 Best objective 2.321708874338e+01, best bound 2.321709154630e+01, gap 0.0000%
@@ -346,8 +346,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.64939415 -1.70936751] and u = [0.94182002 1.41564183]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -409,7 +409,7 @@ Cutting planes:
 Explored 1429 nodes (8517 simplex iterations) in 0.33 seconds (0.07 work units)
 Thread count was 32 (of 32 available processors)
 
-Solution count 2: 24.3512 21.0576 
+Solution count 2: 24.3512 21.0576
 
 Optimal solution found (tolerance 1.00e-02)
 Best objective 2.435114714269e+01, best bound 2.435115009395e+01, gap 0.0000%
@@ -423,8 +423,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-1.43069857 -1.93912779] and u = [1.43069857 1.93912779]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )

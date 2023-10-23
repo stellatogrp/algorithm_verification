@@ -8,7 +8,7 @@ SET(c): l2 ball of radius 0.1 centered at [[1.]
  [1.]
  [1.]
  [1.]]
-SET(q): StackSet = 
+SET(q): StackSet =
 ----Algorithm steps----
 u = LINSTEP(z, q, )
 w = LINSTEP(u, z, )
@@ -33,16 +33,16 @@ all input matrices symmetric
 problem dim n: 216
 x_dim: 23436
 Problem
-  Name                   :                 
-  Objective sense        : minimize        
+  Name                   :
+  Objective sense        : minimize
   Type                   : CONIC (conic optimization problem)
-  Constraints            : 176915          
+  Constraints            : 176915
   Affine conic cons.     : 14 (116094 rows)
-  Disjunctive cons.      : 0               
-  Cones                  : 0               
-  Scalar variables       : 139531          
-  Matrix variables       : 0               
-  Integer variables      : 0               
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 139531
+  Matrix variables       : 0
+  Integer variables      : 0
 
 Optimizer started.
 Presolve started.
@@ -54,25 +54,25 @@ Eliminator terminated.
 Eliminator started.
 Freed constraints in eliminator : 1183
 Eliminator terminated.
-Eliminator - tries                  : 2                 time                   : 0.00            
-Lin. dep.  - tries                  : 1                 time                   : 0.16            
-Lin. dep.  - primal attempts        : 1                 successes              : 1               
-Lin. dep.  - dual attempts          : 0                 successes              : 0               
-Lin. dep.  - primal deps.           : 455               dual deps.             : 0               
-Presolve terminated. Time: 0.49    
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 0.16
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 455               dual deps.             : 0
+Presolve terminated. Time: 0.49
 GP based matrix reordering started.
 GP based matrix reordering terminated.
-Optimizer  - threads                : 4               
-Optimizer  - solved problem         : the primal      
-Optimizer  - Constraints            : 137940          
-Optimizer  - Cones                  : 1               
-Optimizer  - Scalar variables       : 25780             conic                  : 2352            
-Optimizer  - Semi-definite variables: 14                scalarized             : 116094          
-Factor     - setup time             : 173.57          
-Factor     - dense det. time        : 76.37             GP order time          : 6.47            
-Factor     - nonzeros before factor : 5.79e+08          after factor           : 7.67e+08        
-Factor     - dense dim.             : 3058              flops                  : 5.81e+12        
-ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME  
+Optimizer  - threads                : 4
+Optimizer  - solved problem         : the primal
+Optimizer  - Constraints            : 137940
+Optimizer  - Cones                  : 1
+Optimizer  - Scalar variables       : 25780             conic                  : 2352
+Optimizer  - Semi-definite variables: 14                scalarized             : 116094
+Factor     - setup time             : 173.57
+Factor     - dense det. time        : 76.37             GP order time          : 6.47
+Factor     - nonzeros before factor : 5.79e+08          after factor           : 7.67e+08
+Factor     - dense dim.             : 3058              flops                  : 5.81e+12
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME
 0   5.0e+00  2.0e+00  1.0e+00  0.00e+00   7.824270053e-01   7.824270053e-01   1.0e+00  174.19
 1   2.8e+00  1.1e+00  6.8e-01  -8.22e-01  -2.026507463e-01  3.591554585e-01   5.6e-01  202.66
 2   1.5e+00  6.0e-01  3.9e-01  -5.68e-01  -1.151360946e+00  -2.094558010e-01  3.0e-01  228.43

@@ -135,7 +135,8 @@ def all_pep_runs(t_vals, mu, L, r, K_max):
             out_dict = dict(t=t, K=K, tau=tau)
             out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
-    out_df.to_csv('data/pep_data.csv', index=False)
+    print(out_df)
+    # out_df.to_csv('data/pep_data.csv', index=False)
 
 
 def main():
@@ -174,7 +175,7 @@ def main():
     max_r = np.linalg.norm(max_x)
 
     # single_NNLS_conv_resids(10, all_t[0], A, b_samples[0])
-    all_conv_resids(10, all_t, A, b_samples)
+    # all_conv_resids(10, all_t, A, b_samples)
     all_pep_runs(all_t, mu, L, max_r, 10)
 
 

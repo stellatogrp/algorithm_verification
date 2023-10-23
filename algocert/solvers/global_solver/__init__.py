@@ -18,11 +18,14 @@ from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.stack_set import StackSet
 from algocert.init_set.vec_span_set import VecSpanSet
 from algocert.init_set.zero_set import ZeroSet
+from algocert.objectives.block_convergence_residual import BlockConvergenceResidual
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.objectives.l1_conv_resid import L1ConvResid
 from algocert.objectives.lin_comb_squared_norm import LinCombSquaredNorm
 from algocert.objectives.linf_conv_resid import LInfConvResid
 from algocert.objectives.outer_prod_trace import OuterProdTrace
+from algocert.solvers.global_solver.obj_canonicalizers.block_convergence_residual import \
+    block_conv_resid_canon
 from algocert.solvers.global_solver.obj_canonicalizers.convergence_residual import \
     conv_resid_canon
 from algocert.solvers.global_solver.obj_canonicalizers.l1_conv_resid import \
@@ -111,6 +114,7 @@ BOUND_STEP_CANON_METHODS = {
 }
 
 OBJ_CANON_METHODS = {
+    BlockConvergenceResidual: block_conv_resid_canon,
     ConvergenceResidual: conv_resid_canon,
     OuterProdTrace: outer_prod_trace_canon,
     L1ConvResid: l1_conv_resid_canon,

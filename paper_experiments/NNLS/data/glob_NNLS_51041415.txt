@@ -3237,7 +3237,7 @@ Cutting planes:
 Explored 3780221 nodes (255707941 simplex iterations) in 3600.10 seconds (858.40 work units)
 Thread count was 28 (of 28 available processors)
 
-Solution count 3: 0.128833 0.128832 0.127088 
+Solution count 3: 0.128833 0.128832 0.127088
 
 Time limit reached
 Warning: max constraint violation (2.5988e-04) exceeds tolerance

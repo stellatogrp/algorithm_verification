@@ -82,16 +82,16 @@ all input matrices symmetric
 problem dim n: 346
 x_dim: 60031
 Problem
-  Name                   :                 
-  Objective sense        : minimize        
+  Name                   :
+  Objective sense        : minimize
   Type                   : CONIC (conic optimization problem)
-  Constraints            : 228681          
+  Constraints            : 228681
   Affine conic cons.     : 48 (96483 rows)
-  Disjunctive cons.      : 0               
-  Cones                  : 0               
-  Scalar variables       : 156515          
-  Matrix variables       : 0               
-  Integer variables      : 0               
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 156515
+  Matrix variables       : 0
+  Integer variables      : 0
 
 Optimizer started.
 Presolve started.
@@ -103,27 +103,27 @@ Eliminator terminated.
 Eliminator started.
 Freed constraints in eliminator : 825
 Eliminator terminated.
-Eliminator - tries                  : 2                 time                   : 0.00            
-Lin. dep.  - tries                  : 1                 time                   : 0.12            
-Lin. dep.  - primal attempts        : 1                 successes              : 1               
-Lin. dep.  - dual attempts          : 0                 successes              : 0               
-Lin. dep.  - primal deps.           : 1485              dual deps.             : 0               
-Presolve terminated. Time: 0.97    
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 0.12
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 1485              dual deps.             : 0
+Presolve terminated. Time: 0.97
 GP based matrix reordering started.
 GP based matrix reordering terminated.
-Optimizer  - threads                : 1               
-Optimizer  - solved problem         : the primal      
-Optimizer  - Constraints            : 126402          
-Optimizer  - Cones                  : 1               
-Optimizer  - Scalar variables       : 37631             conic                  : 4104            
-Optimizer  - Semi-definite variables: 48                scalarized             : 96483           
-Factor     - setup time             : 82.87           
-Factor     - dense det. time        : 42.33             GP order time          : 16.63           
-Factor     - nonzeros before factor : 1.21e+08          after factor           : 2.83e+08        
-Factor     - dense dim.             : 4133              flops                  : 9.68e+11        
-Factor     - GP saved nzs           : 8.98e+07          GP saved flops         : 1.28e+12        
-ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME  
-0   1.9e+02  4.0e+00  1.0e+00  0.00e+00   0.000000000e+00   0.000000000e+00   1.0e+00  84.13 
+Optimizer  - threads                : 1
+Optimizer  - solved problem         : the primal
+Optimizer  - Constraints            : 126402
+Optimizer  - Cones                  : 1
+Optimizer  - Scalar variables       : 37631             conic                  : 4104
+Optimizer  - Semi-definite variables: 48                scalarized             : 96483
+Factor     - setup time             : 82.87
+Factor     - dense det. time        : 42.33             GP order time          : 16.63
+Factor     - nonzeros before factor : 1.21e+08          after factor           : 2.83e+08
+Factor     - dense dim.             : 4133              flops                  : 9.68e+11
+Factor     - GP saved nzs           : 8.98e+07          GP saved flops         : 1.28e+12
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME
+0   1.9e+02  4.0e+00  1.0e+00  0.00e+00   0.000000000e+00   0.000000000e+00   1.0e+00  84.13
 1   1.8e+02  3.9e+00  9.8e-01  -6.01e-01  -2.150764629e-02  -3.102037861e-03  9.7e-01  103.63
 2   1.1e+02  2.3e+00  6.6e-01  -5.97e-01  -4.664703658e-01  -4.555551943e-02  5.8e-01  121.71
 3   6.1e+01  1.3e+00  4.2e-01  -5.24e-01  -6.405420353e-01  2.641014312e-01   3.3e-01  140.09
@@ -154,14 +154,14 @@ ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU
 28  3.6e-05  4.1e-06  1.9e-10  1.40e+00   -1.964613106e-02  -1.964565043e-02  1.4e-07  638.21
 29  2.6e-05  3.7e-06  1.7e-10  1.00e+00   -2.322413518e-02  -2.322370010e-02  1.3e-07  658.17
 30  2.6e-05  3.7e-06  1.7e-10  1.00e+00   -2.322413518e-02  -2.322370010e-02  1.3e-07  678.90
-Optimizer terminated. Time: 700.85  
+Optimizer terminated. Time: 700.85
 
 
 Interior-point solution summary
   Problem status  : PRIMAL_AND_DUAL_FEASIBLE
   Solution status : OPTIMAL
-  Primal.  obj: -2.3224135178e-02   nrm: 3e+03    Viol.  con: 8e-04    var: 0e+00    acc: 4e-04  
-  Dual.    obj: -2.3223700086e-02   nrm: 1e+04    Viol.  con: 3e-06    var: 1e-05    acc: 5e-07  
+  Primal.  obj: -2.3224135178e-02   nrm: 3e+03    Viol.  con: 8e-04    var: 0e+00    acc: 4e-04
+  Dual.    obj: -2.3223700086e-02   nrm: 1e+04    Viol.  con: 3e-06    var: 1e-05    acc: 5e-07
 0.023224135177509098 164.72625708580017 700.853417284321
    sdp_objval  sdp_solvetime  num_cones  ...  orig_m  orig_n  b_r
 0    0.023224     700.853417       48.0  ...    30.0    15.0  0.1

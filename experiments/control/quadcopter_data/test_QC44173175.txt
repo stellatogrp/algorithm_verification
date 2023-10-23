@@ -47,8 +47,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.49584485 -0.50537061 -0.52405158 -0.49742123 -0.46844788 -0.50393983] and u = [0.50415515 0.49462939 0.47594842 0.50257877 0.53155212 0.49606017]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -90,8 +90,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.49681983 -0.50631904 -0.52173745 -0.49362329 -0.47503123 -0.50149499] and u = [0.50318017 0.49368096 0.47826255 0.50637671 0.52496877 0.49850501]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -132,8 +132,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.4994529  -0.50624838 -0.51731087 -0.49524332 -0.48034156 -0.50243237] and u = [0.5005471  0.49375162 0.48268913 0.50475668 0.51965844 0.49756763]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -174,8 +174,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.50120433 -0.50655397 -0.51380524 -0.49539776 -0.48392903 -0.50273456] and u = [0.49879567 0.49344603 0.48619476 0.50460224 0.51607097 0.49726544]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -216,8 +216,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.50181237 -0.50471346 -0.51149317 -0.49560133 -0.48661793 -0.50112816] and u = [0.49818763 0.49528654 0.48850683 0.50439867 0.51338207 0.49887184]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -258,8 +258,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.50179617 -0.50228918 -0.50903175 -0.49653911 -0.48981211 -0.50241289] and u = [0.49820383 0.49771082 0.49096825 0.50346089 0.51018789 0.49758711]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -300,8 +300,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.50318047 -0.5031145  -0.50679905 -0.49673484 -0.49252832 -0.50176646] and u = [0.49681953 0.4968855  0.49320095 0.50326516 0.50747168 0.49823354]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -342,8 +342,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.50286071 -0.50229545 -0.50366249 -0.49628191 -0.49339662 -0.50145381] and u = [0.49713929 0.49770455 0.49633751 0.50371809 0.50660338 0.49854619]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -384,8 +384,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.50014399 -0.50237547 -0.50083199 -0.49889483 -0.49597475 -0.500685  ] and u = [0.49985601 0.49762453 0.49916801 0.50110517 0.50402525 0.499315  ]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
@@ -426,8 +426,8 @@ SET(z): const = [0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 
  0. 0. 0. 0. 0. 0. 0. 0. 0. 0. 0.]
 ----Parameter set----
 SET(x_init): box with l = [-0.5 -0.5 -0.5 -0.5 -0.5 -0.5] and u = [0.5 0.5 0.5 0.5 0.5 0.5]
-SET(l_param): BoxStackSet = 
-SET(u_param): BoxStackSet = 
+SET(l_param): BoxStackSet =
+SET(u_param): BoxStackSet =
 ----Algorithm steps----
 x = LINSTEP(x, z, y, )
 y = LINSTEP(y, x, z, )
