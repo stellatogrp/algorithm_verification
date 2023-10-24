@@ -20,8 +20,8 @@ def run_admm_single(P, A, l, u, K=300):
         return np.maximum(x, l)
 
     xk = np.zeros(n)
-    xk[0] = -.5
-    np.zeros(m)
+    # xk[0] = -.5
+    # np.zeros(m)
     yk = np.zeros(m)
     zk = np.zeros(m)
     sk = zk + rho_inv @ yk
@@ -92,7 +92,7 @@ def set_up_admm_run(mpc, x_inits, K=100):
         l = mpc.qp_problem['l']
         u = mpc.qp_problem['u']
         # print(l, u)
-        x_iterates, cp_var, _, fixed_point_resids = run_admm_single(P, A, l, u, K=1)
+        x_iterates, cp_var, _, fixed_point_resids = run_admm_single(P, A, l, u, K=2)
         print('fixed pt:', fixed_point_resids[-1])
 
         cp_prob, cp_vars = mpc.cvxpy_problem, mpc.cvxpy_variables
@@ -146,6 +146,7 @@ def main():
         box_u[i] = np.max(X[:, i])
     print(box_l, box_u)
     print(X[0, :])
+    exit(0)
 
     set_up_admm_run(mpc, X)
 

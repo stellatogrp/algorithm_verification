@@ -16,9 +16,25 @@ class LinearStep(Step):
             A (TODO): TODO
         """
         super().__init__()
-        self.A = A
+
+        if isinstance(A, list):
+            # TODO: fix this hack, currently use A for the first one as a proxy to check dims etc
+            self.A_list = A
+            self.A = A[0]
+        else:
+            self.A_list = None
+            self.A = A
+
+        if isinstance(b, list):
+            self.b_list = b
+            self.b = b[0]
+        else:
+            self.b_list = None
+            self.b = b
+
+        # self.A = A
         self.D = D
-        self.b = b
+        # self.b = b
         self.u = u
         self.y = y
         self.Dinv = Dinv
@@ -26,7 +42,7 @@ class LinearStep(Step):
         self.A_blocks = []
         self.A_boundaries = []
         self._test_dims()
-        self._split_A()
+        # self._split_A()
         self.D_factor = sp.linalg.lu_factor(D.todense())
 
     def _test_dims(self):
@@ -101,21 +117,21 @@ class LinearStep(Step):
     #  def apply(self, x):
     #      return intermediate
 
-    def _split_A(self):
-        self._split_A_boundaries()
-        A = self.A
-        for i, x in enumerate(self.u):
-            (left, right) = self.A_boundaries[i]
-            self.A_blocks.append(A.tocsc()[:, left: right])
+    # def _split_A(self):
+    #     self._split_A_boundaries()
+    #     A = self.A
+    #     for i, x in enumerate(self.u):
+    #         (left, right) = self.A_boundaries[i]
+    #         self.A_blocks.append(A.tocsc()[:, left: right])
 
-    def _split_A_boundaries(self):
-        left = 0
-        right = 0
-        for x in self.u:
-            n = x.get_dim()
-            right = left + n
-            self.A_boundaries.append((left, right))
-            left = right
+    # def _split_A_boundaries(self):
+    #     left = 0
+    #     right = 0
+    #     for x in self.u:
+    #         n = x.get_dim()
+    #         right = left + n
+    #         self.A_boundaries.append((left, right))
+    #         left = right
 
     def split_matrix_boundaries(self):
         left = 0
@@ -160,6 +176,19 @@ class LinearStep(Step):
             solves D x = b, where b is a vector or matrix
         '''
         return sp.linalg.lu_solve(self.D_factor, b)
+
+    def get_matrix_data(self, k):
+        if self.A_list is not None:
+            A = self.A_list[k-1]
+        else:
+            A = self.A
+
+        if self.b_list is not None:
+            b = self.b_list[k-1]
+        else:
+            b = self.b
+
+        return dict(D=self.D, A=A, b=b)
 
     def apply(self, k, iter_to_id_map, ranges, out):
         # TODO, this should really be handled in the cgal handler and not here

@@ -18,9 +18,14 @@ def linear_step_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_map, i
 
     iter_to_id_map is needed to check if we want the current or previous u_i's
     """
-    D = step.get_lhs_matrix()
-    A = step.get_rhs_matrix()
-    b = step.get_rhs_const_vec()
+    step_data = step.get_matrix_data(k)
+    # D = step.get_lhs_matrix()
+    # A = step.get_rhs_matrix()
+    # b = step.get_rhs_const_vec()
+    D = step_data['D']
+    A = step_data['A']
+    b = step_data['b']
+
     y = step.get_output_var()
     u = step.get_input_var()  # remember that this is a block of variables
 
@@ -72,10 +77,14 @@ def linear_step_bound_canon(step, k, iter_to_id_map,
                             param_to_lower_bound_map, param_to_upper_bound_map):
     u = step.get_input_var()  # remember this is a list of vars
     y = step.get_output_var()
-    A = step.get_rhs_matrix()
-    #  D = step.get_lhs_matrix()
     Dinv = step.get_lhs_matrix_inv()
-    b = step.get_rhs_const_vec()
+
+    step_data = step.get_matrix_data(k)
+    # A = step.get_rhs_matrix()
+    #  D = step.get_lhs_matrix()
+    # b = step.get_rhs_const_vec()
+    A = step_data['A']
+    b = step_data['b']
 
     DinvA = Dinv @ A
     Dinvb = (Dinv @ b).reshape((-1, 1))

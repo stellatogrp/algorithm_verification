@@ -53,8 +53,8 @@ class ModelPredictiveControl(object):
         self.QN = spa.csc_matrix(QN.dot(QN.T))
 
         # Control diff penalty (used to penalize u_{k+1} - u_k)
-        self.CR = .01 * spa.eye(self.nu)
-        # self.CR = 0 * spa.eye(self.nu)
+        # self.CR = .01 * spa.eye(self.nu)
+        self.CR = 0 * spa.eye(self.nu)
 
         # # Constants for angle penalty:
         # self.m = 1
@@ -78,14 +78,14 @@ class ModelPredictiveControl(object):
         # Input ad state bounds
         self.umin = - 1.0 * np.random.rand(self.nu)
         self.umax = -self.umin
-        self.umin = -1
-        self.umax = 1
+        self.umin = -2
+        self.umax = 2
         # self.xmin = -1.0 - np.random.rand(self.nx)
         # self.xmax = -self.xmin
         # self.xmin = -.1 * np.ones(n)
         # self.xmax = .1 * np.ones(n)
         self.xmin = - 1.1 * np.ones(n)
-        self.xmax = 0.1 * np.ones(n)
+        self.xmax = 1.1 * np.ones(n)
 
         # Initial state (constrain to be within lower and upper bound)
         # self.x0 = np.random.rand(self.nx)

@@ -127,19 +127,25 @@ def canon_with_l_param(step, k, handler):
         x_lower = handler.var_lowerbounds[xrange1D_handler.index_matrix()]
         y_upper = handler.var_upperbounds[yrange1D_handler.index_matrix()]
         y_lower = handler.var_lowerbounds[yrange1D_handler.index_matrix()]
+        handler.var_lowerbounds[lrange1D_handler.index_matrix()]
+        handler.var_upperbounds[lrange1D_handler.index_matrix()]
         # print(x_lower, x_upper)
         gaps_vec = (x_upper - x_lower).reshape(-1,)
         pos_gap_indices = np.argwhere(gaps_vec >= 1e-6).reshape(-1, )
         np.argwhere(gaps_vec < 1e-6).reshape(-1, )
         np.argwhere(gaps_vec < 1e-5).reshape(-1, )
         # print(pos_gap_indices, zero_gap_indices, gaps_vec)
+
         frac = np.divide((y_upper - y_lower)[pos_gap_indices], (x_upper - x_lower)[pos_gap_indices])
+        # frac = np.divide((y_upper - l_lower)[pos_gap_indices], (x_upper - x_lower)[pos_gap_indices])
 
         D = np.zeros((n, n))
         I = np.eye(n)
         for j, i in enumerate(pos_gap_indices):
             D[i, i] = frac[j]
+        # TODO: confirm the below planet change works as intended
         c = np.multiply(frac, -x_lower[pos_gap_indices]) + y_lower[pos_gap_indices]
+        # c = np.multiply(frac, -x_lower[pos_gap_indices]) + y_upper[pos_gap_indices]
         minusc_xupperT = -c @ x_upper.T
         for pos_idx, i in enumerate(pos_gap_indices):
             outmat = spa.lil_matrix((problem_dim, problem_dim))

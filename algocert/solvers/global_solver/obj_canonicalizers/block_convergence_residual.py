@@ -12,18 +12,9 @@ def block_conv_resid_canon(obj, model, iterate_to_gp_var_map):
 
     sk = map_stack_to_gp_var(s, A_split, n, model, iterate_to_gp_var_map, -1)
     skminus1 = map_stack_to_gp_var(s, A_split, n, model, iterate_to_gp_var_map, -2)
-    # exit(0)
-
-    # x = iterate.get_iterate()
-
-    # x_var = iterate_to_gp_var_map[x]
-    # xN = x_var[-1]
-    # xNminus1 = x_var[-2]
 
     In = spa.eye(n)
     twoIn = 2 * In
-
-    # obj = xN @ In @ xN - xN @ twoIn @ xNminus1 + xNminus1 @ In @ xNminus1
 
     obj = sk @ In @ sk - sk @ twoIn @ skminus1 + skminus1 @ In @ skminus1
     return obj
@@ -37,7 +28,6 @@ def map_stack_to_gp_var(s, A, n, model, iterate_to_gp_var_map, k):
 
     sk_val = 0
     for Ai, x in zip(A, s):
-        # print(Ai, x)
         x_var = iterate_to_gp_var_map[x][k]
         sk_val += Ai @ x_var
 

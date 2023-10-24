@@ -136,7 +136,6 @@ def cross_constraints_from_ranges(m, n, problem_dim,
 
 def cross_constraints_between_linsteps(y1, y2, k1, k2, handler,
                                        only_include_psd_cones=False):
-
     if k1 == 0 or k2 == 0:
         return [], [], [], []
 
@@ -144,17 +143,25 @@ def cross_constraints_between_linsteps(y1, y2, k1, k2, handler,
     step1 = var_linstep_map[y1]
     step2 = var_linstep_map[y2]
 
-    D1 = step1.get_lhs_matrix()
-    A1 = step1.get_rhs_matrix()
-    b1 = step1.get_rhs_const_vec()
+    step1_data = step1.get_matrix_data(k1)
+    # D1 = step1.get_lhs_matrix()
+    # A1 = step1.get_rhs_matrix()
+    # b1 = step1.get_rhs_const_vec()
+    D1 = step1_data['D']
+    A1 = step1_data['A']
+    b1 = step1_data['b']
     u1 = step1.get_input_var()
     u1ranges = map_linstep_to_ranges(y1, u1, k1, handler)
     y1range = handler.iter_bound_map[y1][k1]
     # print(u1ranges)
 
-    D2 = step2.get_lhs_matrix()
-    A2 = step2.get_rhs_matrix()
-    b2 = step2.get_rhs_const_vec()
+    step2_data = step2.get_matrix_data(k2)
+    # D2 = step2.get_lhs_matrix()
+    # A2 = step2.get_rhs_matrix()
+    # b2 = step2.get_rhs_const_vec()
+    D2 = step2_data['D']
+    A2 = step2_data['A']
+    b2 = step2_data['b']
     u2 = step2.get_input_var()
     u2ranges = map_linstep_to_ranges(y2, u2, k2, handler)
     y2range = handler.iter_bound_map[y2][k2]
@@ -170,15 +177,18 @@ def cross_constraints_between_linsteps(y1, y2, k1, k2, handler,
 
 
 def cross_constraints_linstep_to_not(y1, y2, k1, k2, handler):
-
     if k1 == 0 or k2 == 0:
         return [], [], [], []
     var_linstep_map = handler.var_linstep_map
     step1 = var_linstep_map[y1]
 
-    D1 = step1.get_lhs_matrix()
-    A1 = step1.get_rhs_matrix()
-    b1 = step1.get_rhs_const_vec()
+    # D1 = step1.get_lhs_matrix()
+    # A1 = step1.get_rhs_matrix()
+    # b1 = step1.get_rhs_const_vec()
+    step1_data = step1.get_matrix_data(k1)
+    D1 = step1_data['D']
+    A1 = step1_data['A']
+    b1 = step1_data['b']
     u1 = step1.get_input_var()
     u1ranges = map_linstep_to_ranges(y1, u1, k1, handler)
     y1range = handler.iter_bound_map[y1][k1]

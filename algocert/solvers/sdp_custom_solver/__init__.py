@@ -1,3 +1,4 @@
+from algocert.objectives.block_convergence_residual import BlockConvergenceResidual
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
@@ -7,6 +8,8 @@ from algocert.init_set.box_set import BoxSet
 from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.stack_set import StackSet
 from algocert.init_set.zero_set import ZeroSet
+from algocert.solvers.sdp_custom_solver.obj_canonicalizers.block_convergence_residual import \
+    block_conv_resid_canon
 from algocert.solvers.sdp_custom_solver.obj_canonicalizers.convergence_residual import \
     conv_resid_canon
 from algocert.solvers.sdp_custom_solver.set_canonicalizers.box_set import (
@@ -29,6 +32,7 @@ HOLDER_SET_NORMS = {
 }
 
 OBJ_CANON_METHODS = {
+    BlockConvergenceResidual: block_conv_resid_canon,
     ConvergenceResidual: conv_resid_canon,
 }
 

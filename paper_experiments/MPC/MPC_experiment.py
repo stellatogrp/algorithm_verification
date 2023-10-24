@@ -26,14 +26,17 @@ def qp_cert_prob(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1):
     m, n = A.shape
     l = example.qp_problem['l']
     u = example.qp_problem['u']
+    print(A.todense())
+    print(l.shape)
+    exit(0)
 
     if rho_const:
-        rho = 2 * np.eye(m)
+        rho = np.eye(m)
     else:
         eq_idx = np.where(np.abs(u - l) <= 1e-5)
         # print(u-l)
         rho = np.ones(m)
-        rho[eq_idx] *= 10
+        rho[eq_idx] *= 5
         rho = np.diag(rho)
     rho = spa.csc_matrix(rho)
     # rho_inv = np.linalg.inv(rho)
@@ -137,8 +140,7 @@ def qp_cert_prob(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1):
     out_g, out_time = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print(out_g, out_time)
 
-    # CP2 = CertificationProblem(K, initsets, paramsets, obj, steps)
-
+    CertificationProblem(K, initsets, paramsets, obj, steps)
     # out_s = CP2.solve(solver_type='SDP_CUSTOM')
 
 
@@ -242,8 +244,9 @@ def qp_cert_prob_max_only(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1
 
 
 def main():
-    n = 2
-    mpc = ModelPredictiveControl(n=n, T=2)
+    n = 4
+    T = 100
+    mpc = ModelPredictiveControl(n=n, T=T, seed=0)
     mpc.qp_problem['P']
     mpc.qp_problem['A']
     mpc.qp_problem['l']
@@ -255,20 +258,25 @@ def main():
     np.random.seed(0)
     for i in range(num_sim):
         # self.cvxpy_problem, self.cvxpy_variables, self.cvxpy_param
+        print('----')
         x_inits.append(mpc.x0)
         cp_prob, cp_vars, _ = mpc.cvxpy_problem, mpc.cvxpy_variables, mpc.cvxpy_param
         # x, u = cp_vars
-        x, _ = cp_vars
-        cp_prob.solve()
-        # print(res)
-        # print(u.value, u.shape)
-        # print(np.round(x.value, 4), x.shape)
+        x, u = cp_vars
+        res = cp_prob.solve()
+        print(res)
+        print(u.value, u.shape)
+        print(np.round(x.value, 4), x.shape)
+        # exit(0)
 
         x0_ref = np.zeros(n)
         x0_ref[0] = -.5
 
-        x0_new = x.value[:, -1] + np.random.normal(scale=.01, size=(n,))
+        x0_new = x.value[:, -1] + np.random.normal(scale=.001, size=(n,))
         x0_ref = x0_ref + x0_new
+        print(x0_new)
+        print(x0_ref)
+        # exit(0)
         # print(x0_new, x0_ref)
         mpc.update_x0(x0_ref)
     # print(x_inits)
@@ -279,11 +287,13 @@ def main():
     for i in range(X.shape[1]):
         box_l[i] = np.min(X[:, i])
         box_u[i] = np.max(X[:, i])
+    print(box_l, box_u, box_l.shape)
+    exit(0)
     # print(box_l, box_u)
     # print(P.shape, A.shape)
     # print(l, u, u - l)
     # print(np.linalg.eigvals(P.todense()))
-    qp_cert_prob(n, mpc, box_l, box_u, K=2)
+    qp_cert_prob(n, mpc, box_l, box_u, rho_const=True, K=5)
     # qp_cert_prob_max_only(n, mpc, box_l, box_u, K=2)
     # print(mpc.qp_problem['q'])
 

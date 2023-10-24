@@ -14,11 +14,20 @@ from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_iters, map_l
 
 
 def linear_step_canon(step, k, handler):
+    step_data = step.get_matrix_data(k)
 
-    D = step.get_lhs_matrix()
-    A = step.get_rhs_matrix()
-    step.get_rhs_matrix_blocks()
-    b = step.get_rhs_const_vec()
+    Dstep = step.get_lhs_matrix()
+    Astep = step.get_rhs_matrix()
+    step.get_rhs_const_vec()
+
+    D = step_data['D']
+    A = step_data['A']
+    b = step_data['b']
+
+    print(Dstep, D)
+    print(Astep.todense(), A.todense())
+    # exit(0)
+
     y = step.get_output_var()
     u = step.get_input_var()  # remember this is a stack of variables
     u_dim = step.get_input_var_dim()
@@ -64,8 +73,12 @@ def linear_step_canon(step, k, handler):
 def linear_step_bound_canon(step, k, handler):
     u = step.get_input_var()  # remember this is a list of vars
     y = step.get_output_var()
-    A = step.get_rhs_matrix()
-    b = step.get_rhs_const_vec()
+    # A = step.get_rhs_matrix()
+    # b = step.get_rhs_const_vec()
+
+    step_data = step.get_matrix_data(k)
+    A = step_data['A']
+    b = step_data['b']
 
     DinvA = step.solve_linear_system(A.todense())
     Dinvb = step.solve_linear_system(b)
@@ -127,8 +140,12 @@ def linear_step_bound_canon_old(step, k, handler):
     # D = step.get_lhs_matrix()
     u = step.get_input_var()  # remember this is a list of vars
     y = step.get_output_var()
-    A = step.get_rhs_matrix()
-    b = step.get_rhs_const_vec()
+    # A = step.get_rhs_matrix()
+    # b = step.get_rhs_const_vec()
+
+    step_data = step.get_matrix_data(k)
+    A = step_data['A']
+    b = step_data['b']
 
     DinvA = step.solve_linear_system(A.todense())
     Dinvb = step.solve_linear_system(b)

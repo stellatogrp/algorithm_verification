@@ -26,10 +26,12 @@ def main():
     print(outf)
 
     m, n = 30, 15
+    # m, n = 3, 2
     b_c = 10 * np.ones((m, 1))
     b_r = .1
     # K = 5
-    K_vals = [9, 10]
+    K_vals = [1]
+    # K_vals = [9, 10]
     # K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6]
 

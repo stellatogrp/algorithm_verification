@@ -55,7 +55,7 @@ class SDPCustomHandler(object):
         if 'add_RLT' in kwargs:
             self.add_RLT = kwargs['add_RLT']
         else:
-            self.add_RLT = True
+            self.add_RLT = False
 
         if 'add_RLT_diag' in kwargs:
             self.add_RLT_diag = kwargs['add_RLT_diag']
@@ -70,7 +70,7 @@ class SDPCustomHandler(object):
         if 'add_planet' in kwargs:
             self.add_planet = kwargs['add_planet']
         else:
-            self.add_planet = True
+            self.add_planet = False
 
         if 'lookback_t' in kwargs:
             self.lookback_t = kwargs['lookback_t']
