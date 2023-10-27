@@ -94,9 +94,9 @@ def main():
     # m, n = 30, 15
     m, n = 3, 2
     b_c = 10 * np.ones((m, 1))
-    b_r = 1
+    b_r = .1
     # K = 5
-    K_vals = [3]
+    K_vals = [2]
     # K_vals = [9, 10]
     # K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6]
@@ -107,6 +107,7 @@ def main():
     # t_vals = generate_all_t_vals(t_vals)
     # print(t_vals)
     t_vals = [[.05, .06, .07]]
+    # t_vals = [.05]
 
     out_res = []
     for K in K_vals:

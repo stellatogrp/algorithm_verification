@@ -16,17 +16,14 @@ from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_iters, map_l
 def linear_step_canon(step, k, handler):
     step_data = step.get_matrix_data(k)
 
-    Dstep = step.get_lhs_matrix()
-    Astep = step.get_rhs_matrix()
-    step.get_rhs_const_vec()
+    # Dstep = step.get_lhs_matrix()
+    # Astep = step.get_rhs_matrix()
+    # step.get_rhs_const_vec()
 
     D = step_data['D']
     A = step_data['A']
     b = step_data['b']
 
-    print(Dstep, D)
-    print(Astep.todense(), A.todense())
-    # exit(0)
 
     y = step.get_output_var()
     u = step.get_input_var()  # remember this is a stack of variables
