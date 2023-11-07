@@ -54,14 +54,24 @@ def box_bound_canon(init_set, handler):
 
     xranges = []
 
+    # if x.is_param:
+    #     xrange = handler.param_bound_map[x]
+    #     xranges.append(xrange)
+    # else:
+    #     xrange = handler.iter_bound_map[x][0]
+
     if x.is_param:
         xrange = handler.param_bound_map[x]
         xranges.append(xrange)
     else:
-        xrange = handler.iter_bound_map[x][0]
+        # xrange = handler.iter_bound_map[x][0]
+        for k in init_set.canon_iter:
+            xrange = handler.iter_bound_map[x][k]
+            xranges.append(xrange)
 
-    xrange1D_handler = RangeHandler1D(xrange)
-    # print(handler.var_lowerbounds[xrange1D_handler.index_matrix()])
-    handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l
-    handler.var_upperbounds[xrange1D_handler.index_matrix()] = u
-    handler.var_warmstart[xrange1D_handler.index_matrix()] = init_set.sample_point()
+    for xrange in xranges:
+        xrange1D_handler = RangeHandler1D(xrange)
+        # print(handler.var_lowerbounds[xrange1D_handler.index_matrix()])
+        handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l
+        handler.var_upperbounds[xrange1D_handler.index_matrix()] = u
+        handler.var_warmstart[xrange1D_handler.index_matrix()] = init_set.sample_point()

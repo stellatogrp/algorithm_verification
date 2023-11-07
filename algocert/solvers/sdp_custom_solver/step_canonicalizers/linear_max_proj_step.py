@@ -296,17 +296,15 @@ def get_Au_bounds(step, k, handler):
 
     uranges = map_linstep_to_ranges(y, u, k, handler)
     iter_map = map_linstep_to_iters(y, u, k, handler)
-    # print(iter_map)
-    # print(handler.iterate_init_set_map)
-    # print(uranges)
+
+    # print(k, iter_map, uranges)
 
     # # if thing is iterate 0 or param, use its function, otherwise use lin_bound_map
     A_split = step.split_matrix(A)
     boundaries = step.split_matrix_boundaries()
     # # print(step.split_matrix(DinvA))
 
-    yrange = handler.iter_bound_map[y][k]
-    RangeHandler1D(yrange)
+    handler.iter_bound_map[y][k]
     urange_handler = RangeHandler1D(uranges)
 
     u_ws = handler.var_warmstart[urange_handler.index_matrix()]

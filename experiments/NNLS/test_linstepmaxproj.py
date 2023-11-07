@@ -27,33 +27,33 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
     q = Parameter(m, name='q')
 
     l = 0.1 * np.ones((n, 1))
-    step1 = LinearMaxProjStep(x, [x, q], A=C, b=b, proj_ranges=(2, 3), l=l, start_canon=3)
+    step1 = LinearMaxProjStep(x, [x, q], A=C, b=b, proj_ranges=(2, 3), l=l, start_canon=1)
     # step1 = LinearStep(x, [x, q], D=spa.eye(n), A=C, b=b)
     steps = [step1]
 
     # initsets = [BoxSet(x, zeros_n, zeros_n)]
-    # initsets = [BoxSet(x, 0 * ones_n, 0.1 * ones_n)]
-    initsets = [L2BallSet(x, 0.1 * ones_n, 0, canon_iter=[0, 1])]
+    # initsets = [BoxSet(x, 0 * ones_n, 0 * ones_n, canon_iter=[0])]
+    initsets = [L2BallSet(x, 0 * ones_n, 0, canon_iter=[0])]
     # initsets = [ConstSet(x, zeros_n)]
     # initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
-    paramsets = [BoxSet(q, 10 * ones_m, 11 * ones_m)]
+    paramsets = [BoxSet(q, 10 * ones_m, 10.5 * ones_m)]
 
     obj = [ConvergenceResidual(x)]
 
     CP = CertificationProblem(K, initsets, paramsets, obj, steps)
-    # res = CP.solve(solver_type=solver_type, add_bounds=True,
-                #    add_RLT=False, TimeLimit=3600, minimize=False)
+    res = CP.solve(solver_type=solver_type, add_bounds=True,
+                   add_RLT=False, TimeLimit=3600, minimize=False)
     # print('global', resg)
-    res = CP.solve(solver_type='SDP_CUSTOM')
+    # res = CP.solve(solver_type='SDP_CUSTOM')
     return res
 
 
 def main():
     np.random.seed(0)
-    m = 5
-    n = 3
-    K = 1
+    m = 10
+    n = 5
+    K = 3
     A = np.random.randn(m, n)
     s = 'GLOBAL'
     # s = 'SDP'

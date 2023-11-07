@@ -98,12 +98,7 @@ def stack_set_canon(init_set, handler):
 def stack_bound_canon(init_set, handler):
     val_stack = init_set.stack
     x = init_set.get_iterate()
-    if x.is_param:
-        xrange = handler.param_bound_map[x]
-    else:
-        xrange = handler.iter_bound_map[x][0]
 
-    xrange1D_handler = RangeHandler1D(xrange)
     l_new = []
     u_new = []
     ws_new = []
@@ -129,7 +124,26 @@ def stack_bound_canon(init_set, handler):
     l_new = np.vstack(l_new)
     u_new = np.vstack(u_new)
     ws_newval = np.vstack(ws_new)
-    # print(l_new, u_new)
-    handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l_new
-    handler.var_upperbounds[xrange1D_handler.index_matrix()] = u_new
-    handler.var_warmstart[xrange1D_handler.index_matrix()] = ws_newval
+
+    xranges = []
+
+    # if x.is_param:
+    #     xrange = handler.param_bound_map[x]
+    # else:
+    #     xrange = handler.iter_bound_map[x][0]
+
+    if x.is_param:
+        xrange = handler.param_bound_map[x]
+        xranges.append(xrange)
+    else:
+        # xrange = handler.iter_bound_map[x][0]
+        for k in init_set.canon_iter:
+            xrange = handler.iter_bound_map[x][k]
+            xranges.append(xrange)
+
+    for xrange in xranges:
+        xrange1D_handler = RangeHandler1D(xrange)
+        # print(l_new, u_new)
+        handler.var_lowerbounds[xrange1D_handler.index_matrix()] = l_new
+        handler.var_upperbounds[xrange1D_handler.index_matrix()] = u_new
+        handler.var_warmstart[xrange1D_handler.index_matrix()] = ws_newval

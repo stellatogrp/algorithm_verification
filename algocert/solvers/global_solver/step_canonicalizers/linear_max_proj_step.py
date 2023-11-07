@@ -1,6 +1,7 @@
 import gurobipy as gp
 import numpy as np
 
+from algocert.solvers.global_solver.step_canonicalizers.linear_step import map_linstep_to_iters
 from algocert.variables.parameter import Parameter
 
 
@@ -29,17 +30,20 @@ def linear_max_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_ma
 
     w_rhs = b.reshape(-1, )
 
+    u_idx = map_linstep_to_iters(y, u, k, iter_to_id_map)
+
     for i, x in enumerate(u):
+        idx = u_idx[i]
         if x.is_param:
             # print(x)
             x_var = param_to_gp_var_map[x]
         else:
             x_varmatrix = iter_to_gp_var_map[x]
-            # print(iter_to_id_map[y], iter_to_id_map[x])
             if iter_to_id_map[y] <= iter_to_id_map[x]:
                 x_var = x_varmatrix[k-1]
             else:
                 x_var = x_varmatrix[k]
+            # x_var = x_varmatrix[idx]
         w_rhs += A_blocks[i] @ x_var
 
     model.addConstr(w == w_rhs)
@@ -94,6 +98,8 @@ def linear_max_proj_bound_canon(step, k, iter_to_id_map,
     # print(lower_l, upper_l)
     u_lower = []
     u_upper = []
+    map_linstep_to_iters(y, u, k, iter_to_id_map)
+
     for x in u:
         if x.is_param:
             u_lower.append(param_to_lower_bound_map[x])
@@ -110,6 +116,17 @@ def linear_max_proj_bound_canon(step, k, iter_to_id_map,
                 x_upper = x_uppermat[k]
             u_lower.append(x_lower)
             u_upper.append(x_upper)
+
+    # for idx, x in zip(u_idx, u):
+    #     if idx is None:
+    #         u_lower.append(param_to_lower_bound_map[x])
+    #         u_upper.append(param_to_upper_bound_map[x])
+    #     else:
+    #         x_lowermat = iter_to_lower_bound_map[x]
+    #         x_uppermat = iter_to_upper_bound_map[x]
+    #         u_lower.append(x_lowermat[idx])
+    #         u_upper.append(x_uppermat[idx])
+
     u_lower = np.hstack(u_lower)
     u_upper = np.hstack(u_upper)
 
