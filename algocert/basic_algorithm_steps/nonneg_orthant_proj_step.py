@@ -8,10 +8,10 @@ class NonNegProjStep(Step):
 
     """Docstring for NonNegStep. """
 
-    def __init__(self, y: Iterate, x: Iterate, nonneg_ranges: (int) = None):
+    def __init__(self, y: Iterate, x: Iterate, nonneg_ranges: (int) = None, start_canon=None):
         """Step representing y = (x)_+
         """
-        super().__init__()
+        super().__init__(start_canon=start_canon)
         self.x = x
         self.y = y
         self._test_dims()

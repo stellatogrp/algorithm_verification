@@ -121,8 +121,12 @@ class GlobalHandler(object):
                         ub = np.zeros((K + 1, n))
                         canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
                         l, u = canon_method(init_set, self)
-                        lb[0] = l
-                        ub[0] = u
+                        # TODO do for all k in canon_iter
+                        for k in init_set.canon_iter:
+                            lb[k] = l
+                            ub[k] = u
+                        # lb[0] = l
+                        # ub[0] = u
                         self.iterate_to_lower_bound_map[(iterate, param_var, i)] = lb
                         self.iterate_to_upper_bound_map[(iterate, param_var, i)] = ub
             else:
@@ -132,8 +136,11 @@ class GlobalHandler(object):
                 ub = np.zeros((K + 1, n))
                 canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
                 l, u = canon_method(init_set, self)
-                lb[0] = l
-                ub[0] = u
+                for k in init_set.canon_iter:
+                    lb[k] = l
+                    ub[k] = u
+                # lb[0] = l
+                # ub[0] = u
                 self.iterate_to_lower_bound_map[iterate] = lb
                 self.iterate_to_upper_bound_map[iterate] = ub
 
@@ -157,10 +164,11 @@ class GlobalHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
             for step in steps:
-                canon_method = BOUND_STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
-                canon_method(step, k, self.iterate_to_id_map,
-                             self.iterate_to_lower_bound_map, self.iterate_to_upper_bound_map,
-                             self.param_to_lower_bound_map, self.param_to_upper_bound_map)
+                if k >= step.start_canon:
+                    canon_method = BOUND_STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
+                    canon_method(step, k, self.iterate_to_id_map,
+                                self.iterate_to_lower_bound_map, self.iterate_to_upper_bound_map,
+                                self.param_to_lower_bound_map, self.param_to_upper_bound_map)
 
     def create_param_bound_map(self):
         parameters = self.CP.get_parameter_sets()
@@ -231,8 +239,9 @@ class GlobalHandler(object):
 
     def canonicalize_initial_sets(self):
         for init_set in self.CP.get_init_sets():
-            canon_method = SET_CANON_METHODS[type(init_set)]
-            canon_method(init_set, self.model, self.iterate_to_gp_var_map)
+            for k in init_set.canon_iter:
+                canon_method = SET_CANON_METHODS[type(init_set)]
+                canon_method(init_set, self.model, self.iterate_to_gp_var_map, k)
 
     def canonicalize_parameter_sets(self):
         for param_set in self.CP.get_parameter_sets():
@@ -243,9 +252,16 @@ class GlobalHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
             for step in steps:
-                canon_method = STEP_CANON_METHODS[type(step)]
-                canon_method(step, self.model, k,
-                             self.iterate_to_gp_var_map, self.param_to_gp_var_map, self.iterate_to_id_map)
+                # print(k, step.start_canon)
+                # exit(0)
+                # if k < step.start_canon:
+                #     print(step.start_canon)
+                #     print('here')
+                #     continue
+                if k >= step.start_canon:
+                    canon_method = STEP_CANON_METHODS[type(step)]
+                    canon_method(step, self.model, k,
+                                self.iterate_to_gp_var_map, self.param_to_gp_var_map, self.iterate_to_id_map)
 
     def canonicalize_objective(self):
         # obj = self.CP.objective

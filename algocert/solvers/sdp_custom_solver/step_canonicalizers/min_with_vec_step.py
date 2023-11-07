@@ -7,9 +7,9 @@ from algocert.variables.parameter import Parameter
 
 
 def min_with_vec_step_canon(step, k, handler):
-    y = step.get_output_var()
-    y.get_dim()
-    step.get_input_var()
+    step.get_output_var()
+    # y.get_dim()
+    # step.get_input_var()
     u = step.get_upper_bound_vec()
 
     if isinstance(u, Parameter):

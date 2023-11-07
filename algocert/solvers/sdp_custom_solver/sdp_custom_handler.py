@@ -161,17 +161,23 @@ class SDPCustomHandler(object):
 
     def initialize_set_bounds(self):
         # print('init')
-        for init_set in self.CP.get_init_sets() + self.CP.get_parameter_sets():
+        for init_set in self.CP.get_init_sets():
             # print(init_set)
             canon_method = SET_BOUND_CANON_METHODS[type(init_set)]
             canon_method(init_set, self)
         # print(self.var_lowerbounds, self.var_upperbounds)
+
+        for param_set in self.CP.get_parameter_sets():
+            canon_method = SET_BOUND_CANON_METHODS[type(param_set)]
+            canon_method(param_set, self)
 
     def propagate_step_bounds(self):
         # print('step upper lower')
         for k in range(1, self.K + 1):
             for step in self.CP.get_algorithm_steps():
                 # print(k, step)
+                if k < step.start_canon:
+                    continue
                 canon_method = STEP_BOUND_CANON_METHODS[type(step)]
                 canon_method(step, k, self)
         # print(self.var_lowerbounds, self.var_upperbounds)
@@ -251,6 +257,8 @@ class SDPCustomHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
             for step in steps:
+                if k < step.start_canon:
+                    continue
                 canon_method = STEP_CANON_METHODS[type(step)]
                 A, b_l, b_u, psd_cones = canon_method(step, k, self)
                 self.A_matrices += A
@@ -274,6 +282,8 @@ class SDPCustomHandler(object):
             for other_var in self.iterate_list:
                 for k1 in range(1, self.K + 1):
                     for k2 in range(k1, max(0, k1 - lookback_t) - 1, -1):
+                        if k1 < self.var_linstep_map[linstep_var].start_canon or k2 < self.var_linstep_map[other_var].start_canon:
+                            continue
                         if linstep_var == other_var and k1 == k2:
                             continue
                         # print(linstep_var, other_var, 'k1:', k1, 'k2:', k2)

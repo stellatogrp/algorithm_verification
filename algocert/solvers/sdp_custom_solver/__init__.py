@@ -3,6 +3,7 @@ from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.l2_ball_set import L2BallSet
@@ -18,6 +19,8 @@ from algocert.solvers.sdp_custom_solver.set_canonicalizers.l2_ball_set import (
     l2_ball_bound_canon, l2_ball_set_canon)
 from algocert.solvers.sdp_custom_solver.set_canonicalizers.stack_set import (
     stack_set_canon, stack_bound_canon)
+from algocert.solvers.sdp_custom_solver.step_canonicalizers.linear_max_proj_step import (
+    linear_max_proj_bound_canon, linear_max_proj_canon)
 from algocert.solvers.sdp_custom_solver.step_canonicalizers.linear_step import (
     linear_step_bound_canon, linear_step_canon)
 from algocert.solvers.sdp_custom_solver.step_canonicalizers.max_with_vec_step import (
@@ -51,6 +54,7 @@ SET_CANON_METHODS = {
 }
 
 STEP_BOUND_CANON_METHODS = {
+    LinearMaxProjStep: linear_max_proj_bound_canon,
     LinearStep: linear_step_bound_canon,
     MaxWithVecStep: max_with_vec_bound_canon,
     MinWithVecStep: min_with_vec_bound_canon,
@@ -58,6 +62,7 @@ STEP_BOUND_CANON_METHODS = {
 }
 
 STEP_CANON_METHODS = {
+    LinearMaxProjStep: linear_max_proj_canon,
     LinearStep: linear_step_canon,
     MaxWithVecStep: max_with_vec_step_canon,
     MinWithVecStep: min_with_vec_step_canon,

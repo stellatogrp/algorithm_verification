@@ -5,9 +5,13 @@ class InitSet(object):
 
     """Doc string"""
 
-    def __init__(self, x: Variable):
+    def __init__(self, x: Variable, canon_iter=None):
         """TODO: to be defined."""
         self.x = x
+        if canon_iter is None:
+            self.canon_iter = set([0])
+        else:
+            self.canon_iter = set(canon_iter)
 
     def get_iterate(self):
         return self.x

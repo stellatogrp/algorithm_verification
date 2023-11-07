@@ -3,6 +3,7 @@ import scipy.sparse as spa
 
 from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
+from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.zero_set import ZeroSet
@@ -52,9 +53,11 @@ class NNLS(object):
         bset = L2BallSet(b, self.b_c, self.b_r)
 
         step1 = LinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
-        step2 = NonNegProjStep(x, y)
+        NonNegProjStep(x, y)
 
-        steps = [step1, step2]
+        step1 = LinearMaxProjStep(x, [x, b], A=C, b=b_const)
+        steps = [step1]
+
         var_sets = [xset]
         param_sets = [bset]
         obj = ConvergenceResidual(x)

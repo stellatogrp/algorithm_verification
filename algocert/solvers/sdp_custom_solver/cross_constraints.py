@@ -43,9 +43,12 @@ def range_to_list(ranges):
 def cross_constraints_from_ranges(m, n, problem_dim,
                                   D, y_range, A, u_range, b,
                                   C, z_range, F, x_range, c,
-                                  only_include_psd_cones=False):
+                                  only_include_psd_cones=False,
+                                  m_indices=None, n_indices=None):
     '''
         Assumes D, A, C, F are dense
+        m_indices, n_indices are if we don't want to include all cross constraints
+        if None, then we will use all of them
     '''
     # print(D)
     # print(y_range)
@@ -106,8 +109,18 @@ def cross_constraints_from_ranges(m, n, problem_dim,
     if only_include_psd_cones:
         return A_matrices, b_lvals, b_uvals, psd_cone_handlers
 
-    for i in range(m):
-        for j in range(n):
+    if m_indices is None:
+        m_indices = range(m)
+    if n_indices is None:
+        n_indices = range(n)
+
+    # for i in m_indices:
+    #     for j in n_indices:
+    #         print(i, j)
+    # exit(0)
+
+    for i in m_indices:
+        for j in n_indices:
             # print(i, j)
             # outmat = np.zeros((problem_dim, problem_dim))
             outmat = spa.lil_matrix((problem_dim, problem_dim))

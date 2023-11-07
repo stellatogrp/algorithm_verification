@@ -185,6 +185,7 @@ def nonneg_orthant_proj_canon(step, k, handler):
             A_vals.append(spa.csc_matrix(outmat))
             b_lvals.append(minusc_xupperT[pos_idx, i])
             b_uvals.append(np.inf)
+        # exit(0)
 
     real_A, real_bl, real_bu = handle_real_indices(y_dim, ybounds, xbounds, real_indices, problem_dim)
     A_vals += real_A

@@ -5,7 +5,7 @@ from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, Ran
 from algocert.solvers.sdp_custom_solver.utils import map_linstep_to_ranges
 
 
-def equality1D_constraints(D, y, A, u, b, k, handler):
+def equality1D_constraints(D, y, A, u, b, k, handler, indices=None):
     '''
         Constraints for D^k = Au + b where u = [u1, u2, ..., ul]
     '''
@@ -24,7 +24,10 @@ def equality1D_constraints(D, y, A, u, b, k, handler):
     b_lvals = []
     b_uvals = []
 
-    for i in range(n):
+    if indices is None:
+        indices = range(n)
+
+    for i in indices:
         # outmat = np.zeros((problem_dim, problem_dim))
         outmat = spa.lil_matrix((problem_dim, problem_dim))
         Di = D.todense()[i]
@@ -42,7 +45,7 @@ def equality1D_constraints(D, y, A, u, b, k, handler):
     return A_matrices, b_lvals, b_uvals
 
 
-def equality2D_constraints(D, y, A, u, b, k, handler):
+def equality2D_constraints(D, y, A, u, b, k, handler, indices=None):
 
     problem_dim = handler.problem_dim
     iter_bound_map = handler.iter_bound_map
@@ -69,10 +72,28 @@ def equality2D_constraints(D, y, A, u, b, k, handler):
 
     bbT = np.outer(b, b)
 
+    if indices is None:
+        indices = range(n)
+    num_idx = len(indices)
+
+    # print(indices, num_idx)
+    # exit(0)
+
     D = D.todense()
     A = A.todense()
-    for i in range(n):
-        for j in range(i, n):
+    # for i in range(n):
+    #     for j in range(i, n):
+    # for i_idx in range(num_idx):
+    #     i = indices[i_idx]
+    #     for j_idx in range(i_idx, num_idx):
+    #         j = indices[j_idx]
+    #         print(i, j)
+    # exit(0)
+
+    for i_idx in range(num_idx):
+        i = indices[i_idx]
+        for j_idx in range(i_idx, num_idx):
+            j = indices[j_idx]
             # outmat = np.zeros((problem_dim, problem_dim))
             outmat = spa.lil_matrix((problem_dim, problem_dim))
             Di = D[i].T.reshape((-1, 1))
@@ -81,6 +102,12 @@ def equality2D_constraints(D, y, A, u, b, k, handler):
             Ai = A[i].T.reshape((-1, 1))
             ATj = A.T[:, j].T.reshape((1, -1))
             # print(Ai.shape, ATj.shape)
+
+            # print(A)
+            # print(Ai)
+            # print(Di)
+
+            # exit(0)
 
             DiDTj = Di @ DTj
             AiATj = Ai @ ATj

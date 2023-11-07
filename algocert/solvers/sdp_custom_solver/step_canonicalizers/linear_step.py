@@ -24,7 +24,6 @@ def linear_step_canon(step, k, handler):
     A = step_data['A']
     b = step_data['b']
 
-
     y = step.get_output_var()
     u = step.get_input_var()  # remember this is a stack of variables
     u_dim = step.get_input_var_dim()
@@ -113,7 +112,7 @@ def linear_step_bound_canon(step, k, handler):
             if type(x_set) in SET_LINPROP_MAP:
                 l_bound, u_bound = SET_LINPROP_MAP[type(x_set)](handler, x, curr_mat)
         else:
-            if iter_map[i] == 0:
+            if iter_map[i] == 0:  # TODO replace with more general inits than zero
                 x_set = handler.iterate_init_set_map[x]
                 if type(x_set) in SET_LINPROP_MAP:
                     l_bound, u_bound = SET_LINPROP_MAP[type(x_set)](handler, x, curr_mat)
@@ -130,40 +129,6 @@ def linear_step_bound_canon(step, k, handler):
     handler.var_lowerbounds[yrange_handler.index_matrix()] = l_out
     handler.var_upperbounds[yrange_handler.index_matrix()] = u_out
     handler.var_warmstart[yrange_handler.index_matrix()] = y_ws
-
-
-def linear_step_bound_canon_old(step, k, handler):
-    # print('lin step bound')
-    # D = step.get_lhs_matrix()
-    u = step.get_input_var()  # remember this is a list of vars
-    y = step.get_output_var()
-    # A = step.get_rhs_matrix()
-    # b = step.get_rhs_const_vec()
-
-    step_data = step.get_matrix_data(k)
-    A = step_data['A']
-    b = step_data['b']
-
-    DinvA = step.solve_linear_system(A.todense())
-    Dinvb = step.solve_linear_system(b)
-
-    yrange = handler.iter_bound_map[y][k]
-    uranges = map_linstep_to_ranges(y, u, k, handler)
-
-    # print(yrange, uranges)
-
-    yrange_handler = RangeHandler1D(yrange)
-    urange_handler = RangeHandler1D(uranges)
-    u_lower = handler.var_lowerbounds[urange_handler.index_matrix()]
-    u_upper = handler.var_upperbounds[urange_handler.index_matrix()]
-    # print(u_lower, u_upper)
-
-    y_lower, y_upper = lin_bound_map(u_lower, u_upper, DinvA)
-    handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower + Dinvb
-    handler.var_upperbounds[yrange_handler.index_matrix()] = y_upper + Dinvb
-
-    # print(y_lower)
-    # print(y_upper)
 
 
 def lin_bound_map(l, u, A):

@@ -4,8 +4,8 @@ from algocert.init_set.init_set import InitSet
 
 class BoxSet(InitSet):
 
-    def __init__(self, x, l, u):
-        super().__init__(x)
+    def __init__(self, x, l, u, canon_iter=None):
+        super().__init__(x, canon_iter=canon_iter)
         self.l = l
         self.u = u
 
@@ -22,4 +22,4 @@ class BoxSet(InitSet):
         # sample = np.random.uniform(size=(n, 1))
         # # print(sample)
         # return np.multiply((self.u - self.l), sample) + self.l
-        return (self.u - self.l) / 2
+        return (self.u + self.l) / 2

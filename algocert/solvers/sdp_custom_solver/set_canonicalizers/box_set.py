@@ -51,8 +51,12 @@ def box_bound_canon(init_set, handler):
     #  n = x.get_dim()
     l = init_set.l
     u = init_set.u
+
+    xranges = []
+
     if x.is_param:
         xrange = handler.param_bound_map[x]
+        xranges.append(xrange)
     else:
         xrange = handler.iter_bound_map[x][0]
 

@@ -25,8 +25,8 @@ def main():
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
-    m, n = 30, 15
-    # m, n = 3, 2
+    # m, n = 30, 15
+    m, n = 3, 2
     b_c = 10 * np.ones((m, 1))
     b_r = .1
     # K = 5

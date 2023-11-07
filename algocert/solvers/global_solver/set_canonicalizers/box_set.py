@@ -1,4 +1,4 @@
-def box_set_canon(init_set, model, var_to_gp_var_map):
+def box_set_canon(init_set, model, var_to_gp_var_map, k=0):
     x = init_set.get_iterate()
     l = init_set.l
     u = init_set.u
@@ -12,8 +12,8 @@ def box_set_canon(init_set, model, var_to_gp_var_map):
         model.addConstr(x_var <= u_vec)
     else:
         # print(l.shape, x_var[0].shape)
-        model.addConstr(l_vec <= x_var[0])
-        model.addConstr(x_var[0] <= u_vec)
+        model.addConstr(l_vec <= x_var[k])
+        model.addConstr(x_var[k] <= u_vec)
 
 
 def box_set_bound_canon(init_set, handler):

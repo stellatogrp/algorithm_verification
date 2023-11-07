@@ -92,11 +92,14 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         Au_mat = spa_to_mosek_mat(Au)
         M.constraint(Expr.mul(Au_mat, x), Domain.lessThan(bu))
 
-        Al = spa.vstack(Al)
-        # i, j, vals = spa.find(Al)
-        # Al_mat = Matrix.sparse(Al.shape[0], Al.shape[1], i, j, vals)
-        Al_mat = spa_to_mosek_mat(Al)
-        M.constraint(Expr.mul(Al_mat, x), Domain.greaterThan(bl))
+        if len(Al) > 0:
+            Al = spa.vstack(Al)
+            # i, j, vals = spa.find(Al)
+            # Al_mat = Matrix.sparse(Al.shape[0], Al.shape[1], i, j, vals)
+            Al_mat = spa_to_mosek_mat(Al)
+            M.constraint(Expr.mul(Al_mat, x), Domain.greaterThan(bl))
+        else:
+            Al = spa.csc_matrix(np.array([]))
 
         tol = 1e-5
         M.setSolverParam('intpntCoTolDfeas', tol)

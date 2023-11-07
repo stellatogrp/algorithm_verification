@@ -1,7 +1,7 @@
 import scipy.sparse as spa
 
 
-def l2_ball_set_canon(init_set, model, var_to_gp_var_map):
+def l2_ball_set_canon(init_set, model, var_to_gp_var_map, k=0):
     x = init_set.get_iterate()
     n = x.get_dim()
     r = init_set.r
@@ -13,7 +13,7 @@ def l2_ball_set_canon(init_set, model, var_to_gp_var_map):
     if x.is_param:
         model.addConstr(x_var @ In @ x_var - 2 * c.T @ x_var + c.T @ c <= r ** 2)
     else:
-        model.addConstr(x_var[0] @ In @ x_var[0] - 2 * c.T @ x_var[0] + c.T @ c <= r ** 2)
+        model.addConstr(x_var[k] @ In @ x_var[k] - 2 * c.T @ x_var[k] + c.T @ c <= r ** 2)
 
     # c = init_set.c
     # x_var = var_to_gp_var_map[x]

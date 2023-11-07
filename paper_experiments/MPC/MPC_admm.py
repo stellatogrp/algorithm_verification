@@ -146,7 +146,6 @@ def main():
         box_u[i] = np.max(X[:, i])
     print(box_l, box_u)
     print(X[0, :])
-    exit(0)
 
     set_up_admm_run(mpc, X)
 

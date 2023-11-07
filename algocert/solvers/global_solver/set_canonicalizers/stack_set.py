@@ -5,7 +5,7 @@ import numpy as np
 from algocert.variables.parameter import Parameter
 
 
-def stack_set_canon(init_set, model, var_to_gp_var_map):
+def stack_set_canon(init_set, model, var_to_gp_var_map, k=0):
     # x = init_set.get_iterate()
     # x_var = var_to_gp_var_map[x]
     # # l_vec = l_new.reshape(-1, )
@@ -35,7 +35,7 @@ def stack_set_canon(init_set, model, var_to_gp_var_map):
     if x.is_param:
         x_constr = x_var
     else:
-        x_constr = x_var[0]
+        x_constr = x_var[k]
 
     curr_dim = 0
     for curr_var in var_stack:

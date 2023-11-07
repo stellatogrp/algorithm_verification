@@ -122,7 +122,7 @@ def stack_bound_canon(init_set, handler):
         else:
             l_new.append(val[0].reshape(-1, 1))
             u_new.append(val[1].reshape(-1, 1))
-            ws_newval = (val[1] - val[0]) / 2
+            ws_newval = (val[1] + val[0]) / 2
             ws_new.append(ws_newval.reshape(-1, 1))
 
     # print(l_new, u_new)
