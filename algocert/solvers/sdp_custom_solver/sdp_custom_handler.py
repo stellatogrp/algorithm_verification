@@ -188,7 +188,7 @@ class SDPCustomHandler(object):
             if step.is_linstep:
                 # self.linstep_output_vars.add(step.get_output_var())
                 self.linstep_output_vars.append(step.get_output_var())
-                self.var_linstep_map[step.get_output_var()] = step
+            self.var_linstep_map[step.get_output_var()] = step
         # print(self.linstep_output_vars)
         # print(self.var_linstep_map)
 
@@ -282,6 +282,7 @@ class SDPCustomHandler(object):
             for other_var in self.iterate_list:
                 for k1 in range(1, self.K + 1):
                     for k2 in range(k1, max(0, k1 - lookback_t) - 1, -1):
+                        # TODO FIX var_linstep_map
                         if k1 < self.var_linstep_map[linstep_var].start_canon or k2 < self.var_linstep_map[other_var].start_canon:
                             continue
                         if linstep_var == other_var and k1 == k2:

@@ -35,15 +35,14 @@ def linear_max_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_ma
     for i, x in enumerate(u):
         idx = u_idx[i]
         if x.is_param:
-            # print(x)
             x_var = param_to_gp_var_map[x]
         else:
             x_varmatrix = iter_to_gp_var_map[x]
-            if iter_to_id_map[y] <= iter_to_id_map[x]:
-                x_var = x_varmatrix[k-1]
-            else:
-                x_var = x_varmatrix[k]
-            # x_var = x_varmatrix[idx]
+            # if iter_to_id_map[y] <= iter_to_id_map[x]:
+            #     x_var = x_varmatrix[k-1]
+            # else:
+            #     x_var = x_varmatrix[k]
+            x_var = x_varmatrix[idx]
         w_rhs += A_blocks[i] @ x_var
 
     model.addConstr(w == w_rhs)
@@ -67,6 +66,8 @@ def linear_max_proj_canon(step, model, k, iter_to_gp_var_map, param_to_gp_var_ma
 
     for idx in proj_indices:
         # model.addConstr(zy[idx] * zl[idx] == 0)
+        model.addConstr(y_var[idx] >= l_vec[idx])
+        model.addConstr(y_var[idx] >= w[idx])
         model.addConstr((y_var[idx] - w[idx]) * (y_var[idx] - l_vec[idx]) == 0)
 
 
@@ -79,12 +80,12 @@ def linear_max_proj_bound_canon(step, k, iter_to_id_map,
     l = step.get_lower_bound_vec()
     # nonneg_indices = step.nonneg_indices
     proj_indices = np.array(step.proj_indices)
-    np.array(step.nonproj_indices)
+    # np.array(step.nonproj_indices)
     # print(proj_indices, nonproj_indices)
 
     step_data = step.get_matrix_data(k)
     A = step_data['A']
-    step_data['b']
+    b = step_data['b']
 
     if not isinstance(l, Parameter):
         l_vec = l.reshape(-1, )
@@ -98,34 +99,34 @@ def linear_max_proj_bound_canon(step, k, iter_to_id_map,
     # print(lower_l, upper_l)
     u_lower = []
     u_upper = []
-    map_linstep_to_iters(y, u, k, iter_to_id_map)
+    u_idx = map_linstep_to_iters(y, u, k, iter_to_id_map)
 
-    for x in u:
-        if x.is_param:
-            u_lower.append(param_to_lower_bound_map[x])
-            u_upper.append(param_to_upper_bound_map[x])
-            # print(param_to_lower_bound_map[x].shape)
-        else:
-            x_lowermat = iter_to_lower_bound_map[x]
-            x_uppermat = iter_to_upper_bound_map[x]
-            if iter_to_id_map[y] <= iter_to_id_map[x]:
-                x_lower = x_lowermat[k - 1]
-                x_upper = x_uppermat[k - 1]
-            else:
-                x_lower = x_lowermat[k]
-                x_upper = x_uppermat[k]
-            u_lower.append(x_lower)
-            u_upper.append(x_upper)
-
-    # for idx, x in zip(u_idx, u):
-    #     if idx is None:
+    # for x in u:
+    #     if x.is_param:
     #         u_lower.append(param_to_lower_bound_map[x])
     #         u_upper.append(param_to_upper_bound_map[x])
+    #         # print(param_to_lower_bound_map[x].shape)
     #     else:
     #         x_lowermat = iter_to_lower_bound_map[x]
     #         x_uppermat = iter_to_upper_bound_map[x]
-    #         u_lower.append(x_lowermat[idx])
-    #         u_upper.append(x_uppermat[idx])
+    #         if iter_to_id_map[y] <= iter_to_id_map[x]:
+    #             x_lower = x_lowermat[k - 1]
+    #             x_upper = x_uppermat[k - 1]
+    #         else:
+    #             x_lower = x_lowermat[k]
+    #             x_upper = x_uppermat[k]
+    #         u_lower.append(x_lower)
+    #         u_upper.append(x_upper)
+
+    for idx, x in zip(u_idx, u):
+        if idx is None:
+            u_lower.append(param_to_lower_bound_map[x])
+            u_upper.append(param_to_upper_bound_map[x])
+        else:
+            x_lowermat = iter_to_lower_bound_map[x]
+            x_uppermat = iter_to_upper_bound_map[x]
+            u_lower.append(x_lowermat[idx])
+            u_upper.append(x_uppermat[idx])
 
     u_lower = np.hstack(u_lower)
     u_upper = np.hstack(u_upper)
@@ -134,14 +135,14 @@ def linear_max_proj_bound_canon(step, k, iter_to_id_map,
     scaled_lower, scaled_upper = lin_bound_map(u_lower, u_upper, A)
     # print(scaled_lower, scaled_upper)
 
-    y_lower = scaled_lower.copy().reshape(-1, )
-    y_upper = scaled_upper.copy().reshape(-1, )
+    y_lower = scaled_lower.copy().reshape(-1, ) + b.reshape(-1, )
+    y_upper = scaled_upper.copy().reshape(-1, ) + b.reshape(-1, )
 
     if len(proj_indices) > 0:
         y_lower[proj_indices] = np.maximum(y_lower[proj_indices], lower_l[proj_indices])
         y_upper[proj_indices] = np.maximum(y_upper[proj_indices], upper_l[proj_indices])
 
-    print(y_lower, y_upper)
+    # print(y_lower, y_upper)
     # exit(0)
 
     y_lowermat = iter_to_lower_bound_map[y]

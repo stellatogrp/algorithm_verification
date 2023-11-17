@@ -252,12 +252,6 @@ class GlobalHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
             for step in steps:
-                # print(k, step.start_canon)
-                # exit(0)
-                # if k < step.start_canon:
-                #     print(step.start_canon)
-                #     print('here')
-                #     continue
                 if k >= step.start_canon:
                     canon_method = STEP_CANON_METHODS[type(step)]
                     canon_method(step, self.model, k,

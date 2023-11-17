@@ -34,9 +34,6 @@ def linear_max_proj_canon(step, k, handler):
     b_uvals = []
     psd_cone_handlers = []
 
-    # print(nonproj_indices, step.proj_indices)
-    # exit(0)
-
     iter_bound_map = handler.iter_bound_map
     yrange = iter_bound_map[y][k]
     urange = map_linstep_to_ranges(y, u, k, handler)
@@ -88,16 +85,17 @@ def canon_with_l_const(step, k, handler):
     u = step.get_input_var()
     l = step.get_lower_bound_vec()
     n = y.get_dim()
-    u_dim = step.get_input_var_dim()
+    step.get_input_var_dim()
     problem_dim = handler.problem_dim
     iter_bound_map = handler.iter_bound_map
     proj_indices = step.proj_indices
+    nonproj_indices = step.nonproj_indices
 
     A_vals = []
     b_lvals = []
     b_uvals = []
 
-    D = np.eye(n)
+    np.eye(n)
     step_data = step.get_matrix_data(k)
     A = step_data['A']
     b = step_data['b']
@@ -114,7 +112,6 @@ def canon_with_l_const(step, k, handler):
     # print(proj_indices)
     # y >= l
     if not handler.add_RLT:
-        print('here')
         for i in proj_indices:
             output_mat = spa.lil_matrix((problem_dim, problem_dim))
             insert_vec = np.zeros((n, 1))
@@ -160,47 +157,45 @@ def canon_with_l_const(step, k, handler):
     if handler.add_planet:
         y_upper = handler.var_upperbounds[yrange1D_handler.index_matrix()]
         y_lower = handler.var_lowerbounds[yrange1D_handler.index_matrix()]
+        handler.var_upperbounds[urange1D_handler.index_matrix()]
         Au_lower, Au_upper, _ = get_Au_bounds(step, k, handler)
+        Au_lower = Au_lower - b
+        Au_upper = Au_upper - b
         # gaps_vec = (Au_upper - Au_lower).reshape(-1, )
         gaps_vec = np.squeeze(np.asarray(Au_upper - Au_lower))
         pos_gap_indices = np.argwhere(gaps_vec >= 1e-6).reshape(-1, )
-        frac = np.divide((y_upper - y_lower)[pos_gap_indices], (Au_upper - Au_lower)[pos_gap_indices])
+        # frac = np.divide((y_upper - y_lower)[pos_gap_indices], (Au_upper - Au_lower)[pos_gap_indices])
 
-        D = np.zeros((n, n))
-        Iy = np.eye(n)
-        Iu = np.eye(u_dim)
-        for j, i in enumerate(pos_gap_indices):
-            D[i, i] = frac[j]
-        # print(Au_upper - Au_lower, gaps_vec, pos_gap_indices)
-        # temp = Au_upper - Au_lower
-        # print(temp, np.argwhere(temp >= 1e-6), np.squeeze(np.asarray(temp)))
-        # exit(0)
-        c = np.multiply(frac, -Au_lower[pos_gap_indices]) + y_lower[pos_gap_indices] + (D @ b)[pos_gap_indices]
-        D = D @ A
-        minusc_AuupperT = -c @ Au_upper.T
-
-        for pos_idx, i in enumerate(pos_gap_indices):
-            if i not in proj_indices:
+        In = np.eye(n)
+        for i in range(n):
+            if i in nonproj_indices:
                 continue
+            if i not in pos_gap_indices:
+                continue
+
+            mul = (y_upper[i, 0] - y_lower[i, 0]) / (Au_upper[i, 0] - Au_lower[i, 0])
+            # print(mul)
+            Di = mul * A[i]
+            ci = mul * (b[i, 0] - Au_lower[i, 0]) + y_lower[i, 0]
 
             outmat = spa.lil_matrix((problem_dim, problem_dim))
 
-            Di = D[i].T.reshape((-1, 1))
-            Ii = Iy[i].T.reshape((-1, 1))
-            Iy.T[:, i].T.reshape((1, -1))
-            IuTj = Iu.T[:, i].T.reshape((1, -1))
-            outmat[urange1D_handler.index_matrix()] = Di * Au_upper[i, 0]
-            outmat[uuTrange_handler.index_matrix()] = -Di @ IuTj
-            outmat[urange1D_handler.index_matrix_horiz()] = -c[pos_idx, 0] * IuTj
-            outmat[yrange1D_handler.index_matrix()] = -Ii * Au_upper[i, 0]
-            outmat[yuTrange_handler.index_matrix()] = Ii @ IuTj
+            # print(Di.shape, Au_upper.shape)
+            # print((Di * Au_upper[i, 0]).shape)
+            outmat[urange1D_handler.index_matrix()] = (Di * Au_upper[i, 0]).reshape((-1, 1))
+            outmat[uuTrange_handler.index_matrix()] = -Di.T @ A[i]
+            outmat[urange1D_handler.index_matrix_horiz()] = -ci * A[i]
+            outmat[yrange1D_handler.index_matrix()] = -In[i] * Au_upper[i, 0]
+            # print(In[i].reshape((-1, 1)) @ A[i])
+            outmat[yuTrange_handler.index_matrix()] = In[i].reshape((-1, 1)) @ A[i]
             outmat = (outmat + outmat.T) / 2
 
             A_vals.append(spa.csc_matrix(outmat))
-            b_lvals.append(minusc_AuupperT[pos_idx, i])
+            b_lvals.append(-ci * Au_upper[i, 0])
             b_uvals.append(np.inf)
 
-    # exit(0)
+        # if k == 4:
+        #     exit(0)
 
     return A_vals, b_lvals, b_uvals
 
@@ -278,7 +273,7 @@ def linear_max_proj_bound_canon(step, k, handler):
 
     # print('proj')
     # print(y_lower, y_upper, y_ws)
-    # print(y_lower, y_upper)
+    # print(y, k, y_lower, y_upper)
     # exit(0)
 
     handler.var_lowerbounds[yrange_handler.index_matrix()] = y_lower

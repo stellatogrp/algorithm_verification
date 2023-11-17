@@ -119,6 +119,7 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         sdp_objval=objval,
         sdp_solvetime=solvetime,
         num_cones=len(PSD_cones),
+        problem_dim=problem_dim,
         x_dim=x_dim,
         num_Aeq=Aeq.shape[0],
         Aeq_nnz=Aeq.count_nonzero(),
