@@ -14,6 +14,7 @@ from algocert.solvers.sdp_custom_solver.cross_constraints import (
     cross_constraints_linstep_to_not,
 )
 from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_vars, RLT_diagonal_vars
+from algocert.solvers.sdp_custom_solver.solve_dd import solve_dd_cvxpy
 from algocert.solvers.sdp_custom_solver.solve_via_custom_admm import solve_via_custom_admm
 from algocert.solvers.sdp_custom_solver.solve_via_mosek import solve_via_mosek
 from algocert.solvers.sdp_custom_solver.solve_via_scs import solve_via_scs
@@ -90,8 +91,13 @@ class SDPCustomHandler(object):
         if 'sdp_solver' in kwargs:
             self.sdp_solver = kwargs['sdp_solver']
         else:
-            # self.sdp_solver = 'scs'
-            self.sdp_solver = 'mosek'
+            self.sdp_solver = 'scs'
+            # self.sdp_solver = 'mosek'
+
+        if 'solve_dd' in kwargs:
+            self.solve_dd = kwargs['solve_dd']
+        else:
+            self.solve_dd = False
 
     def convert_hl_to_basic_steps(self):
         pass
@@ -424,9 +430,16 @@ class SDPCustomHandler(object):
                               self.psd_cone_handlers, self.problem_dim)
         return out
 
+    def solve_dd_relaxation(self):
+        out = solve_dd_cvxpy(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
+                              self.psd_cone_handlers, self.problem_dim)
+        return out
+
     def solve(self):
         # return self.solve_with_cvxpy()
         # return self.solve_with_scs_directly()
+        if self.solve_dd:
+            return self.solve_dd_relaxation()
         if self.sdp_solver == 'mosek':
             print('solving via mosek')
             return self.solve_with_mosek_directly()

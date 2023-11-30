@@ -132,11 +132,11 @@ def main():
     t = .05
     print(t)
 
-    res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
-    print('combined nonneglinstep:', res1)
+    # res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
+    # print('combined nonneglinstep:', res1)
 
-    # res2 = NNLS_twostep(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
-    # print('two steps:', res2)
+    res2 = NNLS_twostep(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
+    print('two steps:', res2)
 
 
 

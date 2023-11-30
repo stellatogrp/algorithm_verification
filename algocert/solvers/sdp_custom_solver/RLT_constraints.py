@@ -48,6 +48,45 @@ def RLT_diagonal_vars(matrix_dim, handler):
     return A_vals, b_lvals, b_uvals
 
 
+def RLT_all_in_range_list(ranges, handler):
+    # print(ranges)
+    range_handler = RangeHandler1D(ranges)
+    # print(range_handler.row_indices)
+    n = len(range_handler.row_indices)
+
+    problem_dim = handler.problem_dim
+
+    A_vals = []
+    b_lvals = []
+    b_uvals = []
+
+    l = handler.var_lowerbounds
+    u = handler.var_upperbounds
+
+    for i in range(n):
+        for j in range(i, n):
+            output_mat3 = spa.lil_matrix((problem_dim, problem_dim))
+            output_mat3[i, j] = -1
+            output_mat3[j, -1] = u[i, 0]
+            output_mat3[-1, i] = l[j, 0]
+            output_mat3 = (output_mat3 + output_mat3.T) / 2
+            A_vals.append(spa.csc_matrix(output_mat3))
+            b_lvals.append(u[i, 0] * l[j, 0])
+            b_uvals.append(np.inf)
+
+            # output_mat4 = np.zeros((matrix_dim + 1, matrix_dim + 1))
+            output_mat4 = spa.lil_matrix((problem_dim, problem_dim))
+            output_mat4[i, j] = 1
+            output_mat4[j, -1] = -u[i, 0]
+            output_mat4[-1, i] = -u[j, 0]
+            output_mat4 = (output_mat4 + output_mat4.T) / 2
+            A_vals.append(spa.csc_matrix(output_mat4))
+            b_lvals.append(-u[i, 0] * u[j, 0])
+            b_uvals.append(np.inf)
+
+    return A_vals, b_lvals, b_uvals
+
+
 def RLT_ranges(idx_range1, idx_range2, handler):
     problem_dim = handler.problem_dim
 

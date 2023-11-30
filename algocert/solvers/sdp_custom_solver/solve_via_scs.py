@@ -189,7 +189,8 @@ def solve_via_scs_nosdp(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     b[0] = 1
     data = dict(A=A, b=b, c=c)
     cones = dict(bu=b_upper, bl=b_lower)
-    solver = scs.SCS(data, cones, eps_abs=1e-5, eps_rel=1e-5)
+    # solver = scs.SCS(data, cones, eps_abs=1e-8, eps_rel=1e-8)
+    solver = scs.SCS(data, cones)
 
     solver.solve()
 

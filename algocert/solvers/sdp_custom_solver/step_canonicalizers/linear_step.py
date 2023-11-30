@@ -6,7 +6,7 @@ from algocert.solvers.sdp_custom_solver.equality_constraints import (
     equality2D_constraints,
 )
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D
-from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_ranges
+from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_in_range_list
 from algocert.solvers.sdp_custom_solver.step_canonicalizers.linear_step_propagation import (
     SET_LINPROP_MAP,
 )
@@ -49,11 +49,16 @@ def linear_step_canon(step, k, handler):
     # print([(h.ranges, h.row_indices) for h in psd_cross])
     # exit(0)
     if handler.add_indiv_RLT:
-        for u in urange:
-            A_rlt, bl_rlt, bu_rlt = RLT_ranges(yrange, u, handler)
-            A_matrices += A_rlt
-            b_lvals += bl_rlt
-            b_uvals += bu_rlt
+        # for u in urange:
+        #     A_rlt, bl_rlt, bu_rlt = RLT_ranges(yrange, u, handler)
+        #     A_matrices += A_rlt
+        #     b_lvals += bl_rlt
+        #     b_uvals += bu_rlt
+        ranges = [yrange] + urange
+        A_rlt, bl_rlt, bu_rlt = RLT_all_in_range_list(ranges, handler)
+        A_matrices += A_rlt
+        b_lvals += bl_rlt
+        b_uvals += bu_rlt
 
     A_matrices += Across
     b_lvals += blcross
@@ -78,6 +83,9 @@ def linear_step_bound_canon(step, k, handler):
 
     DinvA = step.solve_linear_system(A.todense())
     Dinvb = step.solve_linear_system(b)
+
+    # print(k, step)
+    # exit(0)
 
     uranges = map_linstep_to_ranges(y, u, k, handler)
     iter_map = map_linstep_to_iters(y, u, k, handler)

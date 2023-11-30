@@ -8,6 +8,7 @@ from algocert.solvers.sdp_custom_solver.equality_constraints import (
 )
 from algocert.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
+from algocert.solvers.sdp_custom_solver.RLT_constraints import RLT_all_in_range_list
 from algocert.solvers.sdp_custom_solver.step_canonicalizers.linear_step_propagation import (
     SET_LINPROP_MAP,
 )
@@ -77,6 +78,13 @@ def linear_max_proj_canon(step, k, handler):
         A_matrices += Aproj
         b_lvals += b_lproj
         b_uvals += b_uproj
+
+    if handler.add_indiv_RLT:
+        ranges = [yrange] + urange
+        A_rlt, bl_rlt, bu_rlt = RLT_all_in_range_list(ranges, handler)
+        A_matrices += A_rlt
+        b_lvals += bl_rlt
+        b_uvals += bu_rlt
 
     return A_matrices, b_lvals, b_uvals, psd_cone_handlers
 
@@ -158,9 +166,12 @@ def canon_with_l_const(step, k, handler):
         y_upper = handler.var_upperbounds[yrange1D_handler.index_matrix()]
         y_lower = handler.var_lowerbounds[yrange1D_handler.index_matrix()]
         handler.var_upperbounds[urange1D_handler.index_matrix()]
-        Au_lower, Au_upper, _ = get_Au_bounds(step, k, handler)
-        Au_lower = Au_lower - b
-        Au_upper = Au_upper - b
+        Aub_lower, Aub_upper, _ = get_Aub_bounds(step, k, handler)
+        # print(Aub_lower, Aub_upper)
+        Au_lower = Aub_lower - b
+        Au_upper = Aub_upper - b
+        # print(Au_lower, Aub_lower)
+        # print(Au_upper, Aub_upper)
         # gaps_vec = (Au_upper - Au_lower).reshape(-1, )
         gaps_vec = np.squeeze(np.asarray(Au_upper - Au_lower))
         pos_gap_indices = np.argwhere(gaps_vec >= 1e-6).reshape(-1, )
@@ -173,10 +184,10 @@ def canon_with_l_const(step, k, handler):
             if i not in pos_gap_indices:
                 continue
 
-            mul = (y_upper[i, 0] - y_lower[i, 0]) / (Au_upper[i, 0] - Au_lower[i, 0])
+            mul = (y_upper[i, 0] - y_lower[i, 0]) / (Aub_upper[i, 0] - Aub_lower[i, 0])
             # print(mul)
             Di = mul * A[i]
-            ci = mul * (b[i, 0] - Au_lower[i, 0]) + y_lower[i, 0]
+            ci = mul * (b[i, 0] - Aub_lower[i, 0]) + y_lower[i, 0]
 
             outmat = spa.lil_matrix((problem_dim, problem_dim))
 
@@ -194,8 +205,6 @@ def canon_with_l_const(step, k, handler):
             b_lvals.append(-ci * Au_upper[i, 0])
             b_uvals.append(np.inf)
 
-        # if k == 4:
-        #     exit(0)
 
     return A_vals, b_lvals, b_uvals
 
@@ -260,7 +269,7 @@ def linear_max_proj_bound_canon(step, k, handler):
     proj_indices = np.array(step.proj_indices)
     np.array(step.nonproj_indices)
 
-    Ax_lower, Ax_upper, Ax_ws = get_Au_bounds(step, k, handler)
+    Ax_lower, Ax_upper, Ax_ws = get_Aub_bounds(step, k, handler)
 
     y_lower = Ax_lower.copy()
     y_upper = Ax_upper.copy()
@@ -281,7 +290,7 @@ def linear_max_proj_bound_canon(step, k, handler):
     handler.var_warmstart[yrange_handler.index_matrix()] = y_ws
 
 
-def get_Au_bounds(step, k, handler):
+def get_Aub_bounds(step, k, handler):
     u = step.get_input_var()  # remember this is a list of vars
     y = step.get_output_var()
 

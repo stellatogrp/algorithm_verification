@@ -115,6 +115,11 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         solvetime = M.getSolverDoubleInfo('optimizerTime')
         objval = -M.primalObjValue()
 
+        # print(x.level())
+        # print(mat(x.level()))
+        # exit(0)
+        x_sol = mat(x.level())
+
     out = dict(
         sdp_objval=objval,
         sdp_solvetime=solvetime,
@@ -127,5 +132,6 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
         Au_nnz=Au.count_nonzero(),
         num_Al=Al.shape[0],
         Al_nnz=Al.count_nonzero(),
+        primal_sol=x_sol,
     )
     return out

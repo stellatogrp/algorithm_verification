@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.sparse as spa
 
 from algocert.basic_algorithm_steps.step import Step
 from algocert.variables.iterate import Iterate
@@ -163,4 +164,4 @@ class LinearMaxProjStep(Step):
         else:
             b = self.b
 
-        return dict(A=A, b=b)
+        return dict(A=spa.csc_matrix(A), b=b)
