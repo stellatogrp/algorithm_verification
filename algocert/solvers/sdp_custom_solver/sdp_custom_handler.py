@@ -91,8 +91,8 @@ class SDPCustomHandler(object):
         if 'sdp_solver' in kwargs:
             self.sdp_solver = kwargs['sdp_solver']
         else:
-            self.sdp_solver = 'scs'
-            # self.sdp_solver = 'mosek'
+            # self.sdp_solver = 'scs'
+            self.sdp_solver = 'mosek'
 
         if 'solve_dd' in kwargs:
             self.solve_dd = kwargs['solve_dd']
@@ -232,7 +232,10 @@ class SDPCustomHandler(object):
 
         for obj in obj_list:
             obj_canon = OBJ_CANON_METHODS[type(obj)]
-            C_temp = obj_canon(obj, self)
+            C_temp, A, b_l, b_u = obj_canon(obj, self)
+            self.A_matrices += A
+            self.b_lowerbounds += b_l
+            self.b_upperbounds += b_u
             # print(C_temp)
             self.C_matrix += C_temp
 

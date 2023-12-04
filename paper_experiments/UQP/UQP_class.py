@@ -31,9 +31,9 @@ class UnconstrainedQuadraticProgram(object):
         else:
             mid_eigs = []
             len_mid = 0
-        P_eigs[num_zero_eigs] = L
+        P_eigs[num_zero_eigs] = mu
         P_eigs[num_zero_eigs + 1: num_zero_eigs + 1 + len_mid] = mid_eigs
-        P_eigs[-1] = mu
+        P_eigs[-1] = L
         P = Q @ np.diag(P_eigs) @ Q.T
         self.Q = Q
         # print('eigvals of P:', np.round(np.linalg.eigvals(P), 4))

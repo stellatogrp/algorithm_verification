@@ -100,7 +100,7 @@ class ISTA(object):
         C = spa.bmat([[In - t * ATA, t * A.T]])
         D = spa.eye(n, n)
         b_const = np.zeros((n, 1))
-        lambd_ones = self.lambd * np.ones((n, 1))
+        lambd_ones = self.lambd * t * np.ones((n, 1))
         beta_list = self.generate_betas(K)
 
         y = Iterate(n, name='y')

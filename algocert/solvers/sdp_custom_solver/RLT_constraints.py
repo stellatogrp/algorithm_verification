@@ -1,5 +1,6 @@
 import numpy as np
 import scipy.sparse as spa
+from tqdm import trange
 
 from algocert.solvers.sdp_custom_solver.range_handler import RangeHandler1D, RangeHandler2D
 
@@ -51,7 +52,6 @@ def RLT_diagonal_vars(matrix_dim, handler):
 def RLT_all_in_range_list(ranges, handler):
     # print(ranges)
     range_handler = RangeHandler1D(ranges)
-    # print(range_handler.row_indices)
     n = len(range_handler.row_indices)
 
     problem_dim = handler.problem_dim
@@ -99,7 +99,16 @@ def RLT_ranges(idx_range1, idx_range2, handler):
 
     for i in range(idx_range1[0], idx_range1[1]):
         for j in range(idx_range2[0], idx_range2[1]):
-            # print(i, j)
+            # # output_mat1 = np.zeros((matrix_dim + 1, matrix_dim + 1))
+            # output_mat1 = spa.lil_matrix((matrix_dim + 1, matrix_dim + 1))
+            # output_mat1[i, j] = 1
+            # output_mat1[j, -1] = -l[i, 0]
+            # output_mat1[-1, i] = -l[j, 0]
+            # output_mat1 = (output_mat1 + output_mat1.T) / 2
+            # A_vals.append(spa.csc_matrix(output_mat1))
+            # b_lvals.append(-l[i, 0] * l[j, 0])
+            # b_uvals.append(np.inf)
+
             # output_mat3 = np.zeros((matrix_dim + 1, matrix_dim + 1))
             output_mat3 = spa.lil_matrix((problem_dim, problem_dim))
             output_mat3[i, j] = -1
@@ -132,7 +141,7 @@ def RLT_all_vars(matrix_dim, handler):
     l = handler.var_lowerbounds
     u = handler.var_upperbounds
 
-    for i in range(matrix_dim):
+    for i in trange(matrix_dim):
         for j in range(i, matrix_dim):
             # # output_mat1 = np.zeros((matrix_dim + 1, matrix_dim + 1))
             # output_mat1 = spa.lil_matrix((matrix_dim + 1, matrix_dim + 1))

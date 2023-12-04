@@ -7,7 +7,7 @@ from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
     "text.usetex": True,
-    "font.size": 20,})
+    "font.size": 16})
 
 
 def solve_sdp(UQP, c, r, k=1):
@@ -78,7 +78,7 @@ def UQP_pep(mu, L, r, t, k=1):
 
 
 def experiment3():
-    seed1 = 5
+    seed1 = 4
     seed2 = 6
     n = 2
     mu = 1
@@ -93,7 +93,8 @@ def experiment3():
     UQP2 = UnconstrainedQuadraticProgram(n, mu=mu, L=L, seed=seed2, centered=False)
     print(UQP1.P, UQP2.P)
 
-    z0 = np.array([0.9, 0])
+    # z0 = np.array([0.9, 0])
+    z0 = np.array([0, 0.9])
     res1, x1 = solve_sdp(UQP1, z0, r)
     x1 = -x1
     print(res1, x1)
@@ -122,8 +123,9 @@ def experiment3():
     x_star = np.array([0, 0])
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    plt.contour(X1, X2, f1_vec(X1, X2), colors='k', linestyles='solid')
-    plt.contour(X1, X2, f2_vec(X1, X2), colors='k', linestyles='dashed')
+    contour_levels = [0.5, 1, 2, 3, 4]
+    plt.contour(X1, X2, f1_vec(X1, X2), contour_levels, colors='k', linestyles='solid', alpha=0.5)
+    plt.contour(X1, X2, f2_vec(X1, X2), contour_levels, colors='k', linestyles='dashed', alpha=0.5)
 
     ax.scatter(*zip(x_star), marker='*', s=600, color='k')
 
@@ -151,6 +153,7 @@ def experiment3():
     plt.legend()
     # plt.show()
     plt.savefig('experiment3/exp3contours.pdf')
+    # exit(0)
 
     taus = []
     pep_r = R + r
@@ -159,7 +162,7 @@ def experiment3():
         taus.append(tau)
     print(taus)
 
-    labels = [r'$P_1$', r'$P_2$', 'PEP']
+    labels = [r'$P_1$', r'$P_2$', r'$\mathrm{PEP}$']
     markers = ['<', '>', 'x']
 
     plt.cla()

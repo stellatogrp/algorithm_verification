@@ -310,7 +310,12 @@ class GlobalHandler(object):
         # w = (self.y + self.z).getValue()
         # t = self.t.getValue()
         # print(np.round(w - np.abs(t), 4))
-        return self.model.objVal, self.model.Runtime
+        out = dict(
+            glob_objval=self.model.objVal,
+            glob_runtime=self.model.Runtime,
+            gap=self.model.MIPGap
+        )
+        return out
 
     def get_iterate_var_map(self):
         return self.iterate_to_gp_var_map

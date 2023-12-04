@@ -7,7 +7,7 @@ from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
     "text.usetex": True,
-    "font.size": 20,})
+    "font.size": 16,})
 
 
 def solve_sdp(UQP, c, r, z0, k=1):
@@ -115,10 +115,10 @@ def experiment2():
 
     q2_opt = -np.linalg.solve(UQP.P, q2_wc)
 
-    x_min = -.6
-    x_max = .6
-    y_min = -1.5
+    y_min = -.75
     y_max = .75
+    x_min = -1.5
+    x_max = .75
 
     print('z0 to q1 opt:', np.linalg.norm(z0 - q1_opt))
     print('z0 to q2 opt:', np.linalg.norm(z0 - q2_opt))
@@ -144,20 +144,27 @@ def experiment2():
     f2_vec = np.vectorize(f2_plot)
     X1, X2 = np.meshgrid(x_lin[:, 0], x_lin[:, 1])
 
-    fig, ax = plt.subplots(figsize=(6, 6))
-    labels = ['q1', 'q2']
+    fig, ax = plt.subplots(figsize=(6, 3))
+    labels = [r'$z^\star_1$', r'$z^\star_2$']
     markers = ['<', '>']
-    plt.contour(X1, X2, f1_vec(X1, X2), [.1, .3], colors='k', linestyles='dashdot')
-    plt.contour(X1, X2, f2_vec(X1, X2), [.1, .3], colors='k', linestyles='dashdot')
+    contour_levels = [0.25, 0.5]
+    plt.contour(X1, X2, f1_vec(X1, X2), contour_levels, colors='k', linestyles='solid', alpha=0.25)
+    plt.contour(X1, X2, f2_vec(X1, X2), contour_levels, colors='k', linestyles='solid', alpha=0.25)
 
     ax.scatter(*zip(q1_opt), marker='*', s=300, color='k', label=labels[0])
     ax.scatter(*zip(q2_opt), marker='s', s=300, color='k', label=labels[1])
-    ax.scatter(*zip(z0), marker='x', color='k')
+    ax.scatter(*zip(z0), marker='x', color='k', label=r'$z^0$')
 
     # ax.plot(*zip(*gd_out), linestyle='--', marker=marker,
     #         markerfacecolor='none', label=label)
     ax.plot(*zip(*gd1_out), linestyle='--')
     ax.plot(*zip(*gd2_out), linestyle='--')
+
+    pep_r = np.max([np.linalg.norm(z0 - q1_opt), np.linalg.norm(z0 - q2_opt)])
+
+    circ = plt.Circle(q1_opt, pep_r, fill=True, alpha=0.1, color='black', linestyle='dotted')
+
+    ax.add_patch(circ)
 
     ax.set_xlim([x_min, x_max])
     ax.set_ylim([y_min, y_max])
@@ -171,7 +178,6 @@ def experiment2():
 
     # PEP
     taus = []
-    pep_r = np.max([np.linalg.norm(z0 - q1_opt), np.linalg.norm(z0 - q2_opt)])
     for k in range(1, gd_k + 1):
         tau = UQP_pep(mu, L, pep_r, UQP.get_t_opt(), k=k)
         taus.append(tau)
@@ -179,6 +185,7 @@ def experiment2():
     print(q1_resids, q2_resids)
 
     labels = ['q1 worst case', 'q2 worst case', 'PEP']
+    labels = [r'$q^\star_1$', r'$q^\star_2$', r'$\mathrm{PEP}$']
     markers = ['<', '>', 'x']
 
     plt.cla()

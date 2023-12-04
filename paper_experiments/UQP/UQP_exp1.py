@@ -7,7 +7,7 @@ from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
     "text.usetex": True,
-    "font.size": 20,})
+    "font.size": 16,})
 
 
 def solve_sdp(UQP, c, r, k=1):
@@ -101,7 +101,7 @@ def gd(x0, t, k, UQP):
 
 
 def experiment1():
-    seed = 8
+    seed = 1
     n = 2
     mu = 1
     L = 10
@@ -135,7 +135,8 @@ def experiment1():
     x_star = np.array([0, 0])
 
     fig, ax = plt.subplots(figsize=(6, 6))
-    plt.contour(X1, X2, f_vec(X1, X2), colors='k', linestyles='dashdot')
+    contour_levels = [0.25, 0.5, 1, 2, 3, 4, 5]
+    plt.contour(X1, X2, f_vec(X1, X2), contour_levels, colors='k', linestyles='solid', alpha=0.25)
 
     circ1 = plt.Circle((0, 0), 1, fill=False, color='black')
 
@@ -143,7 +144,7 @@ def experiment1():
 
     ax.scatter(*zip(x_star), marker='*', s=600, color='k')
 
-    labels = ['worst case', r'$c_1$', r'$c_2$']
+    labels = [r'$\mathrm{worst~case}$', r'$c_1$', r'$c_2$']
     markers = ['^', '<', '>']
     fp_resids = []
     for (x, c, label, marker) in zip([x_wc, x1, x2], [c_wc, c1, c2], labels, markers):
@@ -165,8 +166,8 @@ def experiment1():
     ax.set_aspect('equal', adjustable='box')
     plt.tight_layout()
     plt.legend()
-    plt.show()
-    # plt.savefig('experiment1/exp1contours.pdf')
+    # plt.show()
+    plt.savefig('experiment1/exp1contours.pdf')
 
     # PEP
     taus = []
@@ -175,7 +176,7 @@ def experiment1():
         taus.append(tau)
 
     fp_resids.append(taus)
-    labels.append('PEP')
+    labels.append(r'$\mathrm{PEP}$')
     markers.append('x')
 
     plt.cla()
@@ -196,8 +197,8 @@ def experiment1():
 
     plt.tight_layout()
     plt.legend()
-    plt.show()
-    # plt.savefig('experiment1/exp1resids.pdf')
+    # plt.show()
+    plt.savefig('experiment1/exp1resids.pdf')
 
 
 def main():
