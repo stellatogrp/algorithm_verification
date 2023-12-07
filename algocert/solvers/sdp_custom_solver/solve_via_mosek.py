@@ -37,14 +37,12 @@ def spa_to_mosek_mat(M):
     return Matrix.sparse(M.shape[0], M.shape[1], i, j, vals)
 
 
-def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
+def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler, block_cone_addition=False):
     print('----solving via mosek directly----')
     print('problem dim n:', problem_dim)
     c = vec(C.todense())
     x_dim = len(c)
     print('x_dim:', x_dim)
-
-
 
     num_Aeq = 0
     num_Al = 0
@@ -54,17 +52,33 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim):
     with Model() as M:
         import sys
         M.setLogHandler(sys.stdout)
-        x = M.variable(x_dim, Domain.unbounded())
-        # x = M.variable(x_dim, Domain.inSVecPSDCone(x_dim))
-        M.objective(ObjectiveSense.Minimize, Expr.dot(c, x))
 
-        for cone in tqdm(PSD_cones):
-            H = cone.get_sparse_Hsymm_mat(problem_dim)
-            z_dim = H.shape[0]
-            H = spa_to_mosek_mat(H)
-            z = M.variable(z_dim, Domain.inSVecPSDCone(z_dim))
-            M.constraint(Expr.sub(Expr.mul(H, x), z), Domain.equalsTo(0))
-        print('all cones added')
+        if handler.couple_single_psd_cone:
+            print('only using single psd cone')
+            x = M.variable(x_dim, Domain.inSVecPSDCone(x_dim))
+            M.objective(ObjectiveSense.Minimize, Expr.dot(c, x))
+        else:
+            x = M.variable(x_dim, Domain.unbounded())
+            # x = M.variable(x_dim, Domain.inSVecPSDCone(x_dim))
+            M.objective(ObjectiveSense.Minimize, Expr.dot(c, x))
+
+            if block_cone_addition:
+                for cone in tqdm(PSD_cones):
+                    H = cone.get_sparse_Hsymm_mat(problem_dim)
+                    z_dim = H.shape[0]
+                    H = spa_to_mosek_mat(H)
+                    z = M.variable(z_dim, Domain.inSVecPSDCone(z_dim))
+                    M.constraint(Expr.sub(Expr.mul(H, x), z), Domain.equalsTo(0))
+            else:
+                for cone in tqdm(PSD_cones):
+                    H = cone.get_sparse_Hsymm_mat(problem_dim)
+                    z_dim = H.shape[0]
+                    # H = spa_to_mosek_mat(H)
+                    z = M.variable(z_dim, Domain.inSVecPSDCone(z_dim))
+                    for i in range(z_dim):
+                        Hi = spa_to_mosek_mat(H[i])
+                        M.constraint(Expr.sub(Expr.dot(Hi, x), z.index(i)), Domain.equalsTo(0))
+            print('all cones added')
 
         for Ai, bli, bui in tzip(A_vals, b_lvals, b_uvals):
             sAi = spa_to_mosek_mat(spa_vec(Ai))

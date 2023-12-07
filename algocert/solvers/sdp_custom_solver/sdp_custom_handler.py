@@ -325,6 +325,24 @@ class SDPCustomHandler(object):
         # print(len(self.A_matrices), len(self.b_lowerbounds), len(self.b_upperbounds))
         # exit(0)
 
+    def process_psd_cones(self):
+        cones = self.psd_cone_handlers
+        included_cones = []
+        for cone in cones:
+            included = False
+            for incl_cone in included_cones:
+                if cone.contained_in(incl_cone):
+                    included = True
+                    break
+            if not included:
+                included_cones.append(cone)
+        # print(len(included_cones))
+        # print(included_cones[0].row_indices)
+        # exit(0)
+        print(f'removed {len(cones) - len(included_cones)} cones')
+        self.psd_cone_handlers = included_cones
+
+
     def single_mat_symmetric(self, M):
         return (abs(M - M.T) > 1e-7).nnz == 0
 
@@ -366,6 +384,8 @@ class SDPCustomHandler(object):
         self.canonicalize_steps()
 
         self.canonicalize_linstep_cross_constraints()
+
+        self.process_psd_cones()
 
         self.check_all_matrices_symmetric()
         # self.solve_with_cvxpy()
@@ -430,7 +450,7 @@ class SDPCustomHandler(object):
 
     def solve_with_mosek_directly(self):
         out = solve_via_mosek(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
-                              self.psd_cone_handlers, self.problem_dim)
+                              self.psd_cone_handlers, self.problem_dim, self)
         return out
 
     def solve_dd_relaxation(self):

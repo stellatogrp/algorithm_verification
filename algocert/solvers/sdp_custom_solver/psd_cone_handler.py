@@ -27,6 +27,7 @@ class PSDConeHandler(object):
             self.row_indices = list(set(row_indices))
             # self.ranges_dim = ranges_dim
             self.ranges_dim = len(self.row_indices)
+            self.row_idx_set = set(self.row_indices)
         else:
             row_indices = []
             used_indices = set([])
@@ -40,6 +41,7 @@ class PSDConeHandler(object):
             row_indices.sort()
             self.row_indices = row_indices + [-1]
             self.ranges_dim = len(self.row_indices)
+            self.row_idx_set = set(self.row_indices)
 
     def get_H_mat(self, n):
         '''
@@ -89,6 +91,14 @@ class PSDConeHandler(object):
         E = np.zeros((r, n))
         E[np.arange(r), self.row_indices] = 1
         return E
+
+    def contained_in(self, other):
+        my_idx = self.row_indices
+        other_idx = other.row_idx_set
+        for idx in my_idx:
+            if idx not in other_idx:
+                return False
+        return True
 
 
 # The vec function as documented in api/cones

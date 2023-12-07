@@ -20,8 +20,8 @@ def main():
     outf_prefix + f'paper_experiments/ISTA/data/glob_{curr_time}.csv'
     print(outf)
 
-    m, n = 30, 20
-    # m, n = 5, 3
+    # m, n = 10, 5
+    m, n = 5, 3
     b_c = 10 * np.ones((m, 1))
     b_r = 1
     # K = 5
@@ -58,7 +58,7 @@ def main():
             out_res.append(pd.Series(out))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            out_df.to_csv(outf, index=False)
+            # out_df.to_csv(outf, index=False)
             # x_sol = out['primal_sol']
             # print(x_sol.shape)
             # iter_range_map = CP.solver.handler.iter_bound_map
