@@ -339,6 +339,7 @@ class SDPCustomHandler(object):
         # print(len(included_cones))
         # print(included_cones[0].row_indices)
         # exit(0)
+        # TODO: this doesnt check containment the other way
         print(f'removed {len(cones) - len(included_cones)} cones')
         self.psd_cone_handlers = included_cones
 

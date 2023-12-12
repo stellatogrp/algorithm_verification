@@ -37,7 +37,7 @@ def spa_to_mosek_mat(M):
     return Matrix.sparse(M.shape[0], M.shape[1], i, j, vals)
 
 
-def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler, block_cone_addition=False):
+def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler, block_cone_addition=True):
     print('----solving via mosek directly----')
     print('problem dim n:', problem_dim)
     c = vec(C.todense())

@@ -5,7 +5,7 @@ import pandas as pd
 from NNLS_class import NNLS
 
 
-def generate_all_t_vals(t_vals, num_between=1):
+def generate_all_t_vals(t_vals, num_between=2):
     t_min, t_opt, t_max = t_vals
     t_min_to_opt = np.logspace(np.log10(t_min), np.log10(t_opt), num=num_between+1)
     t_opt_to_max = np.logspace(np.log10(t_opt), np.log10(t_max), num=num_between+1)
@@ -26,11 +26,11 @@ def main():
     print(outf)
 
     # m, n = 30, 15
-    m, n = 3, 2
+    m, n = 60, 40
     b_c = 10 * np.ones((m, 1))
-    b_r = .1
+    b_r = 1
     # K = 5
-    K_vals = [1]
+    K_vals = [10]
     # K_vals = [9, 10]
     # K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6]
@@ -38,8 +38,9 @@ def main():
     instance = NNLS(m, n, b_c, b_r, seed=1)
 
     t_vals = list(instance.get_t_vals())
+    print('t_min, t_opt, t_max:', t_vals)
     t_vals = generate_all_t_vals(t_vals)
-    print(t_vals)
+    print('t_values:', t_vals)
 
     out_res = []
     for K in K_vals:
