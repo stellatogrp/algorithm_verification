@@ -60,7 +60,7 @@ def main():
             out_res.append(pd.Series(out))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            # out_df.to_csv(outf, index=False)
+            out_df.to_csv(outf, index=False)
 
 
 if __name__ == '__main__':
