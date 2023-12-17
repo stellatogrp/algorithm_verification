@@ -20,20 +20,20 @@ def main():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    # outf_prefix = '/home/vranjan/algorithm-certification/'
-    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    outf_prefix = '/home/vranjan/algorithm-certification/'
+    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
     # m, n = 30, 15
     m, n = 60, 40
-    b_c = 10 * np.ones((m, 1))
+    b_c = 20 * np.ones((m, 1))
     b_r = 1
     # K = 5
     K_vals = [10]
     # K_vals = [9, 10]
     # K_vals = [7, 8]
-    # K_vals = [1, 2, 3, 4, 5, 6]
+    # K_vals = [1, 2, 3, 4, 5, 6, 7, 8]
 
     instance = NNLS(m, n, b_c, b_r, seed=1)
 
@@ -44,7 +44,7 @@ def main():
 
     out_res = []
     for K in K_vals:
-        for t in t_vals:
+        for t in t_vals[-1:]:
         # t = t_vals[1]
             CP = instance.generate_CP(t, K)
             out = CP.solve(solver_type='SDP_CUSTOM')
@@ -54,6 +54,7 @@ def main():
             out['K'] = K
             out['t'] = t
             sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
+            # del out['primal_sol']
             print(sdp_c, sdp_canontime, sdp_solvetime)
 
             # out_df = []

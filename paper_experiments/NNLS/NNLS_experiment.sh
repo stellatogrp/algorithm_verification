@@ -2,10 +2,10 @@
 #SBATCH --job-name=NNLS
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem-per-cpu=30G
-#SBATCH --time=09:00:00
-#SBATCH -o /home/vranjan/algorithm-certification/paper_experiments/NNLS/data/test_NNLS_%A.txt
+#SBATCH --cpus-per-task=16
+#SBATCH --mem-per-cpu=7G
+#SBATCH --time=01:30:00
+#SBATCH -o /home/vranjan/algorithm-certification/paper_experiments/NNLS/data/NNLS_%A.txt
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
 #SBATCH --mail-user=vranjan@princeton.edu
 

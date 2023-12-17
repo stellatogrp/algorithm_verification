@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from datetime import datetime
 from NNLS import NNLS
 
 
@@ -72,14 +73,23 @@ def compute_silver_steps(kappa, K):
 
 
 def silver_vs_opt_sdp(m, n, b_cmul, b_r, instance, K_max, seed):
-    K_vals = range(1, K_max + 1)
-    # K_vals = range(K_max, K_max + 1)
+    d = datetime.now()
+    curr_time = d.strftime('%m%d%y_%H%M%S')
+    outf_prefix = '/home/vranjan/algorithm-certification/'
+    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    outf = outf_prefix + f'paper_experiments/silver/data/{curr_time}.csv'
+    print(outf)
+
+    # K_vals = range(1, K_max + 1)
+    K_vals = range(K_max, K_max + 1)
 
     # silvers = instance.get_silver_steps(K_max)
     kappa = instance.kappa
     silvers = compute_silver_steps(kappa, 2 ** int(np.ceil(np.log2(K_max))))
     silvers /= instance.L
     silvers = list(silvers)[:K_max]
+    print(silvers)
+    exit(0)
     t_opt = instance.get_t_opt()
     # exit(0)
 
@@ -104,6 +114,9 @@ def silver_vs_opt_sdp(m, n, b_cmul, b_r, instance, K_max, seed):
         out_res.append(pd.Series(out))
         out_df = pd.DataFrame(out_res)
         print(out_df)
+
+        out_df.to_csv(outf, index=False)
+        continue  # skip the fixed sched t
 
         CP2 = instance.generate_CP(t_opt, K)
         out = CP2.solve(solver_type='SDP_CUSTOM')
@@ -166,20 +179,21 @@ def t_fixed_sdp(m, n, b_cmul, b_r, instance, K_max, seed):
 
 def silver_vs_opt():
     # m, n = 30, 15
-    m, n = 15, 8
-    bc_mul = 10
+    m, n = 60, 40
+    bc_mul = 20
     b_c = bc_mul * np.ones((m, 1))
-    b_r = 0.5
-    K_max = 8
-    seed = 5
+    b_r = 1
+    K_max = 10
+    seed = 1
 
     instance = NNLS(m, n, b_c, b_r, seed=seed)
     print(instance.L, instance.mu, instance.kappa)
+    print(instance.get_t_opt())
     # compute_silver_idx(instance.kappa, 16)
     # compute_silver_steps(instance.kappa, 16)
     # silver_vs_opt_glob(m, n, b_c, b_r, instance, K_max)
 
-    t_fixed_sdp(m, n, bc_mul, b_r, instance, K_max, seed)
+    # t_fixed_sdp(m, n, bc_mul, b_r, instance, K_max, seed)
     silver_vs_opt_sdp(m, n, bc_mul, b_r, instance, K_max, seed)
 
 

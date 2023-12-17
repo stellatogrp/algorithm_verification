@@ -2,9 +2,9 @@
 #SBATCH --job-name=NUM
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
-#SBATCH --mem-per-cpu=40G
-#SBATCH --time=03:00:00
+#SBATCH --cpus-per-task=16
+#SBATCH --mem-per-cpu=7G
+#SBATCH --time=11:00:00
 #SBATCH -o /home/vranjan/algorithm-certification/paper_experiments/NUM/data/NUM_%A.txt
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
 #SBATCH --mail-user=vranjan@princeton.edu

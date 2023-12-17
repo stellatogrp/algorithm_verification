@@ -1,0 +1,12 @@
+196.20062787835053 2.530952337024979 77.52047520143171
+0.010063825778633162
+Traceback (most recent call last):
+  File "/home/vranjan/algorithm-certification/paper_experiments/silver/silver_strongcvx_NNLS.py", line 202, in <module>
+    main()
+  File "/home/vranjan/algorithm-certification/paper_experiments/silver/silver_strongcvx_NNLS.py", line 198, in main
+    silver_vs_opt()
+  File "/home/vranjan/algorithm-certification/paper_experiments/silver/silver_strongcvx_NNLS.py", line 194, in silver_vs_opt
+    silver_vs_opt_sdp(m, n, bc_mul, b_r, instance, K_max, seed)
+  File "/home/vranjan/algorithm-certification/paper_experiments/silver/silver_strongcvx_NNLS.py", line 76, in silver_vs_opt_sdp
+    curr_time = d.strftime('%m%d%y_%H%M%S')
+NameError: name 'd' is not defined
