@@ -27,11 +27,12 @@ def main():
 
     # m, n = 30, 15
     m, n = 60, 40
-    b_c = 20 * np.ones((m, 1))
+    b_cmul = 20
+    b_c = b_cmul * np.ones((m, 1))
     b_r = 1
     # K = 5
-    K_vals = [10]
-    # K_vals = [9, 10]
+    K_vals = [8]
+    # K_vals = [9]
     # K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6, 7, 8]
 
@@ -44,13 +45,14 @@ def main():
 
     out_res = []
     for K in K_vals:
-        for t in t_vals[-1:]:
+        for t in t_vals:
         # t = t_vals[1]
             CP = instance.generate_CP(t, K)
             out = CP.solve(solver_type='SDP_CUSTOM')
             out['orig_m'] = m
             out['orig_n'] = n
             out['b_r'] = b_r
+            out['b_c'] = b_cmul
             out['K'] = K
             out['t'] = t
             sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']

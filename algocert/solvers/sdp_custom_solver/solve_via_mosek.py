@@ -94,7 +94,7 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler
                     num_Al += 1
         print('all matrices added')
 
-        tol = 1e-5
+        tol = 1e-6
         M.setSolverParam('intpntCoTolDfeas', tol)
         M.setSolverParam('intpntCoTolPfeas', tol)
         M.setSolverParam('intpntCoTolRelGap', tol)
