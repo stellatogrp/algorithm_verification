@@ -1,4 +1,3 @@
-
 import cvxpy as cp
 import numpy as np
 import pandas as pd
@@ -191,16 +190,17 @@ def sample_and_run(instance, c_c, c_r, N, K=5):
     x_rws = np.linalg.norm(x_maxws - z_ws)
     # print(x_rcs, x_rws)
 
-    # c_to_DR(instance, c_vals, z_ws, K=K)
+    c_to_DR(instance, c_vals, z_ws, K=K)
     r_to_pep(instance, x_rcs, x_rws, K=K)
 
 
 def main():
-    m, n = 3, 4
-    c_c = 2 * np.ones((m, 1))
-    c_r = .1
+    m, n = 10, 5
+    c_c = 10 * np.ones((m, 1))
+    c_r = .5
+    seed = 0
 
-    instance = NUM(m, n, c_c, c_r=c_r, seed=3)
+    instance = NUM(m, n, c_c, c_r=c_r, seed=seed)
     # print(instance.test_cp_prob())
 
     N = 100

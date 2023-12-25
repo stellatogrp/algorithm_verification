@@ -1,10 +1,8 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
-from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.zero_set import ZeroSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
@@ -59,10 +57,10 @@ class NNLS(object):
                 C.append(C_curr)
         else:
             C = spa.bmat([[In - t * ATA, t * A.T]])
-        D = spa.eye(n, n)
+        spa.eye(n, n)
         b_const = np.zeros((n, 1))
 
-        y = Iterate(n, name='y')
+        Iterate(n, name='y')
         x = Iterate(n, name='x')
         b = Parameter(m, name='b')
 

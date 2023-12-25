@@ -1,3 +1,4 @@
+import cvxpy as cp
 import numpy as np
 import scipy.sparse as spa
 
@@ -13,8 +14,9 @@ from algocert.variables.parameter import Parameter
 
 class ISTA(object):
 
-    def __init__(self, m, n, b_c, b_r, lambd=0.1, seed=0):
+    def __init__(self, m, n, b_c, b_r, lambd=0.01, seed=0):
         self.seed = seed
+        self.c_seed = 0
         self.m = m
         self.n = n
         self.b_c = b_c
@@ -47,7 +49,7 @@ class ISTA(object):
         C = spa.bmat([[In - t * ATA, t * A.T]])
         D = spa.eye(n, n)
         b_const = np.zeros((n, 1))
-        lambd_ones = self.lambd * np.ones((n, 1))
+        lambd_ones = self.lambd * t * np.ones((n, 1))
 
         y = Iterate(n, name='y')
         x = Iterate(n, name='x')
@@ -135,3 +137,22 @@ class ISTA(object):
         obj = ConvergenceResidual(z)
 
         return CertificationProblem(K, var_sets, param_sets, obj, steps)
+
+    def test_cp_prob(self):
+        A = self.A
+        b = self.sample_c().reshape(-1, )
+        x = cp.Variable(A.shape[1])
+        obj = cp.Minimize(.5 * cp.sum_squares(A @ x - b) + self.lambd * cp.norm(x, 1))
+        prob = cp.Problem(obj)
+        prob.solve()
+        print(np.round(x.value, 4))
+
+    def sample_c(self):
+        # np.random.seed(self.c_seed)
+        c = self.b_c
+        r = self.b_r
+        sample = np.random.normal(0, 1, c.shape[0])
+        sample = np.random.uniform(0, r) * sample / np.linalg.norm(sample)
+        # print(np.linalg.norm(sample))
+        # print(sample.reshape(-1, 1) + c)
+        return sample.reshape(-1, 1) + c

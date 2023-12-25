@@ -13,7 +13,7 @@ SET(c): l2 ball of radius 1 centered at [[5.]
  [5.]
  [5.]
  [5.]]
-SET(q): StackSet = 
+SET(q): StackSet =
 ----Algorithm steps----
 u = LINSTEP(z, q, )
 u_tilde = LINMAXPROJSTEP(u, z, )
@@ -49,16 +49,16 @@ MOSEK warning 52 (MSK_RES_WRN_LARGE_LO_BOUND): A numerically large lower bound v
 all matrices added
 starting mosek solve
 Problem
-  Name                   :                 
-  Objective sense        : minimize        
+  Name                   :
+  Objective sense        : minimize
   Type                   : CONIC (conic optimization problem)
-  Constraints            : 965054          
+  Constraints            : 965054
   Affine conic cons.     : 111 (654576 rows)
-  Disjunctive cons.      : 0               
-  Cones                  : 0               
-  Scalar variables       : 785393          
-  Matrix variables       : 0               
-  Integer variables      : 0               
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 785393
+  Matrix variables       : 0
+  Integer variables      : 0
 
 Optimizer started.
 Presolve started.
@@ -70,11 +70,11 @@ Eliminator terminated.
 Eliminator started.
 Freed constraints in eliminator : 478
 Eliminator terminated.
-Eliminator - tries                  : 2                 time                   : 0.00            
-Lin. dep.  - tries                  : 1                 time                   : 4.01            
-Lin. dep.  - primal attempts        : 1                 successes              : 1               
-Lin. dep.  - dual attempts          : 0                 successes              : 0               
-Lin. dep.  - primal deps.           : 3450              dual deps.             : 0               
-Presolve terminated. Time: 6.29    
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 4.01
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 3450              dual deps.             : 0
+Presolve terminated. Time: 6.29
 /var/spool/slurmd/job52937658/slurm_script: line 19: 1970903 Killed                  python NUM_experiment.py
 slurmstepd: error: Detected 1 oom_kill event in StepId=52937658.batch. Some of the step tasks have been OOM Killed.

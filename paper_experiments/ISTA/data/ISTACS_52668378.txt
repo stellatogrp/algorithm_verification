@@ -65,16 +65,16 @@ all cones added
 all matrices added
 starting mosek solve
 Problem
-  Name                   :                 
-  Objective sense        : minimize        
+  Name                   :
+  Objective sense        : minimize
   Type                   : CONIC (conic optimization problem)
-  Constraints            : 1752374         
+  Constraints            : 1752374
   Affine conic cons.     : 235 (1165310 rows)
-  Disjunctive cons.      : 0               
-  Cones                  : 0               
-  Scalar variables       : 1418427         
-  Matrix variables       : 0               
-  Integer variables      : 0               
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 1418427
+  Matrix variables       : 0
+  Integer variables      : 0
 
 Optimizer started.
 Presolve started.
@@ -86,11 +86,11 @@ Eliminator terminated.
 Eliminator started.
 Freed constraints in eliminator : 4785
 Eliminator terminated.
-Eliminator - tries                  : 2                 time                   : 0.00            
-Lin. dep.  - tries                  : 1                 time                   : 0.84            
-Lin. dep.  - primal attempts        : 1                 successes              : 1               
-Lin. dep.  - dual attempts          : 0                 successes              : 0               
-Lin. dep.  - primal deps.           : 6250              dual deps.             : 0               
-Presolve terminated. Time: 5.38    
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 0.84
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 6250              dual deps.             : 0
+Presolve terminated. Time: 5.38
 /var/spool/slurmd/job52668378/slurm_script: line 19: 230222 Killed                  python ISTA_CStest.py
 slurmstepd: error: Detected 1 oom_kill event in StepId=52668378.batch. Some of the step tasks have been OOM Killed.

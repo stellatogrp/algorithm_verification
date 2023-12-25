@@ -13,7 +13,7 @@ SET(c): l2 ball of radius 0.5 centered at [[10.]
  [10.]
  [10.]
  [10.]]
-SET(q): StackSet = 
+SET(q): StackSet =
 ----Algorithm steps----
 u = LINSTEP(z, q, )
 u_tilde = LINMAXPROJSTEP(u, z, )
@@ -49,16 +49,16 @@ MOSEK warning 52 (MSK_RES_WRN_LARGE_LO_BOUND): A numerically large lower bound v
 all matrices added
 starting mosek solve
 Problem
-  Name                   :                 
-  Objective sense        : minimize        
+  Name                   :
+  Objective sense        : minimize
   Type                   : CONIC (conic optimization problem)
-  Constraints            : 1304823         
+  Constraints            : 1304823
   Affine conic cons.     : 150 (899465 rows)
-  Disjunctive cons.      : 0               
-  Cones                  : 0               
-  Scalar variables       : 1071457         
-  Matrix variables       : 0               
-  Integer variables      : 0               
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 1071457
+  Matrix variables       : 0
+  Integer variables      : 0
 
 Optimizer started.
 Presolve started.
@@ -70,26 +70,26 @@ Eliminator terminated.
 Eliminator started.
 Freed constraints in eliminator : 253
 Eliminator terminated.
-Eliminator - tries                  : 2                 time                   : 0.00            
-Lin. dep.  - tries                  : 1                 time                   : 5.23            
-Lin. dep.  - primal attempts        : 1                 successes              : 1               
-Lin. dep.  - dual attempts          : 0                 successes              : 0               
-Lin. dep.  - primal deps.           : 3950              dual deps.             : 0               
-Presolve terminated. Time: 8.00    
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 5.23
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 3950              dual deps.             : 0
+Presolve terminated. Time: 8.00
 GP based matrix reordering started.
 GP based matrix reordering terminated.
-Optimizer  - threads                : 16              
-Optimizer  - solved problem         : the primal      
-Optimizer  - Constraints            : 1101948         
-Optimizer  - Cones                  : 1               
-Optimizer  - Scalar variables       : 291889            conic                  : 19226           
-Optimizer  - Semi-definite variables: 150               scalarized             : 899465          
-Factor     - setup time             : 1370.68         
-Factor     - dense det. time        : 630.46            GP order time          : 157.17          
-Factor     - nonzeros before factor : 2.92e+09          after factor           : 6.68e+09        
-Factor     - dense dim.             : 37546             flops                  : 8.44e+13        
-Factor     - GP saved nzs           : 9.24e+08          GP saved flops         : 5.72e+13        
-ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME  
+Optimizer  - threads                : 16
+Optimizer  - solved problem         : the primal
+Optimizer  - Constraints            : 1101948
+Optimizer  - Cones                  : 1
+Optimizer  - Scalar variables       : 291889            conic                  : 19226
+Optimizer  - Semi-definite variables: 150               scalarized             : 899465
+Factor     - setup time             : 1370.68
+Factor     - dense det. time        : 630.46            GP order time          : 157.17
+Factor     - nonzeros before factor : 2.92e+09          after factor           : 6.68e+09
+Factor     - dense dim.             : 37546             flops                  : 8.44e+13
+Factor     - GP saved nzs           : 9.24e+08          GP saved flops         : 5.72e+13
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME
 0   1.2e+07  3.3e+04  1.0e+00  0.00e+00   0.000000000e+00   0.000000000e+00   1.0e+00  1379.86
 1   1.1e+07  3.1e+04  6.9e-01  -1.00e+00  -1.150427783e+00  -8.021644698e-01  9.5e-01  1923.43
 2   1.1e+07  3.0e+04  6.8e-01  -1.00e+00  -1.780442525e+00  -1.403696986e+00  9.2e-01  2392.69

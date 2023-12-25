@@ -103,7 +103,6 @@ def canon_with_l_const(step, k, handler):
     b_lvals = []
     b_uvals = []
 
-    np.eye(n)
     step_data = step.get_matrix_data(k)
     A = step_data['A']
     b = step_data['b']
@@ -117,7 +116,6 @@ def canon_with_l_const(step, k, handler):
     yuTrange_handler = RangeHandler2D(ybounds, ubounds)
     uuTrange_handler = RangeHandler2D(ubounds, ubounds)
 
-    # print(proj_indices)
     # y >= l
     if not handler.add_RLT:
         for i in proj_indices:
@@ -125,7 +123,6 @@ def canon_with_l_const(step, k, handler):
             insert_vec = np.zeros((n, 1))
             insert_vec[i, 0] = 1
             output_mat[yrange1D_handler.index_matrix()] = insert_vec
-            # output_mat[urange1D_handler.index_matrix()] = -insert_vec
             output_mat = (output_mat + output_mat.T) / 2
             A_vals.append(spa.csc_matrix(output_mat))
             b_lvals.append(l[i, 0])
@@ -211,29 +208,43 @@ def canon_with_l_const(step, k, handler):
 
 def canon_with_l_param(step, k, handler):
     y = step.get_output_var()
-    u = step.get_input_var()
-    step.get_lower_bound_vec()
+    # u = step.get_input_var()
+    l = step.get_lower_bound_vec()
     n = y.get_dim()
     step.get_input_var_dim()
     iter_bound_map = handler.iter_bound_map
+    problem_dim = handler.problem_dim
+    proj_indices = step.proj_indices
 
     A_vals = []
     b_lvals = []
     b_uvals = []
 
     np.eye(n)
-    step_data = step.get_matrix_data(k)
-    step_data['A']
-    step_data['b']
+    step.get_matrix_data(k)
+    # step_data['A']
+    # step_data['b']
 
     ybounds = iter_bound_map[y][k]
-    ubounds = map_linstep_to_ranges(y, u, k, handler)
+    # ubounds = map_linstep_to_ranges(y, u, k, handler)
 
-    RangeHandler1D(ybounds)
-    RangeHandler1D(ubounds)
-    RangeHandler2D(ybounds, ybounds)
-    RangeHandler2D(ybounds, ubounds)
-    RangeHandler2D(ubounds, ubounds)
+    yrange1D_handler = RangeHandler1D(ybounds)
+    # urange1D_handler = RangeHandler1D(ubounds)
+    # yyTrange_handler = RangeHandler2D(ybounds, ybounds)
+    # yuTrange_handler = RangeHandler2D(ybounds, ubounds)
+    # uuTrange_handler = RangeHandler2D(ubounds, ubounds)
+
+    # y - l >= 0
+    # don't need to only consider RLT
+    for i in proj_indices:
+        output_mat = spa.lil_matrix((problem_dim, problem_dim))
+        insert_vec = np.zeros((n, 1))
+        insert_vec[i, 0] = 1
+        output_mat[yrange1D_handler.index_matrix()] = insert_vec
+        output_mat = (output_mat + output_mat.T) / 2
+        A_vals.append(spa.csc_matrix(output_mat))
+        b_lvals.append(l[i, 0])
+        b_uvals.append(np.inf)
 
     print('here with l param')
     exit(0)

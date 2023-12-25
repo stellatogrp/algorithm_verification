@@ -20,7 +20,7 @@ def main():
     c_c = c_mul * np.ones((m, 1))
     c_r = .5
     # K = 5
-    # K_vals = [1, 2, 3, 4]
+    K_vals = [1, 2, 3, 4]
     # K_vals = [3, 4, 5]
     K_vals = [6]
     seed = 0

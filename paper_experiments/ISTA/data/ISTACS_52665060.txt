@@ -60,16 +60,16 @@ all cones added
 all matrices added
 starting mosek solve
 Problem
-  Name                   :                 
-  Objective sense        : minimize        
+  Name                   :
+  Objective sense        : minimize
   Type                   : CONIC (conic optimization problem)
-  Constraints            : 1143094         
+  Constraints            : 1143094
   Affine conic cons.     : 235 (764570 rows)
-  Disjunctive cons.      : 0               
-  Cones                  : 0               
-  Scalar variables       : 927877          
-  Matrix variables       : 0               
-  Integer variables      : 0               
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 927877
+  Matrix variables       : 0
+  Integer variables      : 0
 
 Optimizer started.
 Presolve started.
@@ -81,26 +81,26 @@ Eliminator terminated.
 Eliminator started.
 Freed constraints in eliminator : 3472
 Eliminator terminated.
-Eliminator - tries                  : 2                 time                   : 0.00            
-Lin. dep.  - tries                  : 1                 time                   : 0.63            
-Lin. dep.  - primal attempts        : 1                 successes              : 1               
-Lin. dep.  - dual attempts          : 0                 successes              : 0               
-Lin. dep.  - primal deps.           : 4000              dual deps.             : 0               
-Presolve terminated. Time: 4.07    
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 0.63
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 4000              dual deps.             : 0
+Presolve terminated. Time: 4.07
 GP based matrix reordering started.
 GP based matrix reordering terminated.
-Optimizer  - threads                : 2               
-Optimizer  - solved problem         : the primal      
-Optimizer  - Constraints            : 928915          
-Optimizer  - Cones                  : 1               
-Optimizer  - Scalar variables       : 244632            conic                  : 19952           
-Optimizer  - Semi-definite variables: 235               scalarized             : 764570          
-Factor     - setup time             : 870.66          
-Factor     - dense det. time        : 441.55            GP order time          : 64.95           
-Factor     - nonzeros before factor : 1.34e+09          after factor           : 2.93e+09        
-Factor     - dense dim.             : 26418             flops                  : 2.25e+13        
-Factor     - GP saved nzs           : 2.90e+08          GP saved flops         : 1.42e+13        
-ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME  
+Optimizer  - threads                : 2
+Optimizer  - solved problem         : the primal
+Optimizer  - Constraints            : 928915
+Optimizer  - Cones                  : 1
+Optimizer  - Scalar variables       : 244632            conic                  : 19952
+Optimizer  - Semi-definite variables: 235               scalarized             : 764570
+Factor     - setup time             : 870.66
+Factor     - dense det. time        : 441.55            GP order time          : 64.95
+Factor     - nonzeros before factor : 1.34e+09          after factor           : 2.93e+09
+Factor     - dense dim.             : 26418             flops                  : 2.25e+13
+Factor     - GP saved nzs           : 2.90e+08          GP saved flops         : 1.42e+13
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME
 0   1.9e+02  1.4e+00  1.0e+00  0.00e+00   0.000000000e+00   0.000000000e+00   1.0e+00  876.28
 1   1.8e+02  1.4e+00  9.8e-01  -4.06e-01  3.467295200e-01   3.446937729e-01   9.9e-01  1240.58
 2   1.7e+02  1.3e+00  9.0e-01  -4.64e-01  8.550732729e-01   8.501189077e-01   9.3e-01  1593.93

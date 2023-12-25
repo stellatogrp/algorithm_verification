@@ -61,7 +61,7 @@ def plot_resids(sdp_df, samples_df, pep_df):
     # ax.set_ylim([None, 10])
     ax0.legend(loc='upper right')
     ax1.legend(loc='upper right')
-    plt.suptitle(r'NUM example, $R \in { \bf R}^{3\times 4}$')
+    plt.suptitle(r'NUM example, $R \in { \bf R}^{10\times 5}$')
     plt.tight_layout()
     # plt.show()
     plt.savefig('plots/NUM.pdf')
@@ -86,14 +86,16 @@ def pep_to_res(pep_df):
 
 
 def sdp_to_res(sdp_df):
-    df_cs = sdp_df[sdp_df["warm_start"] is False]
-    df_ws = sdp_df[sdp_df["warm_start"] is True]
+    # df_cs = sdp_df[sdp_df["warm_start"] is False]
+    # df_ws = sdp_df[sdp_df["warm_start"] is True]
+    df_cs = sdp_df[sdp_df['init_type'] == 'cs']
+    df_ws = sdp_df[sdp_df['init_type'] == 'ws']
 
     return df_cs['sdp_objval'], df_ws['sdp_objval']
 
 
 def main():
-    sdp_df = pd.read_csv('data/sdp_data.csv')
+    sdp_df = pd.read_csv('data/NUM_K1_5_highacc.csv')
     samples_df = pd.read_csv('data/num_sample.csv')
     pep_df = pd.read_csv('data/num_pep.csv')
 

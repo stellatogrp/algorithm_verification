@@ -1,0 +1,3 @@
+sdp_objval,sdp_solvetime,num_cones,problem_dim,x_dim,num_Aeq,num_Au,num_Al,mosek_tol,sdp_canontime,orig_m,orig_n,b_cmul,b_r,K,t,alg,lambd
+3.112571265112386,6.058645009994507,8,96,4656,2176,2,9180,1e-08,5.141417980194092,20,15,10,0.5,1,0.01,ista,5
+3.1128779191065887,24.25635004043579,14,126,8001,3211,3,15810,1e-08,8.928832054138184,20,15,10,0.5,1,0.01,fista,5

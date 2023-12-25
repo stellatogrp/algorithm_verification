@@ -11,7 +11,7 @@ from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps import proximal_step
 
 
-def generate_all_t_vals(t_vals, num_between=1):
+def generate_all_t_vals(t_vals, num_between=2):
     t_min, t_opt, t_max = t_vals
     t_min_to_opt = np.logspace(np.log10(t_min), np.log10(t_opt), num=num_between+1)
     t_opt_to_max = np.logspace(np.log10(t_opt), np.log10(t_max), num=num_between+1)
@@ -39,7 +39,7 @@ def x_opt_vals(A, b_samples):
     m, n = A.shape
     x = cp.Variable(n)
     b = cp.Parameter(m)
-    prob = cp.Problem(cp.Minimize(cp.sum_squares(A @ x - b)), [ x>= 0])
+    prob = cp.Problem(cp.Minimize(cp.sum_squares(A @ x - b)), [x >= 0])
     out_x = []
     for samp in b_samples:
         b.value = samp.reshape(-1, )
@@ -78,7 +78,7 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
 
 
 def single_pep_sample(t, mu, L, r, K):
-    verbose=1
+    verbose=2
     problem = PEP()
     print(mu, L)
     # L = 74.659
@@ -121,7 +121,10 @@ def single_pep_sample(t, mu, L, r, K):
 
     # Solve the PEP
     pepit_verbose = max(verbose, 0)
-    pepit_tau = problem.solve(verbose=pepit_verbose)
+    mosek_params = {
+        # 'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-5,
+    }
+    pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.MOSEK, mosek_params=mosek_params)
 
     return pepit_tau
 
@@ -134,9 +137,9 @@ def all_pep_runs(t_vals, mu, L, r, K_max):
             tau = single_pep_sample(t, mu, L, r, K)
             out_dict = dict(t=t, K=K, tau=tau)
             out_res.append(pd.Series(out_dict))
-    out_df = pd.DataFrame(out_res)
-    print(out_df)
-    # out_df.to_csv('data/pep_data.csv', index=False)
+            out_df = pd.DataFrame(out_res)
+            print(out_df)
+            out_df.to_csv('data/pep_data.csv', index=False)
 
 
 def main():
@@ -148,13 +151,13 @@ def main():
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
-    m, n = 30, 15
-    b_c = 10 * np.ones((m, 1))
-    b_r = .1
+    m, n = 60, 40
+    b_c = 20 * np.ones((m, 1))
+    b_r = 1
     # K = 5
     # K_vals = [1, 2, 3, 4, 6]
     # K_vals = [1]
-    N = 50
+    N = 100
 
     instance = NNLS(m, n, b_c, b_r, seed=1)
 
@@ -164,7 +167,7 @@ def main():
     eigs = np.linalg.eigvals(ATA)
     mu = np.min(eigs)
     L = np.max(eigs)
-    all_t = generate_all_t_vals(instance.get_t_vals(), num_between=3)
+    all_t = generate_all_t_vals(instance.get_t_vals(), num_between=2)
     print(all_t)
 
     b_samples = generate_samples(N, b_c, b_r, seed=2)
