@@ -21,9 +21,9 @@ def main():
     b_r = .5
     lambd = 5
     # K = 5
-    K_vals = [1]
+    K_vals = [7]
     # K_vals = [9, 10]
-    # K_vals = [5, 6]
+    # K_vals = [6, 7]
     # K_vals = [1, 2, 3, 4, 5]
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=1)

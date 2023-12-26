@@ -20,9 +20,9 @@ def main():
     c_c = c_mul * np.ones((m, 1))
     c_r = .5
     # K = 5
-    K_vals = [1, 2, 3, 4]
+    # K_vals = [1, 2, 3, 4]
     # K_vals = [3, 4, 5]
-    K_vals = [6]
+    K_vals = [5]
     seed = 0
 
     instance = NUM(m, n, c_c, c_r=c_r, seed=seed)
@@ -31,8 +31,8 @@ def main():
     # instance = NUM_simple(m, n, c_c, c_r=c_r, seed=3)
 
     out_res = []
-    init_types = ['cs', 'heur', 'ws']
-    # init_types = ['ws']
+    # init_types = ['cs', 'heur', 'ws']
+    init_types = ['ws']
     for K in K_vals:
         for init_type in init_types:
             # instance.generate_CP_ball(K, warm_start=False)
