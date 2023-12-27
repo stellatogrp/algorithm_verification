@@ -146,9 +146,9 @@ def double_silver_experiments():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    outf_prefix = '/home/vranjan/algorithm-certification/'
-    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
-    outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
+    # outf_prefix = '/home/vranjan/algorithm-certification/'
+    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    outf = outf_prefix + f'paper_experiments/silver/data/{curr_time}.csv'
     print(outf)
 
     # m, n = 30, 15
@@ -160,6 +160,68 @@ def double_silver_experiments():
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=seed)
     print(instance.A)
+
+    K_max = 10
+    K_vals = [1, 2, 3, 4, 5, 6, 7]
+    # K_vals = [8, 9, 10]
+    K_vals = [1]
+
+    kappa = instance.kappa
+    mu_silvers = compute_silver_steps(kappa, 2 ** int(np.ceil(np.log2(K_max))))
+    mu_silvers /= instance.L
+    mu_silvers = list(mu_silvers)
+    silvers = instance.get_silver_steps(K_max)  # already divided by L
+
+    print(silvers, mu_silvers)
+    # print(type(silvers), type(mu_silvers))
+
+    out_res = []
+    for K in K_vals:
+        i = K - 1
+
+        # only cvx silvers
+        CP = instance.generate_CP(silvers, K)
+        out = CP.solve(solver_type='SDP_CUSTOM')
+        out['orig_m'] = m
+        out['orig_n'] = n
+        out['mu'] = instance.mu
+        out['L'] = instance.L
+        out['b_cmul'] = b_cmul
+        out['b_r'] = b_r
+        out['K'] = K
+        out['sched'] = 'silver'
+        out['t'] = silvers[i]
+        out['seed'] = seed
+        sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
+        print(sdp_c, sdp_canontime, sdp_solvetime)
+
+        out_res.append(pd.Series(out))
+        out_df = pd.DataFrame(out_res)
+        print(out_df)
+
+        out_df.to_csv(outf, index=False)
+
+        # mu L silvers
+        CP = instance.generate_CP(mu_silvers, K)
+        out = CP.solve(solver_type='SDP_CUSTOM')
+        out['orig_m'] = m
+        out['orig_n'] = n
+        out['mu'] = instance.mu
+        out['L'] = instance.L
+        out['b_cmul'] = b_cmul
+        out['b_r'] = b_r
+        out['K'] = K
+        out['sched'] = 'mu_silver'
+        out['t'] = mu_silvers[i]
+        out['seed'] = seed
+        sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
+        print(sdp_c, sdp_canontime, sdp_solvetime)
+
+        out_res.append(pd.Series(out))
+        out_df = pd.DataFrame(out_res)
+        print(out_df)
+
+        out_df.to_csv(outf, index=False)
 
 
 def silver_vs_opt():
