@@ -23,8 +23,8 @@ def main():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    # outf_prefix = '/home/vranjan/algorithm-certification/'
-    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    outf_prefix = '/home/vranjan/algorithm-certification/'
+    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
@@ -35,12 +35,13 @@ def main():
     b_r = 1
     # K = 5
     # K_vals = [8]
-    # K_vals = [9]
+    K_vals = [10]
     # K_vals = [7, 8]
-    K_vals = [1, 2, 3, 4, 5, 6]
+    # K_vals = [1, 2, 3, 4, 5, 6]
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
     print(instance.mu, instance.L, instance.kappa)
+    print(instance.A)
 
     # t_vals = list(instance.get_t_vals())
     # print('t_min, t_opt, t_max:', t_vals)
