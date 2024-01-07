@@ -27,7 +27,7 @@ def qp_cert_prob(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1):
     l = example.qp_problem['l']
     u = example.qp_problem['u']
     print(A.todense())
-    print(l.shape)
+    print('l shape:', l.shape)
     exit(0)
 
     if rho_const:
@@ -288,6 +288,7 @@ def main():
         box_l[i] = np.min(X[:, i])
         box_u[i] = np.max(X[:, i])
     print(box_l, box_u, box_l.shape)
+    print(mpc.qp_problem['l'].shape)
     exit(0)
     # print(box_l, box_u)
     # print(P.shape, A.shape)

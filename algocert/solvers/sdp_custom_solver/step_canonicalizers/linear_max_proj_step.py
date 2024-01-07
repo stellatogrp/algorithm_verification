@@ -65,7 +65,7 @@ def linear_max_proj_canon(step, k, handler):
     if isinstance(l, Parameter):
         # A_vals, b_lvals, b_uvals = canon_with_l_param(step, k, handler)
         Aproj, b_lproj, b_uproj = canon_with_l_param(step, k, handler)
-        lrange = handler.param_bound_map(l)
+        lrange = handler.param_bound_map[l]
         psd_cone_handlers.append(
             PSDConeHandler(range_to_list(yrange) + range_to_list(urange) + range_to_list(lrange))
         )
@@ -151,8 +151,8 @@ def canon_with_l_const(step, k, handler):
         li = l[i, 0]
         output_mat[yyTrange_handler.index_matrix()] = Ii @ Ii.T
         output_mat[yrange1D_handler.index_matrix()] = -Ii * bi
-        output_mat[yuTrange_handler.index_matrix()] = - Ii @ ATj
-        output_mat[yrange1D_handler.index_matrix_horiz()] = - li * Ii.T
+        output_mat[yuTrange_handler.index_matrix()] = -Ii @ ATj
+        output_mat[yrange1D_handler.index_matrix_horiz()] = -li * Ii.T
         output_mat[urange1D_handler.index_matrix_horiz()] = li * ATj
         output_mat = (output_mat + output_mat.T) / 2
         A_vals.append(spa.csc_matrix(output_mat))
@@ -208,31 +208,36 @@ def canon_with_l_const(step, k, handler):
 
 def canon_with_l_param(step, k, handler):
     y = step.get_output_var()
-    # u = step.get_input_var()
+    u = step.get_input_var()
     l = step.get_lower_bound_vec()
     n = y.get_dim()
     step.get_input_var_dim()
     iter_bound_map = handler.iter_bound_map
     problem_dim = handler.problem_dim
     proj_indices = step.proj_indices
+    nonproj_indices = step.nonproj_indices
 
     A_vals = []
     b_lvals = []
     b_uvals = []
 
-    np.eye(n)
-    step.get_matrix_data(k)
-    # step_data['A']
-    # step_data['b']
+    step_data = step.get_matrix_data(k)
+    A = step_data['A']
+    b = step_data['b']
 
     ybounds = iter_bound_map[y][k]
-    # ubounds = map_linstep_to_ranges(y, u, k, handler)
+    ubounds = map_linstep_to_ranges(y, u, k, handler)
+    lbounds = handler.param_bound_map[l]
 
     yrange1D_handler = RangeHandler1D(ybounds)
-    # urange1D_handler = RangeHandler1D(ubounds)
-    # yyTrange_handler = RangeHandler2D(ybounds, ybounds)
-    # yuTrange_handler = RangeHandler2D(ybounds, ubounds)
-    # uuTrange_handler = RangeHandler2D(ubounds, ubounds)
+    urange1D_handler = RangeHandler1D(ubounds)
+    yyTrange_handler = RangeHandler2D(ybounds, ybounds)
+    yuTrange_handler = RangeHandler2D(ybounds, ubounds)
+    uuTrange_handler = RangeHandler2D(ubounds, ubounds)
+
+    lrange1D_handler = RangeHandler1D(lbounds)
+    lyTrange_handler = RangeHandler2D(lbounds, ybounds)
+    luTrange_handler = RangeHandler2D(lbounds, ubounds)
 
     # y - l >= 0
     # don't need to only consider RLT
@@ -241,13 +246,80 @@ def canon_with_l_param(step, k, handler):
         insert_vec = np.zeros((n, 1))
         insert_vec[i, 0] = 1
         output_mat[yrange1D_handler.index_matrix()] = insert_vec
+        output_mat[lrange1D_handler.index_matrix()] = -insert_vec
+        # insert -insert_vec for l
         output_mat = (output_mat + output_mat.T) / 2
         A_vals.append(spa.csc_matrix(output_mat))
-        b_lvals.append(l[i, 0])
+        b_lvals.append(0)
         b_uvals.append(np.inf)
 
-    print('here with l param')
-    exit(0)
+    # y - Au >= b
+    for i in proj_indices:
+        output_mat = spa.lil_matrix((problem_dim, problem_dim))
+        insert_vec = np.zeros((n, 1))
+        insert_vec[i, 0] = 1
+        output_mat[yrange1D_handler.index_matrix()] = insert_vec
+        Ai = A[i].reshape((-1, 1))
+        output_mat[urange1D_handler.index_matrix()] = -Ai
+        output_mat = (output_mat + output_mat.T) / 2
+        A_vals.append(spa.csc_matrix(output_mat))
+        b_lvals.append(b[i, 0])
+        b_uvals.append(np.inf)
+
+    # diag(yyT - ybT - yxTAT - lyT + lxTAT + lbT) = 0
+    I = np.eye(n)
+    for i in proj_indices:
+        output_mat = spa.lil_matrix((problem_dim, problem_dim))
+        Ii = I[i].T.reshape((-1, 1))
+        ATj = A.T[:, i].reshape((1, -1))
+        bi = b[i, 0]
+        output_mat[yyTrange_handler.index_matrix()] = Ii @ Ii.T
+        output_mat[yrange1D_handler.index_matrix()] = -Ii * bi
+        output_mat[yuTrange_handler.index_matrix()] = -Ii @ ATj
+        output_mat[lyTrange_handler.index_matrix()] = -Ii @ Ii.T
+        output_mat[luTrange_handler.index_matrix()] = Ii @ ATj
+        output_mat[lrange1D_handler.index_matrix()] = Ii * bi
+        output_mat = (output_mat + output_mat.T) / 2
+        A_vals.append(spa.csc_matrix(output_mat))
+        b_lvals.append(0)
+        b_uvals.append(0)
+
+    if handler.add_planet:
+        y_upper = handler.var_upperbounds[yrange1D_handler.index_matrix()]
+        y_lower = handler.var_lowerbounds[yrange1D_handler.index_matrix()]
+        # handler.var_upperbounds[urange1D_handler.index_matrix()]
+        Aub_lower, Aub_upper, _ = get_Aub_bounds(step, k, handler)
+        Au_lower = Aub_lower - b
+        Au_upper = Aub_upper - b
+        gaps_vec = np.squeeze(np.asarray(Au_upper - Au_lower))
+        pos_gap_indices = np.argwhere(gaps_vec >= 1e-6).reshape(-1, )
+
+        In = np.eye(n)
+        for i in range(n):
+            if i in nonproj_indices:
+                continue
+            if i not in pos_gap_indices:
+                continue
+
+            mul = (y_upper[i, 0] - y_lower[i, 0]) / (Aub_upper[i, 0] - Aub_lower[i, 0])
+            # print(mul)
+            Di = mul * A[i]
+            ci = mul * (b[i, 0] - Aub_lower[i, 0]) + y_lower[i, 0]
+
+            outmat = spa.lil_matrix((problem_dim, problem_dim))
+
+            outmat[urange1D_handler.index_matrix()] = (Di * Au_upper[i, 0]).reshape((-1, 1))
+            outmat[uuTrange_handler.index_matrix()] = -Di.T @ A[i]
+            outmat[urange1D_handler.index_matrix_horiz()] = -ci * A[i]
+            outmat[yrange1D_handler.index_matrix()] = -In[i] * Au_upper[i, 0]
+            outmat[yuTrange_handler.index_matrix()] = In[i].reshape((-1, 1)) @ A[i]
+            outmat = (outmat + outmat.T) / 2
+
+            A_vals.append(spa.csc_matrix(outmat))
+            b_lvals.append(-ci * Au_upper[i, 0])
+            b_uvals.append(np.inf)
+
+    # print('here with l param')
 
     return A_vals, b_lvals, b_uvals
 

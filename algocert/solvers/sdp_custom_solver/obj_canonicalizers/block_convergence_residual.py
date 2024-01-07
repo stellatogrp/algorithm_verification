@@ -27,7 +27,7 @@ def block_conv_resid_canon(obj, handler):
     output_mat = (output_mat + output_mat.T) / 2
 
     # exit(0)
-    return spa.csc_matrix(output_mat)
+    return spa.csc_matrix(output_mat), [], [], []
 
 
 def map_s_to_ranges(s, iter_bound_map, k):

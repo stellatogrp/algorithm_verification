@@ -6,6 +6,7 @@ from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjSt
 from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
+from algocert.init_set.const_shift_param_set import ConstShiftParamSet
 from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.stack_set import StackSet
 from algocert.init_set.zero_set import ZeroSet
@@ -15,6 +16,8 @@ from algocert.solvers.sdp_custom_solver.obj_canonicalizers.convergence_residual 
     conv_resid_canon
 from algocert.solvers.sdp_custom_solver.set_canonicalizers.box_set import (
     box_bound_canon, box_set_canon)
+from algocert.solvers.sdp_custom_solver.set_canonicalizers.const_shift_param_set import (
+    const_shift_param_bound_canon, const_shift_param_set_canon)
 from algocert.solvers.sdp_custom_solver.set_canonicalizers.l2_ball_set import (
     l2_ball_bound_canon, l2_ball_set_canon)
 from algocert.solvers.sdp_custom_solver.set_canonicalizers.stack_set import (
@@ -41,6 +44,7 @@ OBJ_CANON_METHODS = {
 
 SET_BOUND_CANON_METHODS = {
     BoxSet: box_bound_canon,
+    ConstShiftParamSet: const_shift_param_bound_canon,
     L2BallSet: l2_ball_bound_canon,
     StackSet: stack_bound_canon,
     ZeroSet: l2_ball_bound_canon,
@@ -48,6 +52,7 @@ SET_BOUND_CANON_METHODS = {
 
 SET_CANON_METHODS = {
     BoxSet: box_set_canon,
+    ConstShiftParamSet: const_shift_param_set_canon,
     L2BallSet: l2_ball_set_canon,
     StackSet: stack_set_canon,
     ZeroSet: l2_ball_set_canon,

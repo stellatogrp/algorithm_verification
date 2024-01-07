@@ -7,6 +7,7 @@ from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.l2_ball_set import L2BallSet
+from algocert.init_set.zero_set import ZeroSet
 
 # from algocert.init_set.const_set import ConstSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
@@ -21,28 +22,31 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
     zeros_n = np.zeros((n, 1))
     # zeros_m = np.zeros((m, 1))
     ones_m = np.ones((m, 1))
-    ones_n = np.ones((n, 1))
+    np.ones((n, 1))
 
     C = spa.bmat([[In - t * ATA, t * A.T]])
     b = zeros_n
 
     x = Iterate(n, name='x')
     q = Parameter(m, name='q')
+    l = Parameter(n, name='l')
 
-    l = 0.1 * np.ones((n, 1))
+    l_c = 0.1 * np.ones((n, 1))
     # TODO split into two steps and compare to see
     # step1 = LinearMaxProjStep(x, [x, q], A=C, b=b, proj_ranges=(0, 5), l=l, start_canon=1)
-    step1 = LinearMaxProjStep(x, [x, q], A=C, b=b, l=l, start_canon=1)
+    step1 = LinearMaxProjStep(x, [x, q], A=C, b=b, l=l)
     # step1 = LinearStep(x, [x, q], D=spa.eye(n), A=C, b=b, Dinv=spa.eye(n), start_canon=1)
     steps = [step1]
 
     # initsets = [BoxSet(x, zeros_n, zeros_n)]
     # initsets = [BoxSet(x, 0 * ones_n, 0 * ones_n, canon_iter=[0])]
-    initsets = [L2BallSet(x, 0 * ones_n, 0, canon_iter=[0])]
+    # initsets = [L2BallSet(x, 0 * ones_n, 0)]
+    initsets = [ZeroSet(x)]
     # initsets = [ConstSet(x, zeros_n)]
     # initsets = [ConstSet(x, np.ones((n, 1)))]
     # paramsets = [ConstSet(q, np.ones((m, 1)))]
-    paramsets = [BoxSet(q, 10 * ones_m, 10.5 * ones_m)]
+    lset = L2BallSet(l, l_c, 0.2)
+    paramsets = [BoxSet(q, 10 * ones_m, 10.5 * ones_m), lset]
 
     obj = [ConvergenceResidual(x)]
 
@@ -65,6 +69,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
         # print('x upper:', CP.solver.handler.iterate_to_upper_bound_map[x])
     # print('global', resg)
     res = CP.solve(solver_type='SDP_CUSTOM')
+    print(res)
     return res
 
 
@@ -132,11 +137,11 @@ def main():
     t = .05
     print(t)
 
-    # res1 = NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
+    NNLS_cert_prob(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
     # print('combined nonneglinstep:', res1)
 
-    res2 = NNLS_twostep(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
-    print('two steps:', res2)
+    # res2 = NNLS_twostep(n, m, spa.csc_matrix(A), K=K, t=t, solver_type=s)
+    # print('two steps:', res2)
 
 
 
