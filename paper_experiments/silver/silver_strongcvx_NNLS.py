@@ -146,8 +146,8 @@ def double_silver_experiments():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    # outf_prefix = '/home/vranjan/algorithm-certification/'
-    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    outf_prefix = '/home/vranjan/algorithm-certification/'
+    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     outf = outf_prefix + f'paper_experiments/silver/data/{curr_time}.csv'
     print(outf)
 
@@ -155,16 +155,17 @@ def double_silver_experiments():
     m, n = 60, 40
     b_cmul = 20
     b_c = b_cmul * np.ones((m, 1))
-    b_r = .5
+    # b_r = .5
+    b_r = 1
     seed = 1
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=seed)
     print(instance.A)
 
     K_max = 10
-    K_vals = [1, 2, 3, 4, 5, 6, 7]
-    # K_vals = [8, 9, 10]
-    K_vals = [1]
+    # K_vals = [1, 2, 3, 4, 5, 6, 7]
+    K_vals = [8, 9, 10]
+    # K_vals = [1]
 
     kappa = instance.kappa
     mu_silvers = compute_silver_steps(kappa, 2 ** int(np.ceil(np.log2(K_max))))
