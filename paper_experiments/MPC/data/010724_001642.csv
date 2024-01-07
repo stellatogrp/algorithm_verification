@@ -1,0 +1,3 @@
+sdp_objval,sdp_solvetime,num_cones,problem_dim,x_dim,num_Aeq,num_Au,num_Al,mosek_tol,sdp_canontime,seed,start,rho,T,K
+7.593933606751802e-05,1.7232134360820055,10,73,2701,636,31,5276,1e-07,5.771575450897217,0,cs,rho_const,2,1
+8.172229517437171e-05,1.7030914179049432,10,73,2701,636,31,5276,1e-07,5.85692024230957,0,cs,rho_adj,2,1
