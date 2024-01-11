@@ -18,7 +18,7 @@ def single_sim(car, T_sim, xinit, uinit, eps=1e-3):
 
 
 def simulate_steps(T=5, T_sim=25, N=100, eps=1e-2):
-    np.random.seed(0)
+    np.random.seed(2)
     car = Car2D(T=T)
     xinit = np.array([5, 5, 0, 0])
     uinit = np.array([0, 0])
@@ -53,7 +53,7 @@ def shift_sol(sol, car):
     print('shifted ws:', out)
     return out
 
-def MPC_experiment(outf, K_max=3):
+def MPC_experiment(outf, K_max=5):
     T = 5
     car, xinit_samples, uinit_samples, sol = simulate_steps(T=T, N=100)
     xinit_min = np.min(xinit_samples, axis=0)
@@ -77,7 +77,8 @@ def MPC_experiment(outf, K_max=3):
 
     res = []
     for (start, rho) in experiments:
-        for K in range(1, K_max + 1):
+        # for K in range(1, K_max + 1):
+        for K in range(6, 7):
             print(start, rho, K)
             if start == 'cs':
                 ws_x = None

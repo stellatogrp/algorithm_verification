@@ -153,10 +153,11 @@ def double_silver_experiments():
 
     # m, n = 30, 15
     m, n = 60, 40
-    b_cmul = 20
+    b_cmul = 30
     b_c = b_cmul * np.ones((m, 1))
+    b_c[30:] = 0
     # b_r = .5
-    b_r = 1
+    b_r = 0.5
     seed = 1
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=seed)

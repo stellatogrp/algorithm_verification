@@ -30,13 +30,14 @@ def main():
 
     # m, n = 30, 15
     m, n = 60, 40
-    b_cmul = 20
+    b_cmul = 30
     b_c = b_cmul * np.ones((m, 1))
+    b_c[30:] = 0
     b_r = .5
     # K = 5
     # K_vals = [9]
-    K_vals = [10]
-    # K_vals = [7, 8]
+    # K_vals = [10]
+    K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6]
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)

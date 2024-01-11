@@ -7,7 +7,10 @@ from NNLS_class import NNLS
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
+from PEPit.functions import (
+    ConvexFunction,
+    SmoothStronglyConvexFunction,
+    SmoothStronglyConvexQuadraticFunction)
 from PEPit.primitive_steps import proximal_step
 
 
@@ -89,7 +92,8 @@ def single_pep_sample(t, mu, L, r, K):
 
     # Declare a convex and a smooth convex function.
     func1 = problem.declare_function(ConvexFunction)
-    func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    # func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     # Define the function to optimize as the sum of func1 and func2
     func = func1 + func2
 
@@ -146,20 +150,24 @@ def main():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    # outf_prefix = '/home/vranjan/algorithm-certification/'
-    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    outf_prefix = '/home/vranjan/algorithm-certification/'
+    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
     m, n = 60, 40
-    b_c = 20 * np.ones((m, 1))
-    b_r = 1
+    b_cmul = 30
+    b_c = b_cmul * np.ones((m, 1))
+    b_c[30:] = 0
+    b_r = 0.5
     # K = 5
     # K_vals = [1, 2, 3, 4, 6]
     # K_vals = [1]
     N = 100
 
-    instance = NNLS(m, n, b_c, b_r, seed=1)
+    instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
+    print(instance.mu, instance.L, instance.kappa)
+    print(instance.A)
 
     A = instance.A
 
@@ -167,8 +175,11 @@ def main():
     eigs = np.linalg.eigvals(ATA)
     mu = np.min(eigs)
     L = np.max(eigs)
-    all_t = generate_all_t_vals(instance.get_t_vals(), num_between=2)
-    print(all_t)
+    # all_t = generate_all_t_vals(instance.get_t_vals(), num_between=2)
+    # print(all_t)
+
+    all_t = np.array(instance.grid_t_vals())
+    print('t_values:', all_t)
 
     b_samples = generate_samples(N, b_c, b_r, seed=2)
     # print(b_samples)

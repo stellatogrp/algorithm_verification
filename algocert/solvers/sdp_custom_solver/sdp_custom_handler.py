@@ -71,7 +71,8 @@ class SDPCustomHandler(object):
         if 'add_planet' in kwargs:
             self.add_planet = kwargs['add_planet']
         else:
-            self.add_planet = True
+            # self.add_planet = True
+            self.add_planet = False
 
         if 'lookback_t' in kwargs:
             self.lookback_t = kwargs['lookback_t']
