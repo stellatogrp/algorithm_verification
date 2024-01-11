@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
 from NNLS_class import NNLS
 
 
@@ -30,16 +29,15 @@ def main():
 
     # m, n = 30, 15
     m, n = 60, 40
-    b_cmul = 30
-    b_c = b_cmul * np.ones((m, 1))
+    b_c = 30 * np.ones((m, 1))
     b_c[30:] = 0
-    b_r = .5
+    b_r = 0.5
     # K = 5
     # K_vals = [9]
     # K_vals = [10]
-    K_vals = [7, 8]
+    # K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6]
-    K_vals = [1]
+    K = 2
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
     print(instance.mu, instance.L, instance.kappa)
@@ -52,31 +50,39 @@ def main():
     # exit(0)
     t_vals = np.array(instance.grid_t_vals())
     print('t_values:', t_vals)
-    t_vals = t_vals[3:4]
     # exit(0)
 
-    out_res = []
-    for K in K_vals:
-        for t in t_vals:
-        # t = t_vals[1]
-            CP = instance.generate_CP(t, K)
-            out = CP.solve(solver_type='SDP_CUSTOM')
-            # out = CP.solve(solver_type='GLOBAL', add_bounds=True)
-            out['orig_m'] = m
-            out['orig_n'] = n
-            out['b_r'] = b_r
-            out['b_c'] = b_cmul
-            out['K'] = K
-            out['t'] = t
-            sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
-            # del out['primal_sol']
-            print(sdp_c, sdp_canontime, sdp_solvetime)
+    t = t_vals[3]
+    print(t)
 
-            # out_df = []
-            out_res.append(pd.Series(out))
-            out_df = pd.DataFrame(out_res)
-            print(out_df)
-            # out_df.to_csv(outf, index=False)
+    CP = instance.generate_CP(t, K)
+    # out = CP.solve(solver_type='GLOBAL', add_bounds=True)
+    out = CP.solve(solver_type='SDP_CUSTOM')
+    print(out)
+    # print(CP.solver.handler.get_param_var_map())
+
+    # out_res = []
+    # for K in K_vals:
+    #     for t in t_vals:
+    #     # t = t_vals[1]
+    #         CP = instance.generate_CP(t, K)
+    #         out = CP.solve(solver_type='SDP_CUSTOM')
+    #         # out = CP.solve(solver_type='GLOBAL', add_bounds=True)
+    #         out['orig_m'] = m
+    #         out['orig_n'] = n
+    #         out['b_r'] = b_r
+    #         out['b_c'] = b_cmul
+    #         out['K'] = K
+    #         out['t'] = t
+    #         sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
+    #         # del out['primal_sol']
+    #         print(sdp_c, sdp_canontime, sdp_solvetime)
+
+    #         # out_df = []
+    #         out_res.append(pd.Series(out))
+    #         out_df = pd.DataFrame(out_res)
+    #         print(out_df)
+    #         # out_df.to_csv(outf, index=False)
 
 
 if __name__ == '__main__':

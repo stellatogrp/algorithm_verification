@@ -313,8 +313,11 @@ class GlobalHandler(object):
         out = dict(
             glob_objval=self.model.objVal,
             glob_runtime=self.model.Runtime,
-            gap=self.model.MIPGap
         )
+        try:
+            out['gap'] = self.model.MIPGap
+        except AttributeError:
+            out['gap'] = 0
         return out
 
     def get_iterate_var_map(self):

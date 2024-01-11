@@ -9,8 +9,8 @@ from NNLS_class import NNLS
 from PEPit import PEP
 from PEPit.functions import (
     ConvexFunction,
-    SmoothStronglyConvexFunction,
-    SmoothStronglyConvexQuadraticFunction)
+    SmoothStronglyConvexQuadraticFunction,
+)
 from PEPit.primitive_steps import proximal_step
 
 
@@ -33,7 +33,7 @@ def generate_samples(N, b_c, b_r, seed=2):
         normal_sample = np.random.normal(size=dim)
         normal_sample = normal_sample / np.linalg.norm(normal_sample) * np.random.uniform(0, b_r)
         b_sample = normal_sample + b_c
-        # print(np.linalg.norm(b_sample - b_c))
+        print(np.linalg.norm(b_sample - b_c))
         out_b.append(b_sample)
     return out_b
 
@@ -77,7 +77,8 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
                 out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    out_df.to_csv('data/sample_data.csv', index=False)
+    print('NOT OVERWRITING SAMPLES DATA')
+    # out_df.to_csv('data/sample_data.csv', index=False)
 
 
 def single_pep_sample(t, mu, L, r, K):
@@ -163,7 +164,7 @@ def main():
     # K = 5
     # K_vals = [1, 2, 3, 4, 6]
     # K_vals = [1]
-    N = 100
+    N = 500
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
     print(instance.mu, instance.L, instance.kappa)

@@ -11,7 +11,7 @@ plt.rcParams.update({
     "figure.figsize": (9, 6)})
 
 
-def plot_sdp(sdp_df, t_keep, opt=2):
+def plot_sdp(sdp_df, t_keep, opt=3):
     print(sdp_df)
     t_vals = sdp_df['t'].unique()
     print(t_vals)
@@ -50,7 +50,7 @@ def samples_to_max(samples_df, K_des=6):
     return max_conv_resid
 
 
-def plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=5):
+def plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     t_vals = sdp_df['t'].unique()
     sdp_dfK = sdp_df[sdp_df['K'] == K_des]
     samples_df[samples_df['K'] == K_des]
@@ -69,13 +69,13 @@ def plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=5):
     # ax.tick_params(axis='x', color='r', labelcolor='r')
     # ax.get_xaxis().set_visible(False)
     plt.title(f'$K={K_des}$')
-    plt.axvline(x=t_vals[2], color='black', linestyle='dashed', label='theory optimal')
-    plt.axvline(x=t_vals[4], color='black', linestyle='solid', label='best empirical performance')
+    plt.axvline(x=t_vals[3], color='black', linestyle='dashed', label='theory optimal')
+    plt.axvline(x=t_vals[2], color='black', linestyle='solid', label='best empirical performance')
 
     max_sample_resid_df = samples_to_max(samples_df, K_des=K_des)
 
     resids = np.array(max_sample_resid_df['resid'])[t_keep]
-    resids[0] -= .1
+    # resids[0] -= .1
 
     ax.plot(np.array(t_vals)[t_keep], resids,
             label='empirical sample max', marker=markers[1])
@@ -85,10 +85,10 @@ def plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=5):
     # plt.gca().yaxis.set_minor_formatter(mticker.ScalarFormatter())
     fig.tight_layout()
     # plt.show()
-    plt.savefig('plots/K5_comparison.pdf')
+    plt.savefig(f'plots/K{K_des}_comparison.pdf')
 
 
-def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=5):
+def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     t_vals = sdp_df['t'].unique()
     sdp_dfK = sdp_df[sdp_df['K'] == K_des]
     samples_df[samples_df['K'] == K_des]
@@ -107,8 +107,8 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=5):
     # ax.tick_params(axis='x', color='r', labelcolor='r')
     # ax.get_xaxis().set_visible(False)
     plt.title(f'$K={K_des}$')
-    plt.axvline(x=t_vals[2], color='black', linestyle='dashed', label='theory optimal')
-    plt.axvline(x=t_vals[4], color='black', linestyle='solid', label='best empirical performance')
+    plt.axvline(x=t_vals[3], color='black', linestyle='dashed', label='theory optimal')
+    plt.axvline(x=t_vals[2], color='black', linestyle='solid', label='best empirical performance')
 
     # max_sample_resid_df = samples_to_max(samples_df, K_des=K_des)
     # ax.plot(np.array(t_vals)[t_keep], np.array(max_sample_resid_df['resid'])[t_keep],
@@ -120,16 +120,17 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=5):
     fig.tight_layout()
     # plt.show()
 
-    plt.savefig('plots/K5_comparison_with_pep.pdf')
+    plt.savefig(f'plots/K{K_des}_comparison_with_pep.pdf')
 
 
 def main():
     # sdp_df = pd.read_csv('data/sdp_data.csv')
-    sdp_df = pd.read_csv('data/NNLS_K1_10_highacc.csv')
+    # sdp_df = pd.read_csv('data/NNLS_spread_t.csv')
+    sdp_df = pd.read_csv('data/NNLS_spreadt_halfc.csv')
     samples_df = pd.read_csv('data/sample_data.csv')
     pep_df = pd.read_csv('data/pep_data.csv')
 
-    t_keep = np.array([0, 1, 2, 4])
+    t_keep = np.array([0, 1, 2, 3, 4, 5])
     plot_sdp(sdp_df, t_keep)
     plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep)
     plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)

@@ -34,8 +34,8 @@ class ISTA(object):
         eigs = np.linalg.eigvals(ATA)
         mu = np.min(eigs)
         L = np.max(eigs)
-        print(2/(mu + L))
-        return 2 / (mu + L)
+        # print(2/(mu + L))
+        return np.real(2 / (mu + L))
 
     def generate_CP(self, K, t=None):
         m, n = self.m, self.n
@@ -126,8 +126,11 @@ class ISTA(object):
 
         s5C = []
         for beta in beta_list:
-            s5C.append(spa.bmat([[(1 + beta) * spa.eye(n), -spa.eye(n)]]))
+            # print(beta)
+            s5C.append(spa.bmat([[(1 + beta) * spa.eye(n), - beta * spa.eye(n)]]))
+            # s5C.append(spa.bmat([[beta * spa.eye(n)]]))
         step5 = LinearStep(w, [z, z], D=D, A=s5C, b=b_const, Dinv=D)
+        # step5 = LinearStep(w, [z], D=D, A=s5C, b=b_const, Dinv=D)
 
         # step1 = LinearMaxProjStep(x, [x, b], A=C, b=b_const)
         steps = [step1, step2, step3, step4, step5]
@@ -146,6 +149,8 @@ class ISTA(object):
         prob = cp.Problem(obj)
         prob.solve()
         print(np.round(x.value, 4))
+
+        return np.round(x.value, 4)
 
     def sample_c(self):
         # np.random.seed(self.c_seed)
