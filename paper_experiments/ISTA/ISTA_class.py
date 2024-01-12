@@ -37,7 +37,7 @@ class ISTA(object):
         # print(2/(mu + L))
         return np.real(2 / (mu + L))
 
-    def generate_CP(self, K, t=None):
+    def generate_CP(self, K, t=None, lstsq=True):
         m, n = self.m, self.n
         A = spa.csc_matrix(self.A)
         ATA = A.T @ A
@@ -57,7 +57,10 @@ class ISTA(object):
         v = Iterate(n, name='u')
         b = Parameter(m, name='b')
 
-        xset = ZeroSet(x)
+        if lstsq:
+            xset = L2BallSet(x, self.generate_lstsq_ws(), 0)
+        else:
+            xset = ZeroSet(x)
         bset = L2BallSet(b, self.b_c, self.b_r)
 
         step1 = LinearStep(y, [x, b], D=D, A=C, b=b_const, Dinv=D)
@@ -90,7 +93,7 @@ class ISTA(object):
         # print(scalar_beta_list)
         return scalar_beta_list
 
-    def generate_FISTA_CP(self, K, t=None):
+    def generate_FISTA_CP(self, K, t=None, lstsq=True):
         m, n = self.m, self.n
         A = spa.csc_matrix(self.A)
         ATA = A.T @ A
@@ -112,8 +115,13 @@ class ISTA(object):
         z = Iterate(n, name='z')
         b = Parameter(m, name='b')
 
-        zset = ZeroSet(z)
-        wset = ZeroSet(w)
+        if lstsq:
+            ws = self.generate_lstsq_ws()
+            zset = L2BallSet(z, ws, 0)
+            wset = L2BallSet(w, ws, 0)
+        else:
+            zset = ZeroSet(z)
+            wset = ZeroSet(w)
         bset = L2BallSet(b, self.b_c, self.b_r)
 
         step1 = LinearStep(y, [w, b], D=D, A=C, b=b_const, Dinv=D)
@@ -161,3 +169,8 @@ class ISTA(object):
         # print(np.linalg.norm(sample))
         # print(sample.reshape(-1, 1) + c)
         return sample.reshape(-1, 1) + c
+
+    def generate_lstsq_ws(self):
+        btest = self.b_c
+        x, _, _, _ = np.linalg.lstsq(self.A, btest, rcond=None)
+        return x.reshape((-1, 1))

@@ -15,18 +15,20 @@ def main():
     print(outf)
 
     # m, n = 25, 20
-    m, n = 20, 15
+    m, n = 10, 15
     b_cmul = 10
     b_c = b_cmul * np.ones((m, 1))
-    b_r = .5
-    lambd = 5
+    b_r = .25
+    lambd = 10
+    t = .04
+    seed = 3
     # K = 5
-    K_vals = [7]
+    # K_vals = [7]
     # K_vals = [9, 10]
     # K_vals = [6, 7]
-    # K_vals = [1, 2, 3, 4, 5]
+    K_vals = [1, 2, 3, 4, 5]
 
-    instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=1)
+    instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
 
     # t_vals = list(instance.get_t_vals())
     # t_vals = generate_all_t_vals(t_vals)
@@ -36,9 +38,6 @@ def main():
     # algs = ['fista']
     for K in K_vals:
         for alg in algs:
-            # for t in t_vals:
-            # t = t_vals[1]
-            t = .01
             if alg == 'ista':
                 CP = instance.generate_CP(K, t=t)
             if alg == 'fista':
@@ -54,6 +53,7 @@ def main():
                 out['t'] = t
                 out['alg'] = alg
                 out['lambd'] = lambd
+                out['seed'] = seed
                 sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
                 print(sdp_c, sdp_canontime, sdp_solvetime)
 

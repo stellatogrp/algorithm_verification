@@ -87,13 +87,14 @@ def main():
 
     print(instance.A)
     print(instance.get_t_opt())
-    t = .05
+    t = .04
 
-    btest = instance.sample_c().reshape(-1,)
-    x, _, _, _ = np.linalg.lstsq(instance.A, btest, rcond=None)
+    # btest = instance.sample_c().reshape(-1,)
+    # x, _, _, _ = np.linalg.lstsq(instance.A, btest, rcond=None)
+
+    x = instance.generate_lstsq_ws().reshape(-1)
     print(x)
 
-    # t = .1 * instance.get_t_opt()
     print('sample opt sol:')
     instance.test_cp_prob()
 
@@ -109,7 +110,7 @@ def main():
 
     exit(0)
 
-    K = 5
+    K = 6
     instance.generate_FISTA_CP(K=K, t=t)
     # out_sdp = sdp_CP.solve(solver_type='SDP_CUSTOM')
 
