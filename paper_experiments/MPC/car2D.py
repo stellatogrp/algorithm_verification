@@ -322,7 +322,8 @@ class Car2D(object):
         # print('sol:', sol)
         return sol
 
-    def get_CP(self, K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=True, ws_x=None):
+    def get_CP(self, K, xinit_min, xinit_max, uinit_min, uinit_max,
+               rho_const=True, ws_x=None, shifted_sols=None):
         P, A, l1, l2, u1, u2 = self.get_QP_data()
 
         print(P.shape, A.shape)
@@ -409,6 +410,9 @@ class Car2D(object):
             xset = ZeroSet(x)
         else:
             xset = L2BallSet(x, ws_x.reshape(-1, 1), 0)
+            x0_min = np.min(shifted_sols, axis=0).reshape((-1, 1))
+            x0_max = np.max(shifted_sols, axis=0).reshape((-1, 1))
+            xset = BoxSet(x, x0_min, x0_max)
         zset = ZeroSet(z)
         yset = ZeroSet(y)
 

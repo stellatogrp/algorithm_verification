@@ -5,8 +5,8 @@ import pandas as pd
 # Set up plot style
 plt.rcParams.update({
     "text.usetex": True,
-    "font.family": "sans-serif",
-    "font.sans-serif": ["Helvetica Neue"],
+    # "font.family": "sans-serif",
+    # "font.sans-serif": ["Helvetica Neue"],
     "font.size": 20,
     "figure.figsize": (9, 6)})
 
@@ -127,13 +127,13 @@ def main():
     # sdp_df = pd.read_csv('data/sdp_data.csv')
     # sdp_df = pd.read_csv('data/NNLS_spread_t.csv')
     sdp_df = pd.read_csv('data/NNLS_spreadt_halfc.csv')
-    samples_df = pd.read_csv('data/sample_data.csv')
-    pep_df = pd.read_csv('data/pep_data.csv')
+    pd.read_csv('data/sample_data.csv')
+    pd.read_csv('data/pep_data.csv')
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
     plot_sdp(sdp_df, t_keep)
-    plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep)
-    plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
+    # plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep)
+    # plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
 
 
 if __name__ == '__main__':

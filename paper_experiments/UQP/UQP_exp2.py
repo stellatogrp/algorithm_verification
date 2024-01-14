@@ -144,7 +144,7 @@ def experiment2():
     f2_vec = np.vectorize(f2_plot)
     X1, X2 = np.meshgrid(x_lin[:, 0], x_lin[:, 1])
 
-    fig, ax = plt.subplots(figsize=(6, 3))
+    fig, ax = plt.subplots(figsize=(6, 6))
     labels = [r'$z^\star_1$', r'$z^\star_2$']
     markers = ['<', '>']
     contour_levels = [0.25, 0.5]

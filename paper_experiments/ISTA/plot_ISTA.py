@@ -43,27 +43,28 @@ def plot_resids(sdp_df, pep_df, samples_df, K_max=7):
     ista_samples = sample_max_df['ista']
     fista_samples = sample_max_df['fista']
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize = (10, 6))
     ax.plot(range(1, K_max + 1), ista_resids, marker='<', label='ISTA')
     ax.plot(range(1, K_max + 1), fista_resids, marker='>', label='FISTA')
 
-    ax.plot(range(1, K_max + 1), ista_pep[:K_max], label='ISTA pep')
-    ax.plot(range(1, K_max + 1), fista_pep[:K_max], label='FISTA pep')
+    ax.plot(range(1, K_max + 1), ista_pep[:K_max], marker='^', label='ISTA PEP')
+    ax.plot(range(1, K_max + 1), fista_pep[:K_max], marker='^', label='FISTA PEP')
 
-    ax.plot(range(1, K_max + 1), ista_samples[:K_max], label='ISTA samples')
-    ax.plot(range(1, K_max + 1), fista_samples[:K_max], label='FISTA samples')
+    ax.plot(range(1, K_max + 1), ista_samples[:K_max], marker='x', label='Sampled ISTA')
+    ax.plot(range(1, K_max + 1), fista_samples[:K_max], marker='x', label='Sampled FISTA')
 
     ax.set_xlabel('$K$')
     ax.set_ylabel('Worst case fixed-point residual')
     ax.set_yscale('log')
 
-    plt.legend()
-    plt.show()
-    # plt.savefig('plots/ista_fista.pdf')
+    plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+    plt.tight_layout()
+    # plt.show()
+    plt.savefig('plots/ista_fista.pdf')
 
 
 def main():
-    sdp_df = pd.read_csv('data/ISTA_K1_7_highacc.csv')
+    sdp_df = pd.read_csv('data/ISTA_sublinconv.csv')
     samples_df = pd.read_csv('data/samples.csv')
     pep_df = pd.read_csv('data/pep.csv')
 
