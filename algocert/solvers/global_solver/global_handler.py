@@ -58,7 +58,7 @@ class GlobalHandler(object):
             # self.model.setParam('MIPFocus', 3)
             # self.model.setParam('OptimalityTol', 1e-4)
             # self.model.setParam('FeasibilityTol', 1e-3)
-            self.model.setParam('MIPGap', .05)
+            self.model.setParam('MIPGap', .01)
             if self.TimeLimit > 0:
                 self.model.setParam('TimeLimit', self.TimeLimit)
 
@@ -313,6 +313,7 @@ class GlobalHandler(object):
         out = dict(
             glob_objval=self.model.objVal,
             glob_runtime=self.model.Runtime,
+            glob_bestbound=self.model.objBound,
         )
         try:
             out['gap'] = self.model.MIPGap

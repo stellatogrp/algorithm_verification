@@ -57,10 +57,9 @@ def shift_sol(sol, car):
     out[:car.nx] = A @ sol[:car.nx] + B @ sol[car.nx: car.nx + car.nv]
     # print(sol)
     # print('shifted ws:', out)
-    # exit(0)
     return out
 
-def MPC_experiment(outf, K_min=7, K_max=7, eps=1e-2):
+def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-2):
     T = 5
     car, xinit_samples, uinit_samples, sol, shifted_sols = simulate_steps(T=T, N=100, eps=eps)
     xinit_min = np.min(xinit_samples, axis=0)
@@ -74,7 +73,6 @@ def MPC_experiment(outf, K_min=7, K_max=7, eps=1e-2):
     x0_min = np.min(shifted_sols, axis=0)
     x0_max = np.max(shifted_sols, axis=0)
     print(x0_min, x0_max)
-    # exit(0)
 
     # options
 
@@ -85,8 +83,8 @@ def MPC_experiment(outf, K_min=7, K_max=7, eps=1e-2):
     # experiments = [('ws', 'rho_const'), ('ws', 'rho_adj')]
     # experiments = [('cs', 'rho_const')]
     # experiments = [('cs', 'rho_adj')]
-    # experiments = [('ws', 'rho_const')]
-    experiments = [('ws', 'rho_adj')]
+    experiments = [('ws', 'rho_const')]
+    # experiments = [('ws', 'rho_adj')]
 
     res = []
     for (start, rho) in experiments:
@@ -107,7 +105,7 @@ def MPC_experiment(outf, K_min=7, K_max=7, eps=1e-2):
             CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=rho_const,
                             ws_x=ws_x, shifted_sols=shifted_sol_list)
             # out = CP.solve(solver_type='SDP_CUSTOM')
-            out = CP.solve(solver_type='GLOBAL', add_bounds=True)
+            out = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
             out['seed'] = 0
             out['start'] = start
             out['rho'] = rho
@@ -117,7 +115,7 @@ def MPC_experiment(outf, K_min=7, K_max=7, eps=1e-2):
             res.append(pd.Series(out))
             res_df = pd.DataFrame(res)
             print(res_df)
-            res_df.to_csv(outf, index=False)
+            # res_df.to_csv(outf, index=False)
 
     # CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=False, ws_x=ws_x)
     # out = CP.solve(solver_type='SDP_CUSTOM')

@@ -31,58 +31,85 @@ def plot_resids(sdp_df, samples_df, pep_df):
     # fig.tight_layout()
     # # plt.show()
     # plt.savefig('plots/sdp_obj_all_K.pdf')
-    samp_cs_resids, samp_ws_resids = samples_to_max(samples_df)
+    samp_cs_resids, samp_ws_resids, samp_heur_resids = samples_to_max(samples_df)
     # print(samp_cs_resids, samp_ws_resids)
-    pep_cs_tau, pep_ws_tau = pep_to_res(pep_df)
+    pep_cs_tau, pep_ws_tau, pep_heur_tau = pep_to_res(pep_df)
 
-    sdp_cs, sdp_ws = sdp_to_res(sdp_df)
+    sdp_cs, sdp_ws, sdp_heur = sdp_to_res(sdp_df)
 
     K_vals = sdp_df['K'].unique()
 
-    fig, (ax0, ax1) = plt.subplots(1, 2, sharey=True)
+    fig, (ax0, ax1, ax2) = plt.subplots(1, 3, figsize=(9, 6), sharey=True)
     ax0.set_xlabel('$K$')
     ax1.set_xlabel('$K$')
+    ax2.set_xlabel('$K$')
     ax0.set_ylabel('Worst case fixed-point residual')
     ax0.set_yscale('log')
 
     sdp_m = '<'
-    pep_m = 'v'
-    samp_m = 'o'
+    pep_m = 'o'
+    samp_m = 'x'
 
-    ax0.plot(K_vals, sdp_cs, marker=sdp_m, linestyle='dashed', label='SDP, cold')
-    ax0.plot(K_vals, pep_cs_tau, marker=pep_m, linestyle='dashed', label='PEP, cold')
-    ax0.plot(K_vals, samp_cs_resids, marker=samp_m, linestyle='dashed', label='Samples, cold')
+    sdp_color = 'b'
+    pep_color = 'g'
+    samp_color = 'r'
 
-    ax1.plot(K_vals, sdp_ws, marker=sdp_m, label='SDP, warm')
-    ax1.plot(K_vals, pep_ws_tau, marker=pep_m, label='PEP, warm')
-    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, label='Samples, warm')
+    # ax0.plot(K_vals, sdp_cs, marker=sdp_m, color=sdp_color, label='SDP, cold')
+    # ax0.plot(K_vals, pep_cs_tau, marker=pep_m, color=pep_color, label='PEP, cold')
+    # ax0.plot(K_vals, samp_cs_resids, marker=samp_m, color=samp_color, label='Samples, cold')
+    # ax0.set_title('Cold start')
+    ax0.plot(K_vals, sdp_cs, marker=sdp_m, color=sdp_color)
+    ax0.plot(K_vals, pep_cs_tau, marker=pep_m, color=pep_color)
+    ax0.plot(K_vals, samp_cs_resids, marker=samp_m, color=samp_color)
+    ax0.set_title('Cold start')
+
+    ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='SDP, warm')
+    ax1.plot(K_vals, pep_ws_tau, marker=pep_m, color=pep_color, label='PEP, warm')
+    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Samples, warm')
+    ax1.set_title('Warm start')
+
+    ax2.set_title('Heuristic')
+    # ax2.plot(K_vals, sdp_heur, marker=sdp_m, color=sdp_color, label='SDP, heuristic')
+    # ax2.plot(K_vals, pep_heur_tau, marker=pep_m, color=pep_color, label='PEP, heuristic')
+    # ax2.plot(K_vals, samp_heur_resids, marker=samp_m, color=samp_color, label='Samples, heuristic')
+
+    ax2.plot(K_vals, sdp_heur, marker=sdp_m, color=sdp_color)
+    ax2.plot(K_vals, pep_heur_tau, marker=pep_m, color=pep_color)
+    ax2.plot(K_vals, samp_heur_resids, marker=samp_m, color=samp_color)
 
     # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     # ax.set_ylim([None, 10])
-    ax0.legend(loc='upper right')
-    ax1.legend(loc='upper right')
+    # ax0.legend(loc='upper right')
+    # ax1.legend(loc='upper right')
+    # plt.legend()
+    fig.legend(ncol=3, loc='upper center', bbox_to_anchor=(0.5, .95))
     plt.suptitle(r'NUM example, $R \in { \bf R}^{10\times 5}$')
     plt.tight_layout()
-    # plt.show()
-    plt.savefig('plots/NUM.pdf')
+
+    print(samp_cs_resids, samp_ws_resids, samp_heur_resids)
+    plt.show()
+    # plt.savefig('plots/NUM.pdf')
 
 
 def samples_to_max(samples_df):
     # print(samples_df)
     df_cs = samples_df[samples_df['type'] == 'cs']
     df_ws = samples_df[samples_df['type'] == 'ws']
+    df_heur = samples_df[samples_df['type'] == 'heur']
     cs_resids = df_cs.groupby(['K'])
     ws_resids = df_ws.groupby(['K'])
+    heur_resids = df_heur.groupby(['K'])
     # print(cs_resids['res'].max())
 
-    return cs_resids['res'].max(), ws_resids['res'].max()
+    return cs_resids['res'].max(), ws_resids['res'].max(), heur_resids['res'].max()
 
 
 def pep_to_res(pep_df):
     df_cs = pep_df[pep_df['type'] == 'cs']
     df_ws = pep_df[pep_df['type'] == 'ws']
+    df_heur = pep_df[pep_df['type'] == 'heur']
 
-    return df_cs['tau'], df_ws['tau']
+    return df_cs['tau'], df_ws['tau'], df_heur['tau']
 
 
 def sdp_to_res(sdp_df):
@@ -90,8 +117,9 @@ def sdp_to_res(sdp_df):
     # df_ws = sdp_df[sdp_df["warm_start"] is True]
     df_cs = sdp_df[sdp_df['init_type'] == 'cs']
     df_ws = sdp_df[sdp_df['init_type'] == 'ws']
+    df_heur = sdp_df[sdp_df['init_type'] == 'heur']
 
-    return df_cs['sdp_objval'], df_ws['sdp_objval']
+    return df_cs['sdp_objval'], df_ws['sdp_objval'], df_heur['sdp_objval']
 
 
 def main():
