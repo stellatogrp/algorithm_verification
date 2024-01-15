@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem-per-cpu=4G
-#SBATCH --time=04:00:00
+#SBATCH --mem-per-cpu=2G
+#SBATCH --time=01:00:00
 #SBATCH -o /home/vranjan/algorithm-certification/paper_experiments/ISTA/data/ISTA_%A.txt
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
 #SBATCH --mail-user=vranjan@princeton.edu

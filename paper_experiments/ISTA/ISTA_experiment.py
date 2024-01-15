@@ -23,10 +23,11 @@ def main():
     t = .04
     seed = 3
     # K = 5
-    K_vals = [7]
+    # K_vals = [7]
     # K_vals = [9, 10]
-    # K_vals = [6, 7]
+    K_vals = [6, 7]
     # K_vals = [1, 2, 3, 4, 5]
+    # K_vals = [1]
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
 
@@ -34,37 +35,36 @@ def main():
     # t_vals = generate_all_t_vals(t_vals)
 
     out_res = []
-    # algs = ['ista', 'fista']
-    algs = ['fista']
+    algs = ['ista', 'fista']
+    # algs = ['fista']
     for K in K_vals:
         for alg in algs:
             if alg == 'ista':
                 CP = instance.generate_CP(K, t=t)
             if alg == 'fista':
                 CP = instance.generate_FISTA_CP(K, t=t)
-            glob = False
+            glob = True
             if not glob:
                 out = CP.solve(solver_type='SDP_CUSTOM')
-                out['orig_m'] = m
-                out['orig_n'] = n
-                out['b_cmul'] = b_cmul
-                out['b_r'] = b_r
-                out['K'] = K
-                out['t'] = t
-                out['alg'] = alg
-                out['lambd'] = lambd
-                out['seed'] = seed
                 sdp_c, sdp_canontime, sdp_solvetime = out['sdp_objval'], out['sdp_canontime'], out['sdp_solvetime']
                 print(sdp_c, sdp_canontime, sdp_solvetime)
-
-                # out_df = []
-                out_res.append(pd.Series(out))
-                out_df = pd.DataFrame(out_res)
-                print(out_df)
-                out_df.to_csv(outf, index=False)
             else:
-                out = CP.solve(solver_type='GLOBAL', add_bounds=True)
-                print(out)
+                out = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
+
+            out['orig_m'] = m
+            out['orig_n'] = n
+            out['b_cmul'] = b_cmul
+            out['b_r'] = b_r
+            out['K'] = K
+            out['t'] = t
+            out['alg'] = alg
+            out['lambd'] = lambd
+            out['seed'] = seed
+            print(out)
+            out_res.append(pd.Series(out))
+            out_df = pd.DataFrame(out_res)
+            print(out_df)
+            out_df.to_csv(outf, index=False)
 
 
 if __name__ == '__main__':
