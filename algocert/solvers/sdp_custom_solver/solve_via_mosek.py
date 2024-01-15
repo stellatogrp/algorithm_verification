@@ -98,6 +98,7 @@ def solve_via_mosek(C, A_vals, b_lvals, b_uvals, PSD_cones, problem_dim, handler
         M.setSolverParam('intpntCoTolDfeas', tol)
         M.setSolverParam('intpntCoTolPfeas', tol)
         M.setSolverParam('intpntCoTolRelGap', tol)
+        M.setSolverParam('intpntMaxIterations', 100)
 
         print('starting mosek solve')
         M.solve()

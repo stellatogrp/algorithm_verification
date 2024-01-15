@@ -78,7 +78,7 @@ def main():
     b_c = b_cmul * np.ones((m, 1))
 
     # b_c = np.array(list(range(m))).reshape((-1, 1))
-    b_r = .5
+    b_r = .25
     lambd = 10
     # t = .01
     test_K = 7
@@ -98,7 +98,8 @@ def main():
     print('sample opt sol:')
     instance.test_cp_prob()
 
-    b = instance.sample_c()
+    # b = instance.sample_c()
+    b = instance.b_c
     # z0 = np.zeros(n)
     z0 = x
 

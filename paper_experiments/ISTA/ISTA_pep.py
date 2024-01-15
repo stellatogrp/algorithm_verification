@@ -95,8 +95,9 @@ def b_to_ISTA(instance, b_vals, ztest, K=7, t=.01):
     for i, b in enumerate(b_vals):
         # print('ista:', ISTA_solve(instance, ztest, b, K))
         # print('fista:', FISTA_solve(instance, ztest, b, K))
-        ISTA_res = ISTA_solve(instance, ztest, b, K)
-        FISTA_res = FISTA_solve(instance, ztest, b, K)
+
+        ISTA_res = ISTA_solve(instance, ztest, b, K, t=t)
+        FISTA_res = FISTA_solve(instance, ztest, b, K, t=t)
 
         for j in range(K):
             out = {
@@ -142,7 +143,7 @@ def fista_pep(instance, r, K=7, t=.01):
     A = instance.A
     L = np.max(np.abs(np.linalg.eigvals(A.T @ A)))
     mu = np.min(np.abs(np.linalg.eigvals(A.T @ A)))
-    print(L, mu)
+    # print(L, mu)
     lambd = instance.lambd
 
     problem = PEP()
@@ -176,8 +177,8 @@ def r_to_pep(instance, r_max, K=7, t=.01):
     out_series = []
 
     for i in range(1, K+1):
-        ista_tau = ista_pep(instance, r_max, K=i, t=.01)
-        fista_tau = fista_pep(instance, r_max, K=i, t=.01)
+        ista_tau = ista_pep(instance, r_max, K=i, t=t)
+        fista_tau = fista_pep(instance, r_max, K=i, t=t)
         out = {
             't': t,
             'K': i,
@@ -204,25 +205,29 @@ def sample_and_run(instance, b_c, b_r, N, ztest, t=.01, K=7):
     print(r_max)
 
     b_to_ISTA(instance, b_vals, ztest, K=K, t=t)
-    r_to_pep(instance, r_max, K=K)
+    r_to_pep(instance, r_max, K=K, t=t)
 
 
 def main():
-    m, n = 20, 15
-    b_c = 10 * np.ones((m, 1))
-    b_r = .5
-    lambd = 5
+    m, n = 10, 15
+    b_cmul = 10
+    b_c = b_cmul * np.ones((m, 1))
+    b_r = .25
+    lambd = 10
+    t = .04
+    seed = 3
+    K = 7
     N = 100
-    K = 15
 
-    instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=1)
+    instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
     # ztest = instance.test_cp_prob()
     # print(ztest)
-    ztest = np.zeros(n)
+    # ztest = np.zeros(n)
+    ztest = instance.generate_lstsq_ws().reshape(-1)
     # print(instance.get_t_opt())
 
     np.random.seed(0)
-    sample_and_run(instance, b_c, b_r, N, ztest, K=K)
+    sample_and_run(instance, b_c, b_r, N, ztest, t=t, K=K)
 
 
 if __name__ == '__main__':

@@ -23,10 +23,10 @@ def main():
     t = .04
     seed = 3
     # K = 5
-    # K_vals = [7]
+    K_vals = [7]
     # K_vals = [9, 10]
     # K_vals = [6, 7]
-    K_vals = [1, 2, 3, 4, 5]
+    # K_vals = [1, 2, 3, 4, 5]
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
 
@@ -34,8 +34,8 @@ def main():
     # t_vals = generate_all_t_vals(t_vals)
 
     out_res = []
-    algs = ['ista', 'fista']
-    # algs = ['fista']
+    # algs = ['ista', 'fista']
+    algs = ['fista']
     for K in K_vals:
         for alg in algs:
             if alg == 'ista':
