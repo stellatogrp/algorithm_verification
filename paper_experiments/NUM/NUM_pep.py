@@ -22,15 +22,16 @@ def run_DR_single(M, q, z0, Pi, K):
     return out_zres
 
 
-def run_DR_cs_ws(M, q, z_ws, Pi, K_max=5):
+def run_DR_cs_ws_heur(M, q, z_ws, z_heur, Pi, K_max=5):
     # out_cs = []
     # out_ws = []
 
     z_cs = np.zeros(M.shape[0])
     out_cs = run_DR_single(M, q, z_cs, Pi, K_max)
     out_ws = run_DR_single(M, q, z_ws, Pi, K_max)
+    out_heur = run_DR_single(M, q, z_heur, Pi, K_max)
 
-    return out_cs, out_ws
+    return out_cs, out_ws, out_heur
 
 
 def sample_l2ball(c, r, N):
@@ -64,7 +65,7 @@ def c_to_xopt(instance, c_vals):
     return out
 
 
-def c_to_DR(instance, c_vals, z_ws, K=5):
+def c_to_DR(instance, c_vals, z_ws, z_heur, K=5):
     M = instance.M
     M.shape[0]
     n = instance.A.shape[1]
@@ -83,17 +84,20 @@ def c_to_DR(instance, c_vals, z_ws, K=5):
     out_series = []
     for i, c in enumerate(c_vals):
         q = np.hstack([w, c.reshape(-1, ), np.zeros(n), instance.t])
-        out_cs, out_ws = run_DR_cs_ws(M, q, z_ws, Pi, K_max=K)
+        out_cs, out_ws, out_heur = run_DR_cs_ws_heur(M, q, z_ws, z_heur, Pi, K_max=K)
         print('--')
         print(out_cs)
         print(out_ws)
+        print(out_heur)
 
         for K_val in range(K):
             cs_res = out_cs[K_val]
             ws_res = out_ws[K_val]
+            heur_res = out_heur[K_val]
             out_dict_cs = dict(type='cs', sample_num=(i + 1), K=(K_val + 1), res=cs_res)
             out_dict_ws = dict(type='ws', sample_num=(i + 1), K=(K_val + 1), res=ws_res)
-            out_series += [pd.Series(out_dict_cs), pd.Series(out_dict_ws)]
+            out_dict_heur = dict(type='heur', sample_num=(i + 1), K=(K_val + 1), res=heur_res)
+            out_series += [pd.Series(out_dict_cs), pd.Series(out_dict_ws), pd.Series(out_dict_heur)]
     out_df = pd.DataFrame(out_series)
     out_df.to_csv('data/num_sample.csv', index=False)
 
@@ -158,7 +162,7 @@ def DR_pep(K, r, L=1, alpha=1, theta=1):
     return pepit_tau
 
 
-def r_to_pep(instance, r_cs, r_ws, K=5):
+def r_to_pep(instance, r_cs, r_ws, r_heur, K=5):
     M = instance.M
     MpI = M + np.eye(M.shape[0])
     eigs = np.linalg.eigvals(MpI)
@@ -170,10 +174,12 @@ def r_to_pep(instance, r_cs, r_ws, K=5):
     for K_val in range(1, K+1):
         cs_tau = DR_pep(K_val, r_cs, L=L)
         ws_tau = DR_pep(K_val, r_ws, L=L)
+        heur_tau = DR_pep(K_val, r_heur, L=L)
         print(cs_tau, ws_tau)
         cs_outdict = dict(type='cs', K=K_val, tau=cs_tau)
         ws_outdict = dict(type='ws', K=K_val, tau=ws_tau)
-        out_series += [pd.Series(cs_outdict), pd.Series(ws_outdict)]
+        heur_outdict = dict(type='heur', K=K_val, tau=heur_tau)
+        out_series += [pd.Series(cs_outdict), pd.Series(ws_outdict), pd.Series(heur_outdict)]
     out_df = pd.DataFrame(out_series)
     print(out_df)
     out_df.to_csv('data/num_pep.csv', index=False)
@@ -184,16 +190,18 @@ def sample_and_run(instance, c_c, c_r, N, K=5):
     # print(c_vals)
     x_opt_vals = c_to_xopt(instance, c_vals)
     z_ws = instance.test_cp_prob().reshape(-1, )
+    z_heur = instance.heuristic_start().reshape(-1, )
     # print(z_ws)
     x_maxcs = max(x_opt_vals, key=lambda x: np.linalg.norm(x))
     x_rcs = np.linalg.norm(x_maxcs)
     x_maxws = max(x_opt_vals, key=lambda x: np.linalg.norm(x - z_ws))
     x_rws = np.linalg.norm(x_maxws - z_ws)
-    print(x_rcs, x_rws)
-    exit(0)
+    x_maxheur = max(x_opt_vals, key=lambda x: np.linalg.norm(x - z_heur))
+    x_rheur = np.linalg.norm(x_maxheur - z_heur)
+    print(x_rcs, x_rws, x_rheur)
 
-    c_to_DR(instance, c_vals, z_ws, K=K)
-    r_to_pep(instance, x_rcs, x_rws, K=K)
+    c_to_DR(instance, c_vals, z_ws, z_heur, K=K)
+    r_to_pep(instance, x_rcs, x_rws, x_rheur, K=K)
 
 
 def main():

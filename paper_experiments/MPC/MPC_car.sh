@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem-per-cpu=6G
+#SBATCH --mem-per-cpu=7G
 #SBATCH --time=10:00:00
 #SBATCH -o /home/vranjan/algorithm-certification/paper_experiments/MPC/data/MPC_%A.txt
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
