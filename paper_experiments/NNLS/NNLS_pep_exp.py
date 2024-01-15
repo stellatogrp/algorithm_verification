@@ -9,7 +9,7 @@ from NNLS_class import NNLS
 from PEPit import PEP
 from PEPit.functions import (
     ConvexFunction,
-    SmoothStronglyConvexQuadraticFunction,
+    SmoothStronglyConvexFunction,
 )
 from PEPit.primitive_steps import proximal_step
 
@@ -81,7 +81,7 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
     # out_df.to_csv('data/sample_data.csv', index=False)
 
 
-def single_pep_sample(t, mu, L, r, K):
+def single_pep_sample(t, mu, L, r, K, test_opt_dist = True):
     verbose=2
     problem = PEP()
     print(mu, L)
@@ -93,8 +93,8 @@ def single_pep_sample(t, mu, L, r, K):
 
     # Declare a convex and a smooth convex function.
     func1 = problem.declare_function(ConvexFunction)
-    # func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
-    func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
+    func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    # func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     # Define the function to optimize as the sum of func1 and func2
     func = func1 + func2
 
@@ -121,8 +121,10 @@ def single_pep_sample(t, mu, L, r, K):
 
     # Set the performance metric to the final distance to the optimum in function values
     # problem.set_performance_metric((func2(y) + fy) - fs)
-    problem.set_performance_metric((x[-1] - x[-2]) ** 2)
-    # problem.set_performance_metric((x[-1] - xs) ** 2)
+    if test_opt_dist:
+        problem.set_performance_metric((x[-1] - xs) ** 2)
+    else:
+        problem.set_performance_metric((x[-1] - x[-2]) ** 2)
 
     # Solve the PEP
     pepit_verbose = max(verbose, 0)
@@ -144,7 +146,7 @@ def all_pep_runs(t_vals, mu, L, r, K_max):
             out_res.append(pd.Series(out_dict))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            out_df.to_csv('data/pep_data.csv', index=False)
+            # out_df.to_csv('data/pep_data.csv', index=False)
 
 
 def main():

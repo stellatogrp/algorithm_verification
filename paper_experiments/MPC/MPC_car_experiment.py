@@ -74,6 +74,7 @@ def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-2):
     x0_min = np.min(shifted_sols, axis=0)
     x0_max = np.max(shifted_sols, axis=0)
     print(x0_min, x0_max)
+    # exit(0)
 
     # options
 
@@ -105,8 +106,8 @@ def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-2):
 
             CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=rho_const,
                             ws_x=ws_x, shifted_sols=shifted_sol_list)
-            out = CP.solve(solver_type='SDP_CUSTOM')
-            # out = CP.solve(solver_type='GLOBAL', add_bounds=True)
+            # out = CP.solve(solver_type='SDP_CUSTOM')
+            out = CP.solve(solver_type='GLOBAL', add_bounds=True)
             out['seed'] = 0
             out['start'] = start
             out['rho'] = rho

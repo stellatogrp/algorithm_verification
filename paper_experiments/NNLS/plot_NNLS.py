@@ -88,7 +88,7 @@ def plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     plt.savefig(f'plots/K{K_des}_comparison.pdf')
 
 
-def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4):
+def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=10):
     t_vals = sdp_df['t'].unique()
     sdp_dfK = sdp_df[sdp_df['K'] == K_des]
     samples_df[samples_df['K'] == K_des]
@@ -127,13 +127,13 @@ def main():
     # sdp_df = pd.read_csv('data/sdp_data.csv')
     # sdp_df = pd.read_csv('data/NNLS_spread_t.csv')
     sdp_df = pd.read_csv('data/NNLS_spreadt_halfc.csv')
-    pd.read_csv('data/sample_data.csv')
-    pd.read_csv('data/pep_data.csv')
+    samples_df = pd.read_csv('data/sample_data.csv')
+    pep_df = pd.read_csv('data/pep_data.csv')
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
     plot_sdp(sdp_df, t_keep)
-    # plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep)
-    # plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
+    plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep)
+    plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
 
 
 if __name__ == '__main__':
