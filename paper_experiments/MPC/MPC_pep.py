@@ -2,6 +2,7 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
+from car2D import Car2D
 from MPC_car_experiment import simulate_steps
 from PEPit import PEP
 from PEPit.functions import (
@@ -148,7 +149,11 @@ def MPC_samp_pep(outf, K_max=7, eps=1e-2):
     N = 100
     # N = 5
 
-    car, xinit_samples, uinit_samples, sol, shifted_sols = simulate_steps(T=T, N=N, eps=eps)
+    np.random.seed(2)
+    car = Car2D(T=T)
+
+    # car, xinit_samples, uinit_samples, sol, shifted_sols = simulate_steps(T=T, N=N, eps=eps)
+    xinit_samples, uinit_samples, sol, shifted_sols = simulate_steps(car, T=T, N=N, eps=eps)
     xinit_min = np.min(xinit_samples, axis=0)
     xinit_max = np.max(xinit_samples, axis=0)
     uinit_min = np.min(uinit_samples, axis=0)

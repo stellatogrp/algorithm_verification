@@ -131,9 +131,9 @@ def main():
     pep_df = pd.read_csv('data/pep_data.csv')
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
-    plot_sdp(sdp_df, t_keep)
-    plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep)
-    plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
+    # plot_sdp(sdp_df, t_keep)
+    plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=10)
+    # plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
 
 
 if __name__ == '__main__':

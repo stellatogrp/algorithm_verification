@@ -4,8 +4,8 @@ import pandas as pd
 # Set up plot style
 plt.rcParams.update({
     "text.usetex": True,
-    "font.family": "sans-serif",
-    "font.sans-serif": ["Helvetica Neue"],
+    "font.family": "serif",
+    # "font.sans-serif": ["Helvetica Neue"],
     "font.size": 20,
     "figure.figsize": (9, 6)})
 

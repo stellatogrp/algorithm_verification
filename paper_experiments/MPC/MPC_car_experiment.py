@@ -17,9 +17,7 @@ def single_sim(car, T_sim, xinit, uinit, eps=1e-3):
     return xinit, uinit, sol
 
 
-def simulate_steps(T=5, T_sim=25, N=100, eps=1e-3):
-    np.random.seed(2)
-    car = Car2D(T=T)
+def simulate_steps(car, T=5, T_sim=25, N=100, eps=1e-3):
     xinit = np.array([5, 5, 0, 0])
     uinit = np.array([0, 0])
     # sol = car.solve_via_cvxpy(xinit)
@@ -45,7 +43,7 @@ def simulate_steps(T=5, T_sim=25, N=100, eps=1e-3):
     # print(np.min(uinit_samples, axis=0))
     # print(np.max(uinit_samples, axis=0))
 
-    return car, xinit_samples, uinit_samples, sol, shifted_sols
+    return xinit_samples, uinit_samples, sol, shifted_sols
 
 
 def shift_sol(sol, car):
@@ -59,25 +57,54 @@ def shift_sol(sol, car):
     # print('shifted ws:', out)
     return out
 
-def MPC_experiment(outf, K_min=5, K_max=7, eps=1e-2):
+
+def MPC_experiment(outf, K_min=1, K_max=1, eps=1e-3, load=True):
     T = 5
-    car, xinit_samples, uinit_samples, sol, shifted_sols = simulate_steps(T=T, N=100, eps=eps)
-    xinit_min = np.min(xinit_samples, axis=0)
-    xinit_max = np.max(xinit_samples, axis=0)
-    uinit_min = np.min(uinit_samples, axis=0)
-    uinit_max = np.max(uinit_samples, axis=0)
-    # K = 2
+    N = 10000
+
+    np.random.seed(2)
+    car = Car2D(T=T)
+
+    if not load:
+
+        xinit_samples, uinit_samples, sol, shifted_sols = simulate_steps(car, T=T, N=N, eps=eps)
+        xinit_min = np.min(xinit_samples, axis=0)
+        xinit_max = np.max(xinit_samples, axis=0)
+        uinit_min = np.min(uinit_samples, axis=0)
+        uinit_max = np.max(uinit_samples, axis=0)
+        x0_min = np.min(shifted_sols, axis=0)
+        x0_max = np.max(shifted_sols, axis=0)
+
+        np.save('data/xinit_min.npy', xinit_min)
+        np.save('data/xinit_max.npy', xinit_max)
+        np.save('data/uinit_min.npy', uinit_min)
+        np.save('data/uinit_max.npy', uinit_max)
+
+        np.save('data/x0_min.npy', x0_min)
+        np.save('data/x0_max.npy', x0_max)
+
+        print(xinit_min, xinit_max)
+        print(uinit_min, uinit_max)
+        print(x0_min, x0_max)
+        exit(0)
+    else:
+        read_dir = '1e-3'
+        xinit_min = np.load(f'data/{read_dir}/xinit_min.npy')
+        xinit_max = np.load(f'data/{read_dir}/xinit_max.npy')
+        uinit_min = np.load(f'data/{read_dir}/uinit_min.npy')
+        uinit_max = np.load(f'data/{read_dir}/uinit_max.npy')
+        x0_min = np.load(f'data/{read_dir}/x0_min.npy')
+        x0_max = np.load(f'data/{read_dir}/x0_max.npy')
+
     print(xinit_min, xinit_max)
     print(uinit_min, uinit_max)
-
-    x0_min = np.min(shifted_sols, axis=0)
-    x0_max = np.max(shifted_sols, axis=0)
     print(x0_min, x0_max)
+
 
     # options
 
     # for K in range(K_max):
-    ws_x_val = shift_sol(sol, car)
+    # ws_x_val = shift_sol(sol, car)
     # experiments = [('cs', 'rho_const'), ('cs', 'rho_adj'), ('ws', 'rho_const'), ('ws', 'rho_adj')]
     # experiments = [('cs', 'rho_const'), ('cs', 'rho_adj')]
     # experiments = [('ws', 'rho_const'), ('ws', 'rho_adj')]
@@ -92,20 +119,20 @@ def MPC_experiment(outf, K_min=5, K_max=7, eps=1e-2):
         # for K in range(6, 7):
             print(start, rho, K)
             if start == 'cs':
-                ws_x = None
-                shifted_sol_list = None
-            else:
-                ws_x = ws_x_val
-                shifted_sol_list = shifted_sols
+                # shifted_sol_list = None
+                x0_min = None
+                x0_max = None
+            # else:
+                # shifted_sol_list = shifted_sols
             if rho == 'rho_const':
                 rho_const = True
             else:
                 rho_const = False
 
             CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=rho_const,
-                            ws_x=ws_x, shifted_sols=shifted_sol_list)
-            # out = CP.solve(solver_type='SDP_CUSTOM')
-            out = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
+                            x0_min=x0_min, x0_max=x0_max)
+            out = CP.solve(solver_type='SDP_CUSTOM')
+            # out = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
             out['seed'] = 0
             out['start'] = start
             out['rho'] = rho
@@ -115,7 +142,7 @@ def MPC_experiment(outf, K_min=5, K_max=7, eps=1e-2):
             res.append(pd.Series(out))
             res_df = pd.DataFrame(res)
             print(res_df)
-            res_df.to_csv(outf, index=False)
+            # res_df.to_csv(outf, index=False)
 
     # CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=False, ws_x=ws_x)
     # out = CP.solve(solver_type='SDP_CUSTOM')

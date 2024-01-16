@@ -7,7 +7,6 @@ from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
-from algocert.init_set.l2_ball_set import L2BallSet
 from algocert.init_set.stack_set import StackSet
 from algocert.init_set.zero_set import ZeroSet
 from algocert.objectives.block_convergence_residual import BlockConvergenceResidual
@@ -323,7 +322,7 @@ class Car2D(object):
         return sol
 
     def get_CP(self, K, xinit_min, xinit_max, uinit_min, uinit_max,
-               rho_const=True, ws_x=None, shifted_sols=None):
+               rho_const=True, x0_min=None, x0_max=None):
         P, A, l1, l2, u1, u2 = self.get_QP_data()
 
         print(P.shape, A.shape)
@@ -406,13 +405,13 @@ class Car2D(object):
 
         steps = [step1, step2, step3, step4]
 
-        if ws_x is None:
+        if x0_min is None:
             xset = ZeroSet(x)
         else:
-            xset = L2BallSet(x, ws_x.reshape(-1, 1), 0)
-            x0_min = np.min(shifted_sols, axis=0).reshape((-1, 1))
-            x0_max = np.max(shifted_sols, axis=0).reshape((-1, 1))
-            xset = BoxSet(x, x0_min, x0_max)
+            # xset = L2BallSet(x, ws_x.reshape(-1, 1), 0)
+            # x0_min = np.min(shifted_sols, axis=0).reshape((-1, 1))
+            # x0_max = np.max(shifted_sols, axis=0).reshape((-1, 1))
+            xset = BoxSet(x, x0_min.reshape((-1, 1)), x0_max.reshape((-1, 1)))
         zset = ZeroSet(z)
         yset = ZeroSet(y)
 

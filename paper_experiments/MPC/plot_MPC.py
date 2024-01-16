@@ -32,7 +32,7 @@ def plot_resids(sdp_df, samp_pep_df, K_max=7):
     ax.set_ylabel('Worst case fixed-point residual')
     ax.set_yscale('log')
 
-    # ax.set_ylim(bottom=1e-0)
+    ax.set_ylim(bottom=1e-0)
 
     plt.legend()
     plt.show()
