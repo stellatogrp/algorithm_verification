@@ -58,7 +58,7 @@ def shift_sol(sol, car):
     return out
 
 
-def MPC_experiment(outf, K_min=1, K_max=1, eps=1e-3, load=True):
+def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-3, load=True):
     T = 5
     N = 10000
 
@@ -107,11 +107,11 @@ def MPC_experiment(outf, K_min=1, K_max=1, eps=1e-3, load=True):
     # ws_x_val = shift_sol(sol, car)
     # experiments = [('cs', 'rho_const'), ('cs', 'rho_adj'), ('ws', 'rho_const'), ('ws', 'rho_adj')]
     # experiments = [('cs', 'rho_const'), ('cs', 'rho_adj')]
-    # experiments = [('ws', 'rho_const'), ('ws', 'rho_adj')]
+    experiments = [('ws', 'rho_const'), ('ws', 'rho_adj')]
     # experiments = [('cs', 'rho_const')]
     # experiments = [('cs', 'rho_adj')]
     # experiments = [('ws', 'rho_const')]
-    experiments = [('ws', 'rho_adj')]
+    # experiments = [('ws', 'rho_adj')]
 
     res = []
     for (start, rho) in experiments:
@@ -142,7 +142,7 @@ def MPC_experiment(outf, K_min=1, K_max=1, eps=1e-3, load=True):
             res.append(pd.Series(out))
             res_df = pd.DataFrame(res)
             print(res_df)
-            # res_df.to_csv(outf, index=False)
+            res_df.to_csv(outf, index=False)
 
     # CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=False, ws_x=ws_x)
     # out = CP.solve(solver_type='SDP_CUSTOM')

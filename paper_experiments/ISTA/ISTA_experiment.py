@@ -23,10 +23,11 @@ def main():
     t = .04
     seed = 3
     # K = 5
-    # K_vals = [7]
+    K_vals = [4]
     # K_vals = [9, 10]
-    K_vals = [6, 7]
-    # K_vals = [1, 2, 3, 4, 5]
+    # K_vals = [6, 7]
+    # K_vals = [5, 6, 7]
+    # K_vals = [1, 2, 3, 4]
     # K_vals = [1]
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
