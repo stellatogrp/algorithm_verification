@@ -4,7 +4,6 @@ import cvxpy as cp
 import numpy as np
 import pandas as pd
 from NNLS_class import NNLS
-from tqdm import tqdm
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
@@ -12,7 +11,7 @@ from PEPit.functions import (
     ConvexFunction,
     SmoothStronglyConvexFunction,
 )
-from PEPit.primitive_steps import proximal_step
+from tqdm import tqdm
 
 
 def generate_all_t_vals(t_vals, num_between=2):
@@ -78,7 +77,7 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
                 out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    print('NOT OVERWRITING SAMPLES DATA')
+    # print('NOT OVERWRITING SAMPLES DATA')
     # out_df.to_csv('data/sample_data.csv', index=False)
 
 
@@ -97,10 +96,11 @@ def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
     func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
     # func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     # Define the function to optimize as the sum of func1 and func2
-    func = func1 + func2
+    func1 + func2
 
     # Start by defining its unique optimal point xs = x_* and its function value fs = F(x_*)
-    xs = func.stationary_point()
+    # xs = func.stationary_point()
+    xs = func2.stationary_point()
     # fs = func(xs)
 
     # Then define the starting point x0 of the algorithm and its function value f0
@@ -112,9 +112,9 @@ def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
     # x = x0
     for i in range(K):
         # y = x[i] - t * func2.gradient(x[i])
-        # x[i+1], _, _ = proximal_step(y, func1, 1)
-        y = x[i] - t * func2.gradient(x[i])
-        x[i+1], _, _ = proximal_step(y, func1, t)
+        # x[i+1], _, _ = proximal_step(y, func1, t)
+
+        x[i + 1] = x[i] - t * func2.gradient(x[i])
 
     # Set the initial constraint that is the distance between x0 and xs = x_*
     problem.set_initial_condition((x0 - xs) ** 2 <= r ** 2)
@@ -186,6 +186,9 @@ def main():
 
     all_t = np.array(instance.grid_t_vals())
     print('t_values:', all_t)
+
+    # all_t = all_t[:-1]
+    print(all_t)
 
     b_samples = generate_samples(N, b_c, b_r, seed=2)
     # print(b_samples)

@@ -32,6 +32,7 @@ def plot_resids(sdp_df, samples_df, pep_df):
     # # plt.show()
     # plt.savefig('plots/sdp_obj_all_K.pdf')
     samp_cs_resids, samp_ws_resids, samp_heur_resids = samples_to_max(samples_df)
+
     # print(samp_cs_resids, samp_ws_resids)
     pep_cs_tau, pep_ws_tau, pep_heur_tau = pep_to_res(pep_df)
 
@@ -61,14 +62,14 @@ def plot_resids(sdp_df, samples_df, pep_df):
     ax0.plot(K_vals, sdp_cs, marker=sdp_m, color=sdp_color)
     ax0.plot(K_vals, pep_cs_tau, marker=pep_m, color=pep_color)
     ax0.plot(K_vals, samp_cs_resids, marker=samp_m, color=samp_color)
-    ax0.set_title('Cold start')
+    ax0.set_title('Cold Start')
 
-    ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='SDP, warm')
-    ax1.plot(K_vals, pep_ws_tau, marker=pep_m, color=pep_color, label='PEP, warm')
-    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Samples, warm')
-    ax1.set_title('Warm start')
+    ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='SDP')
+    ax1.plot(K_vals, pep_ws_tau, marker=pep_m, color=pep_color, label='PEP')
+    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Samples')
+    ax1.set_title('Warm Start')
 
-    ax2.set_title('Heuristic')
+    ax2.set_title('Heuristic Start')
     # ax2.plot(K_vals, sdp_heur, marker=sdp_m, color=sdp_color, label='SDP, heuristic')
     # ax2.plot(K_vals, pep_heur_tau, marker=pep_m, color=pep_color, label='PEP, heuristic')
     # ax2.plot(K_vals, samp_heur_resids, marker=samp_m, color=samp_color, label='Samples, heuristic')
@@ -82,13 +83,22 @@ def plot_resids(sdp_df, samples_df, pep_df):
     # ax0.legend(loc='upper right')
     # ax1.legend(loc='upper right')
     # plt.legend()
-    fig.legend(ncol=3, loc='upper center', bbox_to_anchor=(0.5, .95))
-    plt.suptitle(r'NUM example, $R \in { \bf R}^{10\times 5}$')
+
+    fig.legend(ncol=3, loc='upper center', bbox_to_anchor=(0.5, 0.11))
+    # plt.suptitle(r'NUM example, $R \in { \bf R}^{10\times 5}$')
+    plt.suptitle(r'Network utility maximization')
     plt.tight_layout()
 
+    axes = [ax0, ax1, ax2]
+    for ax in axes:
+        print(ax.get_position())
+        pos = ax.get_position()
+        new_pos = [pos.x0, pos.y0+.05, pos.width, pos.height]
+        ax.set_position(new_pos)
+
     print(samp_cs_resids, samp_ws_resids, samp_heur_resids)
-    plt.show()
-    # plt.savefig('plots/NUM.pdf')
+    # plt.show()
+    plt.savefig('plots/NUM.pdf')
 
 
 def samples_to_max(samples_df):

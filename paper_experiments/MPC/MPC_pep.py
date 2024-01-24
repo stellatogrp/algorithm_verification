@@ -144,9 +144,9 @@ def MPC_pep(car, r, K):
     return pepit_tau
 
 
-def MPC_samp_pep(outf, K_max=7, eps=1e-2):
+def MPC_samp_pep(outf, K_max=7, eps=1e-3):
     T = 5
-    N = 100
+    N = 10000
     # N = 5
 
     np.random.seed(2)

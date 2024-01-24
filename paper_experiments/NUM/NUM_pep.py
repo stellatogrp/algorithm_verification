@@ -5,8 +5,9 @@ from NUM_class import NUM
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
+from PEPit.functions import ConvexFunction, ConvexLipschitzFunction
 from PEPit.primitive_steps import proximal_step
+from tqdm import tqdm
 
 
 def run_DR_single(M, q, z0, Pi, K):
@@ -51,7 +52,7 @@ def c_to_xopt(instance, c_vals):
     m, n = A.shape
     w = instance.w
 
-    for c in c_vals:
+    for c in tqdm(c_vals, desc='getting xopt'):
         f = cp.Variable(n)
         rhs = np.hstack([c.reshape(-1, ), np.zeros(n), instance.t])
         obj = cp.Minimize(w @ f)
@@ -82,13 +83,13 @@ def c_to_DR(instance, c_vals, z_ws, z_heur, K=5):
     # print(x, Pi(x))
 
     out_series = []
-    for i, c in enumerate(c_vals):
+    for i, c in tqdm(enumerate(c_vals)):
         q = np.hstack([w, c.reshape(-1, ), np.zeros(n), instance.t])
         out_cs, out_ws, out_heur = run_DR_cs_ws_heur(M, q, z_ws, z_heur, Pi, K_max=K)
-        print('--')
-        print(out_cs)
-        print(out_ws)
-        print(out_heur)
+        # print('--')
+        # print(out_cs)
+        # print(out_ws)
+        # print(out_heur)
 
         for K_val in range(K):
             cs_res = out_cs[K_val]
@@ -105,34 +106,9 @@ def c_to_DR(instance, c_vals, z_ws, z_heur, K=5):
 def DR_pep(K, r, L=1, alpha=1, theta=1):
     problem = PEP()
 
-    # func1 = problem.declare_function(SmoothConvexFunction, L=L)
-    # func1 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=.1)
-    # func2 = problem.declare_function(ConvexFunction)
-    # func = func1 + func2
-
-    # zs = func.stationary_point()
-    # # ws = func.stationary_point()
-
-    # z0 = problem.set_initial_point()
-    # w0 = problem.set_initial_point()
-
-    # z = [z0 for _ in range(K + 1)]
-    # w = [w0 for _ in range(K)]
-
-    # for i in range(K):
-    #     w[i], _, _ = proximal_step(z[i], func1, alpha)
-    #     y, _, _ = proximal_step(2 * w[i] - z[i], func2, alpha)
-    #     z[i + 1] = z[i] + theta * (y - w[i])
-
-    # problem.set_initial_condition((z[0] - zs) ** 2 <= r ** 2)
-    # problem.set_initial_condition(w0 ** 2 <= 0)
-
-    # problem.set_performance_metric((z[-1] - z[-2]) ** 2)
-
-    # pepit_tau = problem.solve(verbose=1)
-
     func1 = problem.declare_function(ConvexFunction)
-    func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=0)
+    func2 = problem.declare_function(ConvexLipschitzFunction, M=L)
+    # func2 = problem.declare_function(ConvexFunction)
     # Define the function to optimize as the sum of func1 and func2
     func = func1 + func2
 
@@ -145,18 +121,31 @@ def DR_pep(K, r, L=1, alpha=1, theta=1):
 
     # Compute n steps of the Douglas-Rachford splitting starting from x0
     x = [x0 for _ in range(K)]
+    y = [x0 for _ in range(K + 1)]
     w = [x0 for _ in range(K + 1)]
     for i in range(K):
         x[i], _, _ = proximal_step(w[i], func2, alpha)
-        y, _, fy = proximal_step(2 * x[i] - w[i], func1, alpha)
-        w[i + 1] = w[i] + theta * (y - x[i])
+        y[i + 1], _, _ = proximal_step(2 * x[i] - w[i], func1, alpha)
+        w[i + 1] = w[i] + theta * (y[i + 1] - x[i])
 
     # Set the initial constraint that is the distance between x0 and xs = x_*
     problem.set_initial_condition((x[0] - xs) ** 2 <= r ** 2)
+    # problem.set_initial_condition((w[0] - xs) ** 2 <= r ** 2)
+    # problem.set_initial_condition((y[0] - xs) ** 2 <= r ** 2)
 
     # Set the performance metric to the final distance to the optimum in function values
     # problem.set_performance_metric((func2(y) + fy) - fs)
-    problem.set_performance_metric((w[-1] - w[-2]) ** 2)
+    # problem.set_performance_metric((w[-1] - w[-2]) ** 2)
+
+    if K == 1:
+        problem.set_performance_metric((x[-1] - x0) ** 2 + (y[-1] - x0) ** 2)
+    else:
+        problem.set_performance_metric((x[-1] - x[-2]) ** 2 + (y[-1] - y[-2]) ** 2)
+
+    # if K == 1:
+    #     problem.set_performance_metric((x[-1] - x0) ** 2 + (w[-1] - w[-2]) ** 2)
+    # else:
+    #     problem.set_performance_metric((x[-1] - x[-2]) ** 2 + (w[-1] - w[-2]) ** 2)
 
     pepit_tau = problem.solve(verbose=1)
     return pepit_tau
@@ -164,11 +153,15 @@ def DR_pep(K, r, L=1, alpha=1, theta=1):
 
 def r_to_pep(instance, r_cs, r_ws, r_heur, K=5):
     M = instance.M
-    MpI = M + np.eye(M.shape[0])
-    eigs = np.linalg.eigvals(MpI)
-    print(r_cs, r_ws)
+    M + np.eye(M.shape[0])
+    eigs = np.linalg.eigvals(M)
+    # eigs = np.linalg.eigvals((M + M.T) / 2)
+    print(np.real(eigs))
+    print(r_cs, r_ws, r_heur)
     # print(eigs)
     L = np.max(np.abs(eigs))
+    print('L:', L)
+    # exit(0)
 
     out_series = []
     for K_val in range(1, K+1):
@@ -213,7 +206,7 @@ def main():
     instance = NUM(m, n, c_c, c_r=c_r, seed=seed)
     # print(instance.test_cp_prob())
 
-    N = 100
+    N = 10000
     np.random.seed(0)
     sample_and_run(instance, c_c, c_r, N)
 

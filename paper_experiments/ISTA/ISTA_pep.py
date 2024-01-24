@@ -7,6 +7,7 @@ from ISTA_class import ISTA
 from PEPit import PEP
 from PEPit.functions import ConvexLipschitzFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps import proximal_step
+from tqdm import tqdm
 
 
 def sample_l2ball(c, r, N):
@@ -25,7 +26,7 @@ def b_to_xopt(instance, b_vals):
     A = instance.A
     lambd = instance.lambd
 
-    for b in b_vals:
+    for b in tqdm(b_vals, desc='getting xopt'):
         x = cp.Variable(A.shape[1])
         obj = cp.Minimize(.5 * cp.sum_squares(A @ x - b.reshape(-1, )) + lambd * cp.sum(cp.abs(x)))
         prob = cp.Problem(obj, [])
@@ -92,7 +93,7 @@ def FISTA_solve(instance, zk, b, K, t=.01):
 def b_to_ISTA(instance, b_vals, ztest, K=7, t=.01):
 
     out_series = []
-    for i, b in enumerate(b_vals):
+    for i, b in tqdm(enumerate(b_vals)):
         # print('ista:', ISTA_solve(instance, ztest, b, K))
         # print('fista:', FISTA_solve(instance, ztest, b, K))
 
@@ -217,7 +218,7 @@ def main():
     t = .04
     seed = 3
     K = 7
-    N = 100
+    N = 10000
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
     # ztest = instance.test_cp_prob()

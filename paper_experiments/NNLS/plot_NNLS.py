@@ -5,7 +5,7 @@ import pandas as pd
 # Set up plot style
 plt.rcParams.update({
     "text.usetex": True,
-    # "font.family": "sans-serif",
+    "font.family": "serif",
     # "font.sans-serif": ["Helvetica Neue"],
     "font.size": 20,
     "figure.figsize": (9, 6)})
@@ -107,7 +107,8 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=10):
     # ax.tick_params(axis='x', color='r', labelcolor='r')
     # ax.get_xaxis().set_visible(False)
     plt.title(f'$K={K_des}$')
-    plt.axvline(x=t_vals[3], color='black', linestyle='dashed', label='theory optimal')
+    # plt.axvline(x=t_vals[3], color='black', linestyle='dashed', label='theory optimal')
+    plt.axvline(x=t_vals[1], color='black', linestyle='dashed', label='best PEP bound')
     plt.axvline(x=t_vals[2], color='black', linestyle='solid', label='best empirical performance')
 
     # max_sample_resid_df = samples_to_max(samples_df, K_des=K_des)
@@ -118,9 +119,9 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=10):
     # plt.gca().yaxis.set_major_formatter(mticker.ScalarFormatter())
     # plt.gca().yaxis.set_minor_formatter(mticker.ScalarFormatter())
     fig.tight_layout()
-    # plt.show()
+    plt.show()
 
-    plt.savefig(f'plots/K{K_des}_comparison_with_pep.pdf')
+    # plt.savefig(f'plots/K{K_des}_comparison_with_pep.pdf')
 
 
 def main():
@@ -132,8 +133,8 @@ def main():
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
     # plot_sdp(sdp_df, t_keep)
-    plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=10)
-    # plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep)
+    # plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=7)
+    plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4)
 
 
 if __name__ == '__main__':
