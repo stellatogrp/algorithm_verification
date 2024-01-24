@@ -55,13 +55,15 @@ def plot_resids(sdp_df, samp_pep_df, K_max=6, single_plot=False):
 
         ax0.plot(K_vals, rhoconst_resids[:K_max], marker=sdp_m, color=sdp_color, label='SDP')
         ax0.plot(K_vals, const_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
-        ax0.plot(K_vals, samp_const_resids[:K_max], marker=samp_m, color=samp_color, label='Samples')
+        ax0.plot(K_vals, samp_const_resids[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
+        ax0.set_xticks(K_vals)
         ax0.set_title(r'Scalar $\rho$')
 
         ax1.plot(K_vals, rhoadj_resids[:K_max], marker=sdp_m, color=sdp_color)
         # ax1.plot(K_vals, fista_pep[:K_max], marker=pep_m, color=pep_color)
         ax1.plot(K_vals, samp_adj_resids[:K_max], marker=samp_m, color=samp_color)
         ax1.set_title(r'Diagonal $\rho$')
+        ax1.set_xticks(K_vals)
 
         fig.legend(ncol=3, loc='upper center', bbox_to_anchor=(0.5, 0.11))
         plt.suptitle(r'Model predictive control')

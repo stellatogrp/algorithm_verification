@@ -62,11 +62,13 @@ def plot_resids(sdp_df, samples_df, pep_df):
     ax0.plot(K_vals, sdp_cs, marker=sdp_m, color=sdp_color)
     ax0.plot(K_vals, pep_cs_tau, marker=pep_m, color=pep_color)
     ax0.plot(K_vals, samp_cs_resids, marker=samp_m, color=samp_color)
+    ax0.set_xticks(K_vals)
     ax0.set_title('Cold Start')
 
     ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='SDP')
     ax1.plot(K_vals, pep_ws_tau, marker=pep_m, color=pep_color, label='PEP')
-    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Samples')
+    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Sample Max')
+    ax1.set_xticks(K_vals)
     ax1.set_title('Warm Start')
 
     ax2.set_title('Heuristic Start')
@@ -77,6 +79,7 @@ def plot_resids(sdp_df, samples_df, pep_df):
     ax2.plot(K_vals, sdp_heur, marker=sdp_m, color=sdp_color)
     ax2.plot(K_vals, pep_heur_tau, marker=pep_m, color=pep_color)
     ax2.plot(K_vals, samp_heur_resids, marker=samp_m, color=samp_color)
+    ax2.set_xticks(K_vals)
 
     # ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
     # ax.set_ylim([None, 10])

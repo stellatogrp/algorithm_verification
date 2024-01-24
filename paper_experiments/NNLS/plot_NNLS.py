@@ -18,8 +18,9 @@ def plot_sdp(sdp_df, t_keep, opt=3):
 
     fig, ax = plt.subplots(1, 1)
     ax.set_xlabel('$K$')
-    ax.set_ylabel('Max SDP objective')
+    ax.set_ylabel('Worst case SDP fixed-point residual')
     ax.set_yscale('log')
+    ax.set_title('NNLS, Fixed Stepsizes')
 
     markers = ['.',',','o','v','^','<','>']
 
@@ -38,9 +39,10 @@ def plot_sdp(sdp_df, t_keep, opt=3):
         ax.plot(K_vals, df_t['sdp_objval'], label=t_label, marker=markers[i])
 
     ax.legend()
+    ax.set_xticks(K_vals)
     fig.tight_layout()
     # plt.show()
-    plt.savefig('plots/sdp_obj_all_K.pdf')
+    plt.savefig('plots/NNLS_sdp_obj_all_K.pdf')
 
 
 def samples_to_max(samples_df, K_des=6):
@@ -88,11 +90,12 @@ def plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     plt.savefig(f'plots/K{K_des}_comparison.pdf')
 
 
-def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=10):
+def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     t_vals = sdp_df['t'].unique()
     sdp_dfK = sdp_df[sdp_df['K'] == K_des]
-    samples_df[samples_df['K'] == K_des]
+    samples_dfK = samples_df[samples_df['K'] == K_des]
     pep_dfK = pep_df[pep_df['K'] == K_des]
+
 
     fig, ax = plt.subplots(1, 1)
     ax.set_xlabel('$t$')
@@ -100,41 +103,46 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=10):
     # ax.set_xscale('log')
     ax.set_yscale('log')
 
-    markers = ['o','v','^','<','>']
-    ax.plot(np.array(t_vals)[t_keep], np.array(sdp_dfK['sdp_objval'])[t_keep], label='SDP', marker=markers[0])
-    ax.plot(np.array(t_vals)[t_keep], np.array(pep_dfK['tau'])[t_keep], label='PEP', color='green', marker='^')
+    # markers = ['o','v','^','<','>']
+    ax.plot(np.array(t_vals)[t_keep], np.array(sdp_dfK['sdp_objval'])[t_keep], label='SDP', color='b', marker='<')
+    ax.plot(np.array(t_vals)[t_keep], np.array(pep_dfK['tau'])[t_keep], label='PEP', color='g', marker='o')
+    ax.plot(np.array(t_vals)[t_keep], np.array(samples_dfK['resid'])[t_keep], label='Sample Max', color='r', marker='x')
     # ax.plot(t_vals, )
     # ax.tick_params(axis='x', color='r', labelcolor='r')
     # ax.get_xaxis().set_visible(False)
     plt.title(f'$K={K_des}$')
     # plt.axvline(x=t_vals[3], color='black', linestyle='dashed', label='theory optimal')
-    plt.axvline(x=t_vals[1], color='black', linestyle='dashed', label='best PEP bound')
-    plt.axvline(x=t_vals[2], color='black', linestyle='solid', label='best empirical performance')
+    plt.axvline(x=t_vals[1], color='black', linestyle='dashed', label='Best PEP bound')
+    plt.axvline(x=t_vals[2], color='black', linestyle='solid', label='Best SDP/Sample bound')
 
     # max_sample_resid_df = samples_to_max(samples_df, K_des=K_des)
     # ax.plot(np.array(t_vals)[t_keep], np.array(max_sample_resid_df['resid'])[t_keep],
     #         label='empirical sample max', marker=markers[1])
-    ax.legend()
+    # ax.legend()
     # plt.ticklabel_format(style='plain', axis='y')
     # plt.gca().yaxis.set_major_formatter(mticker.ScalarFormatter())
     # plt.gca().yaxis.set_minor_formatter(mticker.ScalarFormatter())
-    fig.tight_layout()
-    plt.show()
 
-    # plt.savefig(f'plots/K{K_des}_comparison_with_pep.pdf')
+    # ax.legend(loc='center right', bbox_to_anchor=(1, 0.5))
+    ax.legend(fontsize='16')
+    fig.tight_layout()
+    # plt.show()
+
+    plt.savefig(f'plots/K{K_des}_comparison_with_pep.pdf')
 
 
 def main():
     # sdp_df = pd.read_csv('data/sdp_data.csv')
     # sdp_df = pd.read_csv('data/NNLS_spread_t.csv')
     sdp_df = pd.read_csv('data/NNLS_spreadt_halfc.csv')
-    samples_df = pd.read_csv('data/sample_data.csv')
+    pd.read_csv('data/sample_data.csv')
+    samples_max_df = pd.read_csv('data/sample_max.csv')
     pep_df = pd.read_csv('data/pep_data.csv')
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
-    # plot_sdp(sdp_df, t_keep)
+    plot_sdp(sdp_df, t_keep)
     # plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=7)
-    plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4)
+    plot_sdp_single_t_pep(sdp_df, samples_max_df, pep_df, t_keep, K_des=4)
 
 
 if __name__ == '__main__':

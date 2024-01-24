@@ -74,12 +74,16 @@ def main():
     # in_files = ['NNLS/data/NNLS_papertab_raw.csv']
     # out_files = ['NNLS/data/roundtest.csv']
     in_files = [
+        'NNLS/data/NNLS_papertab_raw.csv',
+        'silver/data/silver_papertab_raw.csv',
         'ISTA/data/ISTA_papertab_raw.csv',
         'NUM/data/NUM_papertab_raw.csv',
         'MPC/data/MPC_papertab_raw.csv',
         'ISTA/data/ISTA_glob_papertab.csv',
     ]
     out_files = [
+        'NNLS/data/NNLS_roundsci.csv',
+        'silver/data/silver_roundsci.csv',
         'ISTA/data/Lasso_roundsci.csv',
         'NUM/data/NUM_roundsci.csv',
         'MPC/data/MPC_roundsci.csv',
