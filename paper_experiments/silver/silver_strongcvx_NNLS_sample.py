@@ -54,7 +54,7 @@ def single_NNLS_conv_resids(K_max, t_list, A, b):
     return conv_resids
 
 
-def all_conv_resids(K_max, t_vals, t_opt, silvers, A, b_samples):
+def all_conv_resids(K_max, t_vals, t_opt, silvers, mu_silvers, A, b_samples):
     # out_res = []
     # for i, b_samp in enumerate(b_samples):
     #     for t in t_vals:
@@ -71,6 +71,7 @@ def all_conv_resids(K_max, t_vals, t_opt, silvers, A, b_samples):
     for i, b_samp in enumerate(b_samples):
         topt_conv_resids = single_NNLS_conv_resids(K_max, [t_opt] * K_max, A, b_samp)
         silver_conv_resids = single_NNLS_conv_resids(K_max, silvers, A, b_samp)
+        mu_silver_conv_resids = single_NNLS_conv_resids(K_max, mu_silvers, A, b_samp)
         for l in range(len(topt_conv_resids)):
             # first t opt
             # out_dict = dict(sample_num=i+1, K=l+1, sched='t_opt', resid=topt_conv_resids[l])
@@ -78,6 +79,8 @@ def all_conv_resids(K_max, t_vals, t_opt, silvers, A, b_samples):
 
             # then silver
             out_dict = dict(sample_num=i+1, K=l+1, sched='silver', resid=silver_conv_resids[l])
+            out_res.append(pd.Series(out_dict))
+            out_dict = dict(sample_num=i+1, K=l+1, sched='mu_silver', resid=mu_silver_conv_resids[l])
             out_res.append(pd.Series(out_dict))
 
     out_df = pd.DataFrame(out_res)
@@ -146,7 +149,7 @@ def all_pep_runs_tfixed(t_vals, mu, L, r, K_max):
     # out_df.to_csv('data/strongcvx/pep_tfixed_m15n8.csv', index=False)
 
 
-def all_pep_runs_topt_silver(t_opt, silvers, mu, L, r, K_max):
+def all_pep_runs_topt_silver(t_opt, silvers, mu_silvers, mu, L, r, K_max):
     out_res = []
     for K in range(1, K_max + 1):
         # first t_opt
@@ -158,6 +161,10 @@ def all_pep_runs_topt_silver(t_opt, silvers, mu, L, r, K_max):
         # then silvers
         tau = single_pep_sample(silvers, mu, L, r, K)
         out_dict = dict(sched='silver', K=K, tau=tau)
+        out_res.append(pd.Series(out_dict))
+
+        tau = single_pep_sample(mu_silvers, mu, L, r, K)
+        out_dict = dict(sched='mu_silver', K=K, tau=tau)
         out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
     print(out_df)
@@ -216,12 +223,16 @@ def main():
     K_max = 10
     t_opt = 0.015
 
-    silvers = compute_silver_steps(instance.kappa, 2 ** int(np.ceil(np.log2(K_max))))
-    silvers /= L
-    silvers = list(silvers)[:K_max]
+    mu_silvers = compute_silver_steps(instance.kappa, 2 ** int(np.ceil(np.log2(K_max))))
+    mu_silvers /= L
+    mu_silvers = list(mu_silvers)[:K_max]
 
-    all_pep_runs_topt_silver(t_opt, silvers, mu, L, max_r, K_max)
-    all_conv_resids(K_max, t_vals, t_opt, silvers, A, b_samples)
+    silvers = instance.get_silver_steps(K_max)  # already divided by L
+
+    print(silvers, mu_silvers)
+
+    all_pep_runs_topt_silver(t_opt, silvers, mu_silvers, mu, L, max_r, K_max)
+    all_conv_resids(K_max, t_vals, t_opt, silvers, mu_silvers, A, b_samples)
 
 
 if __name__ == '__main__':
