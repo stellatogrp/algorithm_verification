@@ -55,17 +55,17 @@ def single_NNLS_conv_resids(K_max, t_list, A, b):
 
 
 def all_conv_resids(K_max, t_vals, t_opt, silvers, A, b_samples):
-    out_res = []
-    for i, b_samp in enumerate(b_samples):
-        for t in t_vals:
-            conv_resids = single_NNLS_conv_resids(K_max, [t] * K_max, A, b_samp)
-            print(conv_resids)
-            for l in range(len(conv_resids)):
-                out_dict = dict(sample_num=i+1, K=l+1, t=t, resid=conv_resids[l])
-                out_res.append(pd.Series(out_dict))
-    out_df = pd.DataFrame(out_res)
-    print(out_df)
-    out_df.to_csv('data/strongcvx/sample_tfixed_m15n8.csv', index=False)
+    # out_res = []
+    # for i, b_samp in enumerate(b_samples):
+    #     for t in t_vals:
+    #         conv_resids = single_NNLS_conv_resids(K_max, [t] * K_max, A, b_samp)
+    #         print(conv_resids)
+    #         for l in range(len(conv_resids)):
+    #             out_dict = dict(sample_num=i+1, K=l+1, t=t, resid=conv_resids[l])
+    #             out_res.append(pd.Series(out_dict))
+    # out_df = pd.DataFrame(out_res)
+    # print(out_df)
+    # out_df.to_csv('data/strongcvx/sample_tfixed_m15n8.csv', index=False)
 
     out_res = []
     for i, b_samp in enumerate(b_samples):
@@ -73,15 +73,16 @@ def all_conv_resids(K_max, t_vals, t_opt, silvers, A, b_samples):
         silver_conv_resids = single_NNLS_conv_resids(K_max, silvers, A, b_samp)
         for l in range(len(topt_conv_resids)):
             # first t opt
-            out_dict = dict(sample_num=i+1, K=l+1, sched='t_opt', resid=topt_conv_resids[l])
-            out_res.append(pd.Series(out_dict))
+            # out_dict = dict(sample_num=i+1, K=l+1, sched='t_opt', resid=topt_conv_resids[l])
+            # out_res.append(pd.Series(out_dict))
 
             # then silver
             out_dict = dict(sample_num=i+1, K=l+1, sched='silver', resid=silver_conv_resids[l])
             out_res.append(pd.Series(out_dict))
 
     out_df = pd.DataFrame(out_res)
-    out_df.to_csv('data/strongcvx/sample_silver_m15n8.csv', index=False)
+    # out_df.to_csv('data/strongcvx/sample_silver_m15n8.csv', index=False)
+    out_df.to_csv('data/sample_data.csv', index=False)
 
 
 def single_pep_sample(t_list, mu, L, r, K):
@@ -142,17 +143,17 @@ def all_pep_runs_tfixed(t_vals, mu, L, r, K_max):
             out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    out_df.to_csv('data/strongcvx/pep_tfixed_m15n8.csv', index=False)
+    # out_df.to_csv('data/strongcvx/pep_tfixed_m15n8.csv', index=False)
 
 
 def all_pep_runs_topt_silver(t_opt, silvers, mu, L, r, K_max):
     out_res = []
     for K in range(1, K_max + 1):
         # first t_opt
-        tau = single_pep_sample([t_opt] * K_max, mu, L, r, K)
-        # tau = single_pep_sample(silvers, mu, L, r, K)
-        out_dict = dict(sched='t_opt', K=K, tau=tau)
-        out_res.append(pd.Series(out_dict))
+        # tau = single_pep_sample([t_opt] * K_max, mu, L, r, K)
+        # # tau = single_pep_sample(silvers, mu, L, r, K)
+        # out_dict = dict(sched='t_opt', K=K, tau=tau)
+        # out_res.append(pd.Series(out_dict))
 
         # then silvers
         tau = single_pep_sample(silvers, mu, L, r, K)
@@ -160,23 +161,40 @@ def all_pep_runs_topt_silver(t_opt, silvers, mu, L, r, K_max):
         out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    out_df.to_csv('data/strongcvx/pep_silver_m15n8.csv', index=False)
+    # out_df.to_csv('data/strongcvx/pep_silver_m15n8.csv', index=False)
+    out_df.to_csv('data/pep_data.csv', index=False)
 
 
 def main():
     # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     # outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
 
-    m, n = 15, 8
-    bc_mul = 10
-    b_c = bc_mul * np.ones((m, 1))
-    b_r = 0.5
-    K_max = 8
-    seed = 5
+    # m, n = 15, 8
+    # bc_mul = 10
+    # b_c = bc_mul * np.ones((m, 1))
+    # b_r = 0.5
+    # K_max = 8
+    # seed = 5
 
-    instance = NNLS(m, n, b_c, b_r, seed=seed)
-    print(instance.L, instance.mu, instance.kappa)
-    N = 50
+    # instance = NNLS(m, n, b_c, b_r, seed=seed)
+    # print(instance.L, instance.mu, instance.kappa)
+    # N = 50
+
+    m, n = 60, 40
+    b_cmul = 30
+    b_c = b_cmul * np.ones((m, 1))
+    b_c[30:] = 0
+    b_r = 0.5
+    # K = 5
+    # K_vals = [1, 2, 3, 4, 6]
+    # K_vals = [1]
+    N = 10000
+
+    instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
+    print(instance.mu, instance.L, instance.kappa)
+    print(instance.A)
+
+    # exit(0)
 
     mu = instance.mu
     L = instance.L
@@ -192,9 +210,11 @@ def main():
     max_x = max(x_opt, key=lambda x: np.linalg.norm(x))
     print(np.linalg.norm(max_x))
     max_r = np.linalg.norm(max_x)
-    all_pep_runs_tfixed(t_vals, mu, L, max_r, K_max)
+    # all_pep_runs_tfixed(t_vals, mu, L, max_r, K_max)
 
-    t_opt = instance.get_t_opt()
+    # t_opt = instance.get_t_opt()
+    K_max = 10
+    t_opt = 0.015
 
     silvers = compute_silver_steps(instance.kappa, 2 ** int(np.ceil(np.log2(K_max))))
     silvers /= L

@@ -3,8 +3,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem-per-cpu=6G
-#SBATCH --time=10:00:00
+#SBATCH --mem-per-cpu=5G
+#SBATCH --time=08:00:00
 #SBATCH -o /home/vranjan/algorithm-certification/paper_experiments/NNLS/data/NNLS_%A.txt
 #SBATCH --mail-type=BEGIN,END,FAIL,TIME_LIMIT
 #SBATCH --mail-user=vranjan@princeton.edu

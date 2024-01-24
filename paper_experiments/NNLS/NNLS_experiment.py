@@ -37,9 +37,9 @@ def main():
     # K = 5
     # K_vals = [9]
     # K_vals = [10]
-    K_vals = [7, 8]
+    # K_vals = [7, 8]
     # K_vals = [1, 2, 3, 4, 5, 6]
-    K_vals = [1]
+    K_vals = [5, 6]
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
     print(instance.mu, instance.L, instance.kappa)
@@ -52,7 +52,7 @@ def main():
     # exit(0)
     t_vals = np.array(instance.grid_t_vals())
     print('t_values:', t_vals)
-    t_vals = t_vals[3:4]
+    # t_vals = t_vals[3:4]
     # exit(0)
 
     out_res = []
@@ -76,7 +76,7 @@ def main():
             out_res.append(pd.Series(out))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            # out_df.to_csv(outf, index=False)
+            out_df.to_csv(outf, index=False)
 
 
 if __name__ == '__main__':

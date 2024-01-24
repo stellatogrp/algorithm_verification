@@ -4,6 +4,7 @@ import cvxpy as cp
 import numpy as np
 import pandas as pd
 from NNLS_class import NNLS
+from tqdm import tqdm
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
@@ -68,10 +69,10 @@ def single_NNLS_conv_resids(K_max, t, A, b):
 
 def all_conv_resids(K_max, t_vals, A, b_samples):
     out_res = []
-    for i, b_samp in enumerate(b_samples):
+    for i, b_samp in tqdm(enumerate(b_samples)):
         for t in t_vals:
             conv_resids = single_NNLS_conv_resids(K_max, t, A, b_samp)
-            print(conv_resids)
+            # print(conv_resids)
             for l in range(len(conv_resids)):
                 out_dict = dict(sample_num=i+1, K=l+1, t=t, resid=conv_resids[l])
                 out_res.append(pd.Series(out_dict))
@@ -81,7 +82,7 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
     # out_df.to_csv('data/sample_data.csv', index=False)
 
 
-def single_pep_sample(t, mu, L, r, K, test_opt_dist = True):
+def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
     verbose=2
     problem = PEP()
     print(mu, L)
@@ -166,11 +167,13 @@ def main():
     # K = 5
     # K_vals = [1, 2, 3, 4, 6]
     # K_vals = [1]
-    N = 500
+    N = 100
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
     print(instance.mu, instance.L, instance.kappa)
     print(instance.A)
+
+    # exit(0)
 
     A = instance.A
 
