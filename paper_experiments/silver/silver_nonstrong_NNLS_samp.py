@@ -6,7 +6,7 @@ from NNLS import NNLS
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, SmoothConvexFunction
+from PEPit.functions import ConvexFunction, SmoothConvexFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps import proximal_step
 from silver_strongcvx_NNLS_sample import generate_samples, single_NNLS_conv_resids, x_opt_vals
 
@@ -37,6 +37,7 @@ def single_pep(t_list, L, r, K):
     print(L)
     func1 = problem.declare_function(ConvexFunction)
     func2 = problem.declare_function(SmoothConvexFunction, L=L)
+    # func2 = problem.declare_function(SmoothStronglyConvexFunction, mu=1, L=L)
 
     func = func1 + func2
 
@@ -91,7 +92,7 @@ def main():
     # b_r = .5
     b_r = 0.5
     seed = 1
-    N = 100
+    N = 10000
     K_max = 7
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=0, seed=seed)
