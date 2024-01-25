@@ -100,7 +100,12 @@ def c_to_DR(instance, c_vals, z_ws, z_heur, K=5):
             out_dict_heur = dict(type='heur', sample_num=(i + 1), K=(K_val + 1), res=heur_res)
             out_series += [pd.Series(out_dict_cs), pd.Series(out_dict_ws), pd.Series(out_dict_heur)]
     out_df = pd.DataFrame(out_series)
-    out_df.to_csv('data/num_sample.csv', index=False)
+    out_df.to_csv('data/new_num_sample.csv', index=False)
+
+    out_max = out_df.groupby(['type', 'K']).max()
+    # print(df.groupby(['t', 'K']).max())
+    out_max.reset_index().to_csv('data/new_num_sampmax.csv', index=False)
+
 
 
 def DR_pep(K, r, L=1, alpha=1, theta=1):
@@ -175,7 +180,7 @@ def r_to_pep(instance, r_cs, r_ws, r_heur, K=5):
         out_series += [pd.Series(cs_outdict), pd.Series(ws_outdict), pd.Series(heur_outdict)]
     out_df = pd.DataFrame(out_series)
     print(out_df)
-    out_df.to_csv('data/num_pep.csv', index=False)
+    out_df.to_csv('data/new_num_pep.csv', index=False)
 
 
 def sample_and_run(instance, c_c, c_r, N, K=5):
@@ -201,7 +206,7 @@ def main():
     m, n = 10, 5
     c_c = 10 * np.ones((m, 1))
     c_r = .5
-    seed = 0
+    seed = 1
 
     instance = NUM(m, n, c_c, c_r=c_r, seed=seed)
     # print(instance.test_cp_prob())

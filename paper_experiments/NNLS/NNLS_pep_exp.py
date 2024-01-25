@@ -147,7 +147,7 @@ def all_pep_runs(t_vals, mu, L, r, K_max):
             out_res.append(pd.Series(out_dict))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            # out_df.to_csv('data/pep_data.csv', index=False)
+            out_df.to_csv('data/pep_data.csv', index=False)
 
 
 def main():

@@ -1,0 +1,2 @@
+sdp_objval,sdp_solvetime,num_cones,problem_dim,x_dim,num_Aeq,num_Au,num_Al,mosek_tol,sdp_canontime,orig_m,orig_n,z_dim,c_mul,K,init_type,seed
+1.6450376110961713,10861.369043185143,78,436,95266,38221,17,189760,1e-07,434.9409875869751,10,5,25,10,5,ws,1
