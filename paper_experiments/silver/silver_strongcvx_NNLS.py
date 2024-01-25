@@ -244,6 +244,7 @@ def silver_vs_opt():
 
     # silver_vs_opt_sdp(m, n, bc_mul, b_r, instance, K_max, seed)
     double_silver_experiments()
+    # silver_nonstrong_cvx_only()
 
 
 def main():
