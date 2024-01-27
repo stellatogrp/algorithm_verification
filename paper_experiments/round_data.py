@@ -4,8 +4,10 @@ import pandas as pd
 
 def round_dfs(in_files, out_files):
     skip_cols = [0, 1]
-    middle_cols = [2, 3, 4, 5]
-    percent_cols = [6, 7]
+    middle_cols = [2, 3, 4, 5, 6, 7]
+    # middle_cols = [2, 3, 4, 5]
+    # percent_cols = [6, 7]
+    percent_cols = []
 
     def sigfigs_to_latex(input_str):
         print(input_str)
@@ -43,16 +45,19 @@ def round_dfs(in_files, out_files):
         if 'glob' in in_f:
             skip_cols = [0, 1]
             middle_cols = [2, 3, 4, 5]
-            percent_cols = []
+        elif 'silver' in in_f:
+            skip_cols = [0, 2]
+            middle_cols = [1, 3, 4, 5, 6, 7, 8]
         else:
             skip_cols = [0, 1]
-            middle_cols = [2, 3, 4, 5]
-            percent_cols = [6, 7]
+            middle_cols = [2, 3, 4, 5, 6, 7]
 
         new_df = pd.DataFrame()
         df = pd.read_csv(in_f)
         cols = df.columns
         print(cols)
+        len(df.columns)
+
         for col_idx in skip_cols:
             col = cols[col_idx]
             new_df[col] = df[col]
@@ -73,21 +78,38 @@ def round_dfs(in_files, out_files):
 def main():
     # in_files = ['NNLS/data/NNLS_papertab_raw.csv']
     # out_files = ['NNLS/data/roundtest.csv']
+    # in_files = [
+    #     'NNLS/data/NNLS_papertab_raw.csv',
+    #     'silver/data/silver_papertab_raw.csv',
+    #     'ISTA/data/ISTA_papertab_raw.csv',
+    #     'NUM/data/NUM_papertab_raw.csv',
+    #     'MPC/data/MPC_papertab_raw.csv',
+    #     'ISTA/data/ISTA_glob_papertab.csv',
+    # ]
+    # out_files = [
+    #     'NNLS/data/NNLS_roundsci.csv',
+    #     'silver/data/silver_roundsci.csv',
+    #     'ISTA/data/Lasso_roundsci.csv',
+    #     'NUM/data/NUM_roundsci.csv',
+    #     'MPC/data/MPC_roundsci.csv',
+    #     'ISTA/data/ISTA_glob_roundsci.csv',
+    # ]
     in_files = [
-        'NNLS/data/NNLS_papertab_raw.csv',
-        'silver/data/silver_papertab_raw.csv',
-        'ISTA/data/ISTA_papertab_raw.csv',
-        'NUM/data/NUM_papertab_raw.csv',
-        'MPC/data/MPC_papertab_raw.csv',
-        'ISTA/data/ISTA_glob_papertab.csv',
+        'NNLS/data/NNLS_paper_ratio.csv',
+        'silver/data/strongsilver_paper_ratio.csv',
+        'silver/data/nonstrongsilver_paper_ratio.csv',
+        'NUM/data/NUM_paper_ratio.csv',
+        'ISTA/data/ISTA_paper_ratio.csv',
+        'MPC/data/MPC_paper_ratio.csv',
     ]
+
     out_files = [
-        'NNLS/data/NNLS_roundsci.csv',
-        'silver/data/silver_roundsci.csv',
-        'ISTA/data/Lasso_roundsci.csv',
-        'NUM/data/NUM_roundsci.csv',
-        'MPC/data/MPC_roundsci.csv',
-        'ISTA/data/ISTA_glob_roundsci.csv',
+        'NNLS/data/NNLS_ratio_rounded.csv',
+        'silver/data/strongsilver_ratio_rounded.csv',
+        'silver/data/nonstrongsilver_ratio_rounded.csv',
+        'NUM/data/NUM_ratio_rounded.csv',
+        'ISTA/data/ISTA_ratio_rounded.csv',
+        'MPC/data/MPC_ratio_rounded.csv'
     ]
     round_dfs(in_files, out_files)
 

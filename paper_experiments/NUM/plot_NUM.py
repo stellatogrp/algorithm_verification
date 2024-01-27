@@ -65,7 +65,7 @@ def plot_resids(sdp_df, samples_df, pep_df):
     ax0.set_xticks(K_vals)
     ax0.set_title('Cold Start')
 
-    ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='SDP')
+    ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='VPSDP')
     ax1.plot(K_vals, pep_ws_tau, marker=pep_m, color=pep_color, label='PEP')
     ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Sample Max')
     ax1.set_xticks(K_vals)
@@ -136,9 +136,13 @@ def sdp_to_res(sdp_df):
 
 
 def main():
-    sdp_df = pd.read_csv('data/NUM_K1_5_highacc.csv')
-    samples_df = pd.read_csv('data/num_sample.csv')
-    pep_df = pd.read_csv('data/num_pep.csv')
+    # sdp_df = pd.read_csv('data/NUM_K1_5_highacc.csv')
+    # samples_df = pd.read_csv('data/num_sample.csv')
+    # pep_df = pd.read_csv('data/num_pep.csv')
+
+    sdp_df = pd.read_csv('data/NUM_seed0_rad04.csv')
+    samples_df = pd.read_csv('data/new_num_sample.csv')
+    pep_df = pd.read_csv('data/new_num_pep.csv')
 
     plot_resids(sdp_df, samples_df, pep_df)
 

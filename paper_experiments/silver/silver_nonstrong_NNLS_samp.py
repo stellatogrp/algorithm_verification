@@ -6,7 +6,7 @@ from NNLS import NNLS
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, SmoothConvexFunction, SmoothStronglyConvexFunction
+from PEPit.functions import ConvexFunction, SmoothConvexFunction
 from PEPit.primitive_steps import proximal_step
 from silver_strongcvx_NNLS_sample import generate_samples, single_NNLS_conv_resids, x_opt_vals
 
