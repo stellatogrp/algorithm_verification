@@ -78,7 +78,7 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
     out_df = pd.DataFrame(out_res)
     print(out_df)
     # print('NOT OVERWRITING SAMPLES DATA')
-    # out_df.to_csv('data/sample_data.csv', index=False)
+    out_df.to_csv('data/nonstrong_grid_sample_data.csv', index=False)
 
 
 def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
@@ -147,7 +147,7 @@ def all_pep_runs(t_vals, mu, L, r, K_max):
             out_res.append(pd.Series(out_dict))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            out_df.to_csv('data/pep_data.csv', index=False)
+            out_df.to_csv('data/nonstrong_grid_pep_data.csv', index=False)
 
 
 def main():
@@ -169,7 +169,7 @@ def main():
     # K_vals = [1]
     N = 10000
 
-    instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
+    instance = NNLS(m, n, b_c, b_r, ATA_mu=0, seed=1)
     print(instance.mu, instance.L, instance.kappa)
     print(instance.A)
 
@@ -198,7 +198,7 @@ def main():
     max_r = np.linalg.norm(max_x)
 
     # single_NNLS_conv_resids(10, all_t[0], A, b_samples[0])
-    # all_conv_resids(10, all_t, A, b_samples)
+    all_conv_resids(10, all_t, A, b_samples)
     all_pep_runs(all_t, mu, L, max_r, 10)
 
 

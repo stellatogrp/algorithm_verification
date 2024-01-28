@@ -322,14 +322,14 @@ class Car2D(object):
         return sol
 
     def get_CP(self, K, xinit_min, xinit_max, uinit_min, uinit_max,
-               rho_const=True, x0_min=None, x0_max=None):
+               rho_const=True, rho_scalar = 1, x0_min=None, x0_max=None):
         P, A, l1, l2, u1, u2 = self.get_QP_data()
 
         print(P.shape, A.shape)
 
         m, n = A.shape
         if rho_const:
-            rho = np.eye(m)
+            rho = rho_scalar * np.eye(m)
         else:
             # eq_idx = np.where(np.abs(u - l) <= 1e-5)
             # print(u-l)

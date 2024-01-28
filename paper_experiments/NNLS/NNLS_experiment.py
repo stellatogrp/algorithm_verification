@@ -38,10 +38,11 @@ def main():
     # K_vals = [9]
     # K_vals = [10]
     # K_vals = [7, 8]
-    # K_vals = [1, 2, 3, 4, 5, 6]
-    K_vals = [5, 6]
+    # K_vals = [1, 2, 3, 4, 5, 6, 7]
+    # K_vals = [8, 9, 10]
+    K_vals = [10]
 
-    instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)
+    instance = NNLS(m, n, b_c, b_r, ATA_mu=0, seed=1)
     print(instance.mu, instance.L, instance.kappa)
     print(instance.A)
 
@@ -50,7 +51,10 @@ def main():
     # t_vals = generate_all_t_vals(t_vals)
     # print('t_values:', t_vals)
     # exit(0)
-    t_vals = np.array(instance.grid_t_vals())
+    # t_vals = np.array(instance.grid_t_vals())
+    L = instance.L
+    # t_vals = [1/L, 1.25/L, 1.75/L, 2/L]
+    t_vals = [1/L, 1.25/L, 1.5/L, 1.75/L, 2/L]
     print('t_values:', t_vals)
     # t_vals = t_vals[3:4]
     # exit(0)
@@ -64,6 +68,8 @@ def main():
             # out = CP.solve(solver_type='GLOBAL', add_bounds=True)
             out['orig_m'] = m
             out['orig_n'] = n
+            out['mu'] = instance.mu
+            out['L'] = instance.L
             out['b_r'] = b_r
             out['b_c'] = b_cmul
             out['K'] = K

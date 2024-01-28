@@ -58,7 +58,7 @@ def shift_sol(sol, car):
     return out
 
 
-def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-3, load=True):
+def MPC_experiment(outf, K_min=1, K_max=6, eps=1e-3, load=True):
     T = 5
     N = 10000
 
@@ -107,10 +107,10 @@ def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-3, load=True):
     # ws_x_val = shift_sol(sol, car)
     # experiments = [('cs', 'rho_const'), ('cs', 'rho_adj'), ('ws', 'rho_const'), ('ws', 'rho_adj')]
     # experiments = [('cs', 'rho_const'), ('cs', 'rho_adj')]
-    experiments = [('ws', 'rho_const'), ('ws', 'rho_adj')]
+    # experiments = [('ws', 'rho_const'), ('ws', 'rho_adj')]
     # experiments = [('cs', 'rho_const')]
     # experiments = [('cs', 'rho_adj')]
-    # experiments = [('ws', 'rho_const')]
+    experiments = [('ws', 'rho_const')]
     # experiments = [('ws', 'rho_adj')]
 
     res = []
@@ -126,11 +126,14 @@ def MPC_experiment(outf, K_min=6, K_max=6, eps=1e-3, load=True):
                 # shifted_sol_list = shifted_sols
             if rho == 'rho_const':
                 rho_const = True
+                rho_scalar = 10
             else:
                 rho_const = False
 
+            print('rho_sclar:', rho_scalar)
+
             CP = car.get_CP(K, xinit_min, xinit_max, uinit_min, uinit_max, rho_const=rho_const,
-                            x0_min=x0_min, x0_max=x0_max)
+                            rho_scalar=rho_scalar, x0_min=x0_min, x0_max=x0_max)
             out = CP.solve(solver_type='SDP_CUSTOM')
             # out = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
             out['seed'] = 0

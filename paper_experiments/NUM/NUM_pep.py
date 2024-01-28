@@ -205,8 +205,8 @@ def sample_and_run(instance, c_c, c_r, N, K=5):
 def main():
     m, n = 10, 5
     c_c = 10 * np.ones((m, 1))
-    c_r = .5
-    seed = 1
+    c_r = .4
+    seed = 0
 
     instance = NUM(m, n, c_c, c_r=c_r, seed=seed)
     # print(instance.test_cp_prob())

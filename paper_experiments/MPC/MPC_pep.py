@@ -119,7 +119,6 @@ def MPC_pep(car, r, K):
     # Then define the starting point x0 of the algorithm and its function value f0
     x0 = problem.set_initial_point()
 
-    # Compute n steps of the Douglas-Rachford splitting starting from x0
     x = [x0 for _ in range(K)]
     w = [x0 for _ in range(K + 1)]
     for i in range(K):
