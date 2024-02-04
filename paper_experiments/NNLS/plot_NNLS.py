@@ -11,7 +11,7 @@ plt.rcParams.update({
     "figure.figsize": (9, 6)})
 
 
-def plot_sdp(sdp_df, t_keep, opt=3):
+def plot_sdp(sdp_df, t_keep, opt=3, outf=None):
     print(sdp_df)
     t_vals = sdp_df['t'].unique()
     print(t_vals)
@@ -20,9 +20,18 @@ def plot_sdp(sdp_df, t_keep, opt=3):
     ax.set_xlabel('$K$')
     ax.set_ylabel('Worst case VPSDP fixed-point residual')
     ax.set_yscale('log')
-    ax.set_title('NNLS, Fixed Stepsizes')
+    ax.set_title('Strongly Convex NNLS, Fixed Stepsizes')
+    incl_tstar = True
 
     markers = ['.',',','o','v','^','<','>']
+    colors = ['tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown']
+
+    if outf is not None and 'nonstrong' in outf:
+        incl_tstar = False
+        markers.pop(3)
+        colors.pop(3)
+        ax.set_title('Nonstrongly Convex NNLS, Fixed Stepsizes')
+
 
     print(t_keep)
     for i, t in enumerate(t_vals):
@@ -30,19 +39,22 @@ def plot_sdp(sdp_df, t_keep, opt=3):
             continue
         df_t = sdp_df[sdp_df['t'] == t]
         K_vals = df_t['K'].unique()
-        if i == opt:
+        if incl_tstar and i == opt:
             t_label = f'$t={t:.4f} = t^\star$'
         else:
             t_label = f'$t={t:.4f}$'
         # label = f'$t_{i+1}$'
         # print(t_label)
-        ax.plot(K_vals, df_t['sdp_objval'], label=t_label, marker=markers[i])
+        ax.plot(K_vals, df_t['sdp_objval'], label=t_label, marker=markers[i], color=colors[i])
 
     ax.legend()
     ax.set_xticks(K_vals)
     fig.tight_layout()
     # plt.show()
-    plt.savefig('plots/NNLS_sdp_obj_all_K.pdf')
+    if outf is None:
+        plt.savefig('plots/strong_NNLS_gridt.pdf')
+    else:
+        plt.savefig(outf)
 
 
 def samples_to_max(samples_df, K_des=6):
@@ -110,7 +122,7 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     # ax.plot(t_vals, )
     # ax.tick_params(axis='x', color='r', labelcolor='r')
     # ax.get_xaxis().set_visible(False)
-    plt.title(f'$K={K_des}$')
+    plt.title(f'Strongly Convex NNLS, $K={K_des}$')
     # plt.axvline(x=t_vals[3], color='black', linestyle='dashed', label='theory optimal')
     plt.axvline(x=t_vals[1], color='black', linestyle='dashed', label='Best PEP bound')
     plt.axvline(x=t_vals[2], color='black', linestyle='solid', label='Best VPSDP/Sample bound')
@@ -135,14 +147,17 @@ def main():
     # sdp_df = pd.read_csv('data/sdp_data.csv')
     # sdp_df = pd.read_csv('data/NNLS_spread_t.csv')
     sdp_df = pd.read_csv('data/NNLS_spreadt_halfc.csv')
-    pd.read_csv('data/sample_data.csv')
-    pd.read_csv('data/sample_max.csv')
-    pd.read_csv('data/pep_data.csv')
+    # sample_df = pd.read_csv('data/sample_data.csv')
+    samples_max_df = pd.read_csv('data/sample_max.csv')
+    pep_df = pd.read_csv('data/pep_data.csv')
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
-    plot_sdp(sdp_df, t_keep)
+    # plot_sdp(sdp_df, t_keep)
     # plot_sdp_single_t(sdp_df, samples_df, pep_df, t_keep, K_des=7)
-    # plot_sdp_single_t_pep(sdp_df, samples_max_df, pep_df, t_keep, K_des=4)
+    plot_sdp_single_t_pep(sdp_df, samples_max_df, pep_df, t_keep, K_des=4)
+
+    # nonstrong_sdpdf = pd.read_csv('data/nonstrong_grid_sdp.csv')
+    # plot_sdp(nonstrong_sdpdf, t_keep, outf='plots/nonstrong_NNLS_gridt.pdf')
 
 
 if __name__ == '__main__':

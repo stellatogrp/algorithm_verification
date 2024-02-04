@@ -7,7 +7,9 @@ from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
     "text.usetex": True,
-    "font.size": 16,})
+    "font.family": "serif",
+    "font.size": 16,
+})
 
 
 def solve_sdp(UQP, c, r, z0, k=1):
@@ -153,12 +155,12 @@ def experiment2():
 
     ax.scatter(*zip(q1_opt), marker='*', s=300, color='k', label=labels[0])
     ax.scatter(*zip(q2_opt), marker='s', s=300, color='k', label=labels[1])
-    ax.scatter(*zip(z0), marker='x', color='k', label=r'$z^0$')
+    ax.scatter(*zip(z0), marker='x', s=300, color='k', label=r'$z^0$')
 
     # ax.plot(*zip(*gd_out), linestyle='--', marker=marker,
     #         markerfacecolor='none', label=label)
-    ax.plot(*zip(*gd1_out), linestyle='--')
-    ax.plot(*zip(*gd2_out), linestyle='--')
+    ax.plot(*zip(*gd1_out), linestyle='--', marker=markers[0], markerfacecolor='None')
+    ax.plot(*zip(*gd2_out), linestyle='--', marker=markers[1], markerfacecolor='None')
 
     pep_r = np.max([np.linalg.norm(z0 - q1_opt), np.linalg.norm(z0 - q2_opt)])
 
@@ -186,7 +188,8 @@ def experiment2():
 
     labels = ['q1 worst case', 'q2 worst case', 'PEP']
     labels = [r'$q^\star_1$', r'$q^\star_2$', r'$\mathrm{PEP}$']
-    markers = ['<', '>', 'x']
+    markers = ['<', '>', 'o']
+    colors = ['tab:blue', 'tab:orange', 'g']
 
     plt.cla()
     plt.clf()
@@ -198,8 +201,8 @@ def experiment2():
     ax.set_ylabel('Worst case fixed point residual')
     K_vals = range(1, gd_k+1)
     # ax.set_title('NNLS SDP Relaxation')
-    for (resids, label, marker) in zip([q1_resids, q2_resids, taus], labels, markers):
-        ax.plot(K_vals, resids, label=label, marker=marker, markerfacecolor='none')
+    for (resids, label, marker, color) in zip([q1_resids, q2_resids, taus], labels, markers, colors):
+        ax.plot(K_vals, resids, label=label, marker=marker, color=color, markerfacecolor='None')
 
     plt.tight_layout()
     plt.legend()

@@ -96,6 +96,8 @@ def main():
     # ]
     in_files = [
         'NNLS/data/NNLS_paper_ratio.csv',
+        'NNLS/data/NNLS_nonstrong_raw_pt1.csv',
+        'NNLS/data/NNLS_nonstrong_raw_pt2.csv',
         'silver/data/strongsilver_paper_ratio.csv',
         'silver/data/nonstrongsilver_paper_ratio.csv',
         'NUM/data/NUM_paper_ratio.csv',
@@ -105,6 +107,8 @@ def main():
 
     out_files = [
         'NNLS/data/NNLS_ratio_rounded.csv',
+        'NNLS/data/NNLS_nonstrong_rounded_pt1.csv',
+        'NNLS/data/NNLS_nonstrong_rounded_pt2.csv',
         'silver/data/strongsilver_ratio_rounded.csv',
         'silver/data/nonstrongsilver_ratio_rounded.csv',
         'NUM/data/NUM_ratio_rounded.csv',

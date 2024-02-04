@@ -79,7 +79,7 @@ def linear_step_bound_canon(step, k, iter_to_id_map,
                             param_to_lower_bound_map, param_to_upper_bound_map):
     u = step.get_input_var()  # remember this is a list of vars
     y = step.get_output_var()
-    Dinv = step.get_lhs_matrix_inv()
+    # Dinv = step.get_lhs_matrix_inv()
 
     step_data = step.get_matrix_data(k)
     # A = step.get_rhs_matrix()
@@ -88,8 +88,11 @@ def linear_step_bound_canon(step, k, iter_to_id_map,
     A = step_data['A']
     b = step_data['b']
 
-    DinvA = Dinv @ A
-    Dinvb = (Dinv @ b).reshape((-1, 1))
+    # DinvA = Dinv @ A
+    # Dinvb = (Dinv @ b).reshape((-1, 1))
+
+    DinvA = step.solve_linear_system(A.todense())
+    Dinvb = step.solve_linear_system(b)
     u_lower = []
     u_upper = []
 
@@ -136,7 +139,7 @@ def linear_step_bound_canon(step, k, iter_to_id_map,
 
 
 def lin_bound_map(l, u, A):
-    A = A.toarray()
+    # A = A.toarray()
     (m, n) = A.shape
     l_out = np.zeros(m)
     u_out = np.zeros(m)

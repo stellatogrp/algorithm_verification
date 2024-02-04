@@ -7,7 +7,9 @@ from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
     "text.usetex": True,
-    "font.size": 16})
+    "font.family": "serif",
+    "font.size": 16,
+})
 
 
 def solve_sdp(UQP, c, r, k=1):
@@ -163,7 +165,8 @@ def experiment3():
     print(taus)
 
     labels = [r'$P_1$', r'$P_2$', r'$\mathrm{PEP}$']
-    markers = ['<', '>', 'x']
+    markers = ['<', '>', 'o']
+    colors = ['tab:blue', 'tab:orange', 'g']
 
     plt.cla()
     plt.clf()
@@ -175,8 +178,8 @@ def experiment3():
     ax.set_ylabel('Worst case fixed point residual')
     K_vals = range(1, gd_k+1)
     # ax.set_title('NNLS SDP Relaxation')
-    for (resids, label, marker) in zip([fp1_resids, fp2_resids, taus], labels, markers):
-        ax.plot(K_vals, resids, label=label, marker=marker, markerfacecolor='none')
+    for (resids, label, marker, color) in zip([fp1_resids, fp2_resids, taus], labels, markers, colors):
+        ax.plot(K_vals, resids, label=label, marker=marker, markerfacecolor='None', color=color)
 
     plt.tight_layout()
     plt.legend()

@@ -7,7 +7,9 @@ from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
     "text.usetex": True,
-    "font.size": 16,})
+    "font.family": "serif",
+    "font.size": 16,
+})
 
 
 def solve_sdp(UQP, c, r, k=1):
@@ -144,10 +146,11 @@ def experiment1():
 
     ax.scatter(*zip(x_star), marker='*', s=600, color='k')
 
-    labels = [r'$\mathrm{worst~case}$', r'$c_1$', r'$c_2$']
-    markers = ['^', '<', '>']
+    labels = [r'$\mathrm{Worst~case}$', r'$c_1$', r'$c_2$']
+    markers = ['x', '<', '>']
+    colors=['r', 'tab:blue', 'tab:orange']
     fp_resids = []
-    for (x, c, label, marker) in zip([x_wc, x1, x2], [c_wc, c1, c2], labels, markers):
+    for (x, c, label, marker, color) in zip([x_wc, x1, x2], [c_wc, c1, c2], labels, markers, colors):
         print(x, c)
         circ = plt.Circle(c, r, fill=False, color='black', linestyle='dotted')
 
@@ -157,7 +160,7 @@ def experiment1():
 
         ax.add_patch(circ)
         ax.plot(*zip(*gd_out), linestyle='--', marker=marker,
-            markerfacecolor='none', label=label)
+            markerfacecolor='None', label=label, color=color)
 
     ax.set_xlim([x_min, x_max])
     ax.set_ylim([y_min, y_max])
@@ -177,7 +180,11 @@ def experiment1():
 
     fp_resids.append(taus)
     labels.append(r'$\mathrm{PEP}$')
-    markers.append('x')
+    markers.append('o')
+    colors.append('g')
+
+    # labels.insert(0, r'$\mathrm{PEP}$')
+    # markers.insert(0, 'o')
 
     plt.cla()
     plt.clf()
@@ -192,8 +199,9 @@ def experiment1():
     ax.set_ylabel('Worst case fixed point residual')
     K_vals = range(1, gd_k+1)
     # ax.set_title('NNLS SDP Relaxation')
-    for (resids, label, marker) in zip(fp_resids, labels, markers):
-        ax.plot(K_vals, resids, label=label, marker=marker, markerfacecolor='none')
+    for (resids, label, marker, color) in zip(fp_resids, labels, markers, colors):
+        ax.plot(K_vals, resids, label=label, markerfacecolor='None',
+            marker=marker, color=color)
 
     plt.tight_layout()
     plt.legend()

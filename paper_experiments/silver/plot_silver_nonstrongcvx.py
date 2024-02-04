@@ -10,7 +10,7 @@ plt.rcParams.update({
     "figure.figsize": (9, 6)})
 
 
-def plot_resids(sdp_df, pep_df, sample_df, K_max=7):
+def plot_resids(sdp_df, pep_df, sample_df, fixed_sdp, fixed_pep, fixed_samp, K_max=7):
     silver_sdp = sdp_df[sdp_df['sched'] == 'silver']['sdp_objval']
     fixed_sdp = sdp_df[sdp_df['sched'] == 'fixed']['sdp_objval']
 
@@ -40,7 +40,7 @@ def plot_resids(sdp_df, pep_df, sample_df, K_max=7):
     ax0.plot(K_vals, silver_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
     ax0.plot(K_vals, silver_samp[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
     ax0.set_xticks(K_vals)
-    ax0.set_title('Nonstrongly Convex Silver')
+    ax0.set_title('Silver Sched.')
 
     ax1.plot(K_vals, fixed_sdp[:K_max], marker=sdp_m, color=sdp_color)
     ax1.plot(K_vals, fixed_pep[:K_max], marker=pep_m, color=pep_color)
@@ -69,7 +69,15 @@ def main():
     samples_df = pd.read_csv('data/sample_max.csv')
     pep_df = pd.read_csv('data/pep_data.csv')
 
-    plot_resids(sdp_df, pep_df, samples_df)
+    fixedt_sdp_df = pd.read_csv('../NNLS/data/nonstrong_grid_sdp.csv')
+    fixedt_samples_df = pd.read_csv('../NNLS/data/nonstrong_grid_sample_max.csv')
+    fixedt_pep_df = pd.read_csv('../NNLS/data/nonstrong_grid_pep.csv')
+
+    fixedt_sdp_df = fixedt_sdp_df[fixedt_sdp_df['t'] == 0.015]
+    fixedt_samples_df = fixedt_samples_df[fixedt_samples_df['t'] == 0.015]
+    fixedt_pep_df = fixedt_pep_df[fixedt_pep_df['t'] == 0.015]
+
+    plot_resids(sdp_df, pep_df, samples_df, fixedt_sdp_df, fixedt_pep_df, fixedt_samples_df)
 
 
 if __name__ == '__main__':
