@@ -1,0 +1,2 @@
+sdp_objval,sdp_solvetime,num_cones,x_dim,num_Aeq,Aeq_nnz,num_Au,Au_nnz,num_Al,Al_nnz,sdp_canontime,orig_m,orig_n,b_r
+16.31473113022339,0.20139393210411072,3.0,351.0,126.0,3506.0,2.0,25.0,660.0,1524.0,0.715545654296875,10.0,5.0,0.1

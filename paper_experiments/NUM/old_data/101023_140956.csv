@@ -1,0 +1,2 @@
+sdp_objval,sdp_solvetime,scs_iter,num_cones,x_dim,num_Aeq,num_Au,num_Al,A_nnz,sdp_canontime,orig_m,orig_n,z_dim,K,warm_start
+,,-1,14,990,607,8,1900,12110,1.0526759624481201,1,2,6,1,False

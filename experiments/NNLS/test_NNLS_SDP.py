@@ -6,11 +6,11 @@ import scipy.sparse as spa
 
 # from algocert.basic_algorithm_steps.block_step import BlockStep
 # from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
-    NonNegProjStep
+from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.linear_step import LinearStep
 from algocert.init_set.box_set import BoxSet
+
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.objectives.convergence_residual import ConvergenceResidual
 from algocert.variables.iterate import Iterate
@@ -62,7 +62,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # x_l = np.zeros((n, 1))
     # x_u = np.zeros((n, 1))
 
-    x_l = -1 * np.ones((n, 1))
+    x_l = 0.5 * np.ones((n, 1))
     x_u = np.ones((n, 1))
     # x_u[0] = -1
     xset = BoxSet(x, x_l, x_u)
@@ -94,15 +94,15 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # print(res_g)
 
     # out_fname = 'data/planet_test.csv'
-    # out_fname = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/
-    #  experiments/NNLS/data/planet_test.csv'
     out = []
     # K = 2
     for K_curr in range(1, K+1):
+        # K_curr = 2
         CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
         CP4 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP5 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
 
         (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)
@@ -111,6 +111,10 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
             (glob, glob_time) = CP4.solve(solver_type='GLOBAL', add_bounds=True)
         else:
             glob, glob_time = 0, 0
+        (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
+
+        # print('sdp:', sdp)
+        # exit(0)
 
         out.append(
             pd.Series({
@@ -121,6 +125,8 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
                 'sdp_rtime': sdp_rtime,
                 'sdp_p': sdp_p,
                 'sdp_ptime': sdp_ptime,
+                'sdp_c': sdp_c,
+                'sdp_ctime': sdp_ctime,
                 'glob': glob,
                 'glob_time': glob_time,
             })
@@ -148,9 +154,9 @@ def cp_test(A):
 
 def main():
     np.random.seed(1)
-    m = 10
-    n = 5
-    K = 8
+    m = 5
+    n = 3
+    K = 5
     A = np.random.randn(m, n)
     A = spa.csc_matrix(A)
     # cp_test(A)

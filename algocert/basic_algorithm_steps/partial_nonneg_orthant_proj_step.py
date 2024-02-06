@@ -9,6 +9,7 @@ class PartialNonNegProjStep(Step):
     def __init__(self, y: Iterate, x: Iterate, nonneg_ranges):
         """Step representing y = Pi_C(x) where C = nonneg orthant for all indices in ranges
         """
+        super().__init__()
         self.x = x
         self.y = y
 

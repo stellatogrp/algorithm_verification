@@ -2,14 +2,16 @@ import cvxpy as cp
 import numpy as np
 
 from algocert.basic_algorithm_steps.basic_linear_step import BasicLinearStep
-from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import \
-    RLT_constraints
+from algocert.solvers.sdp_solver.var_bounds.RLT_constraints import RLT_constraints
 
 
-def partial_nonneg_orthant_proj_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars,
-                                      add_RLT, kwargs):
+def partial_nonneg_orthant_proj_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars,
+                                     param_outerproduct_vars, var_linstep_map, add_RLT, kwargs):
     step = steps[i]
     prev_step = steps[i-1]
+
+    curr = iteration_handlers[k]
+    iteration_handlers[k - 1]
 
     y = step.get_output_var()
     x = step.get_input_var()

@@ -9,6 +9,7 @@ class MinWithVecStep(Step):
     def __init__(self, y: Iterate, x: Iterate, u=None):
         """Step representing y = min(x, u) elementwise
         """
+        super().__init__()
         self.x = x
         self.y = y
         self.u = u

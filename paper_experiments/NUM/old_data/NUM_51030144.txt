@@ -1,0 +1,114 @@
+/home/vranjan/algorithm-certification/paper_experiments/NUM/data/100923_215938.csv
+1 steps of algorithm
+----Initial set----
+ZEROSET(z)
+----Parameter set----
+SET(c): l2 ball of radius 0.1 centered at [[1.]
+ [1.]
+ [1.]
+ [1.]
+ [1.]]
+SET(q): StackSet =
+----Algorithm steps----
+u = LINSTEP(z, q, )
+w = LINSTEP(u, z, )
+u_tilde = NONNEG_PROJ(w)
+z = LINSTEP(z, u_tilde, u, )
+----Objective----
+OBJ: CONVERGENCE_RESIDUAL(z)
+{ITERATE(u): 0, ITERATE(w): 1, ITERATE(u_tilde): 2, ITERATE(z): 3}
+{PARAMETER(c): (0, 5), PARAMETER(q): (5, 40)}
+{ITERATE(z): {0: (40, 75), 1: (180, 215)}, ITERATE(u): {1: (75, 110)}, ITERATE(w): {1: (110, 145)}, ITERATE(u_tilde): {1: (145, 180)}}
+problem dim: 216
+adding mat RLT
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23
+ 24 25 26 27 28 29 30 31 32 33] [34] [ 9.77920773 19.37523666  6.77637358  4.75599296  2.88137339  6.74163175
+  9.6603068  12.76909844 13.49092008  5.05215863  2.78585693  1.62316533
+  3.77507298  5.16571669  9.26603063  2.65010421  6.31657045 14.11259281
+  2.87447027  3.29309828  2.026083    8.12214929  2.03489198  4.20186788
+  1.83575773  0.37956274  0.67259141  0.80361062  2.03870634  0.45651692
+  0.53906219  1.34365187  1.94303624  0.74511583  0.        ]
+all input matrices symmetric
+----solving via mosek directly----
+problem dim n: 216
+x_dim: 23436
+Problem
+  Name                   :
+  Objective sense        : minimize
+  Type                   : CONIC (conic optimization problem)
+  Constraints            : 176916
+  Affine conic cons.     : 14 (116094 rows)
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 139531
+  Matrix variables       : 0
+  Integer variables      : 0
+
+Optimizer started.
+Presolve started.
+Linear dependency checker started.
+Linear dependency checker terminated.
+Eliminator started.
+Freed constraints in eliminator : 112380
+Eliminator terminated.
+Eliminator started.
+Freed constraints in eliminator : 5863
+Eliminator terminated.
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 0.15
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 770               dual deps.             : 0
+Presolve terminated. Time: 0.45
+GP based matrix reordering started.
+GP based matrix reordering terminated.
+Optimizer  - threads                : 4
+Optimizer  - solved problem         : the primal
+Optimizer  - Constraints            : 130999
+Optimizer  - Cones                  : 1
+Optimizer  - Scalar variables       : 19508             conic                  : 738
+Optimizer  - Semi-definite variables: 14                scalarized             : 116094
+Factor     - setup time             : 139.51
+Factor     - dense det. time        : 58.59             GP order time          : 6.59
+Factor     - nonzeros before factor : 5.74e+08          after factor           : 6.51e+08
+Factor     - dense dim.             : 2100              flops                  : 4.62e+12
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME
+0   2.3e+02  3.2e+01  1.0e+00  0.00e+00   1.427231715e-01   1.427231715e-01   1.0e+00  140.17
+1   1.8e+02  2.5e+01  8.7e-01  -9.51e-01  -1.311893763e-01  1.616827030e-01   7.7e-01  161.91
+2   1.1e+02  1.5e+01  6.7e-01  -9.63e-01  2.197863388e-01   1.383101750e+00   4.5e-01  180.77
+3   5.2e+00  7.1e-01  1.5e-01  -9.80e-01  -5.795895466e-01  4.155826461e+01   2.2e-02  206.40
+4   6.5e-03  8.9e-04  5.2e-03  -9.99e-01  -5.680065330e-01  3.417715502e+04   2.8e-05  232.01
+5   7.8e-09  1.5e-08  4.8e-04  -1.00e+00  -4.701083637e+00  2.837358758e+10   3.4e-11  260.16
+6   1.3e-11  7.9e-12  6.5e+00  -1.00e+00  -2.172787313e+06  1.173204421e+20   8.5e-21  288.72
+7   1.6e-06  7.8e-13  1.4e-01  -1.00e+00  3.644668592e-20   9.724336442e-01   4.3e-27  313.89
+Optimizer terminated. Time: 313.99
+
+
+Interior-point solution summary
+  Problem status  : PRIMAL_INFEASIBLE
+  Solution status : PRIMAL_INFEASIBLE_CER
+  Dual.    obj: 9.7243364422e-01    nrm: 4e+04    Viol.  con: 2e-12    var: 7e-12    acc: 0e+00
+Traceback (most recent call last):
+  File "/home/vranjan/algorithm-certification/paper_experiments/NUM/NUM_experiment.py", line 51, in <module>
+    main()
+  File "/home/vranjan/algorithm-certification/paper_experiments/NUM/NUM_experiment.py", line 28, in main
+    out = CP.solve(solver_type='SDP_CUSTOM')
+  File "/home/vranjan/algorithm-certification/algocert/certification_problem.py", line 40, in solve
+    res = solver.solve(**kwargs)
+  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/sdp_custom_solver.py", line 19, in solve
+    res = self.handler.solve(**kwargs)
+  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/sdp_custom_handler.py", line 407, in solve
+    return self.solve_with_mosek_directly()
+  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/sdp_custom_handler.py", line 400, in solve_with_mosek_directly
+    out = solve_via_mosek(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
+  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/solve_via_mosek.py", line 108, in solve_via_mosek
+    objval = -M.primalObjValue()
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/mosek/fusion/impl/_implementation.py", line 4942, in primalObjValue
+    return self._primalObjValue_(*args)
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/mosek/fusion/impl/_implementation.py", line 7362, in _primalObjValue_
+    return numpy.float64((self._get_1sol_1cache_Emosek_4fusion_4SolutionType_2Z(mosek.fusion.SolutionType.Default,True).pobj)) # bld/docker-centos-8/final/default/src/fusion/Model.mbi:3553:8-61
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/mosek/fusion/impl/_implementation.py", line 7525, in _get_1sol_1cache_Emosek_4fusion_4SolutionType_2Z
+    return (self._get_1sol_1cache_Emosek_4fusion_4SolutionType_2ZZ(_0_which_,_1_primal,False)) # bld/docker-centos-8/final/default/src/fusion/Model.mbi:3474:8-50
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/mosek/fusion/impl/_implementation.py", line 7517, in _get_1sol_1cache_Emosek_4fusion_4SolutionType_2ZZ
+    raise mosek_fusion_SolutionError._ctor_S(_5_sb._toString_()) # bld/docker-centos-8/final/default/src/fusion/Model.mbi:3545:12-51
+mosek.fusion.impl._implementation.__mk_mosek_fusion_SolutionError.<locals>.SolutionError: Solution status is Undefined but Optimal is expected. Reason: Accessing interior-point solution whose problem status is PrimalInfeasible.

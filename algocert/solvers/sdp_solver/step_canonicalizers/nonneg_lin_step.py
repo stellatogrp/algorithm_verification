@@ -2,8 +2,10 @@ import cvxpy as cp
 import numpy as np
 
 
-def nonneg_lin_canon(steps, i, curr, prev, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
+def nonneg_lin_canon(steps, i, iteration_handlers, k, iter_id_map, param_vars, param_outerproduct_vars, add_RLT, kwargs):
     step = steps[i]
+    curr = iteration_handlers[k]
+    prev = iteration_handlers[k - 1]
 
     # block_vars = step.list_x
     y = step.get_output_var()

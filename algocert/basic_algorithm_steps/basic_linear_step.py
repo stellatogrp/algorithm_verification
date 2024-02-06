@@ -6,12 +6,13 @@ class BasicLinearStep(Step):
 
     """Docstring for BasicLinearStep. """
 
-    def __init__(self, y: Iterate, x: Iterate, D=None, A=None, b=None, Dinv=None):
+    def __init__(self, y: Iterate, x: Iterate, D=None, A=None, b=None, Dinv=None, start_canon=None):
         """Step representing y = Ax + b
 
         Args:
             A (TODO): TODO
         """
+        super().__init__(start_canon=start_canon)
         self.A = A
         self.D = D
         self.b = b

@@ -9,9 +9,11 @@ from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 from algocert.init_set.box_set import BoxSet
+
 # from algocert.init_set.box_stack_set import BoxStackSet
 # from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
 from algocert.init_set.const_set import ConstSet
+
 # from algocert.init_set.control_example_set import ControlExampleSet
 # from algocert.init_set.init_set import InitSet
 from algocert.objectives.convergence_residual import ConvergenceResidual

@@ -1,0 +1,147 @@
+/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/paper_experiments/NUM/data/101323_065510.csv
+[[1 0 1 1]
+ [0 0 1 1]
+ [1 1 1 1]]
+6 steps of algorithm
+----Initial set----
+ZEROSET(z)
+----Parameter set----
+SET(c): l2 ball of radius 0.1 centered at [[1.]
+ [1.]
+ [1.]]
+SET(q): StackSet =
+----Algorithm steps----
+u = LINSTEP(z, q, )
+w = LINSTEP(u, z, )
+u_tilde = NONNEG_PROJ(w)
+z = LINSTEP(z, u_tilde, u, )
+----Objective----
+OBJ: CONVERGENCE_RESIDUAL(z)
+{ITERATE(u): 0, ITERATE(w): 1, ITERATE(u_tilde): 2, ITERATE(z): 3}
+{PARAMETER(c): (0, 3), PARAMETER(q): (3, 18)}
+{ITERATE(z): {0: (18, 33), 1: (78, 93), 2: (138, 153), 3: (198, 213), 4: (258, 273), 5: (318, 333), 6: (378, 393)}, ITERATE(u): {1: (33, 48), 2: (93, 108), 3: (153, 168), 4: (213, 228), 5: (273, 288), 6: (333, 348)}, ITERATE(w): {1: (48, 63), 2: (108, 123), 3: (168, 183), 4: (228, 243), 5: (288, 303), 6: (348, 363)}, ITERATE(u_tilde): {1: (63, 78), 2: (123, 138), 3: (183, 198), 4: (243, 258), 5: (303, 318), 6: (363, 378)}}
+problem dim: 394
+adding mat RLT
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14] [] [0.08365868 0.08426785 0.07067865 0.07067865 0.29651931 0.30203106
+ 0.25280356 0.08365868 0.08426785 0.07067865 0.07067865 0.08365868
+ 0.08426785 0.07067865 0.07067865]
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14] [] [0.60821189 0.58378919 0.49472103 0.49472103 1.7375554  1.08600238
+ 1.48995271 0.56668787 0.53827225 0.46135933 0.46135933 0.56668787
+ 0.53827225 0.46135933 0.46135933]
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14] [] [3.59603488 3.54002311 2.89896718 2.89896718 8.10015429 4.91975419
+ 8.0634323  3.33070613 3.59028036 2.6144732  2.6144732  3.23171112
+ 3.15824363 2.6144732  2.6144732 ]
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14] [] [20.446024   19.6674821  16.97144966 16.97144966 37.33175161 26.67041358
+ 36.47341688 21.35320724 21.38984545 17.27285828 17.50694202 19.65084347
+ 18.41079434 16.38319469 16.14911096]
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14] [] [117.65470242 109.27314767 101.97659346 101.97659346 185.10699365
+ 152.00533615 177.99076728 132.68163377 123.47138335 114.27485499
+ 115.12675461 123.96008515 113.17815733 107.41978045 106.56788082]
+[ 0  1  2  3  4  5  6  7  8  9 10 11 12 13 14] [] [684.33561569 613.69079443 617.61386098 617.61386098 985.39901501
+ 886.70797748 939.79071732 799.54336836 706.43143935 724.59323942
+ 726.96138869 760.70969071 673.89566947 684.41573199 682.04758271]
+all input matrices symmetric
+solving via mosek
+----solving via mosek directly----
+problem dim n: 394
+x_dim: 77815
+Problem
+  Name                   :
+  Objective sense        : minimize
+  Type                   : CONIC (conic optimization problem)
+  Constraints            : 701317
+  Affine conic cons.     : 259 (520153 rows)
+  Disjunctive cons.      : 0
+  Cones                  : 0
+  Scalar variables       : 597969
+  Matrix variables       : 0
+  Integer variables      : 0
+
+Optimizer started.
+Presolve started.
+Linear dependency checker started.
+Linear dependency checker terminated.
+Eliminator started.
+Freed constraints in eliminator : 556171
+Eliminator terminated.
+Eliminator started.
+Freed constraints in eliminator : 1335
+Eliminator terminated.
+Eliminator - tries                  : 2                 time                   : 0.00
+Lin. dep.  - tries                  : 1                 time                   : 0.95
+Lin. dep.  - primal attempts        : 1                 successes              : 1
+Lin. dep.  - dual attempts          : 0                 successes              : 0
+Lin. dep.  - primal deps.           : 1125              dual deps.             : 0
+Presolve terminated. Time: 2.36
+GP based matrix reordering started.
+GP based matrix reordering terminated.
+Optimizer  - threads                : 2
+Optimizer  - solved problem         : the primal
+Optimizer  - Constraints            : 616992
+Optimizer  - Cones                  : 1
+Optimizer  - Scalar variables       : 141846            conic                  : 11408
+Optimizer  - Semi-definite variables: 259               scalarized             : 520153
+Factor     - setup time             : 258.33
+Factor     - dense det. time        : 104.50            GP order time          : 24.48
+Factor     - nonzeros before factor : 5.71e+08          after factor           : 1.26e+09
+Factor     - dense dim.             : 16308             flops                  : 5.52e+12
+Factor     - GP saved nzs           : -5.89e+06         GP saved flops         : 3.39e+11
+ITE PFEAS    DFEAS    GFEAS    PRSTATUS   POBJ              DOBJ              MU       TIME
+0   6.4e+04  5.1e+02  1.0e+00  0.00e+00   0.000000000e+00   0.000000000e+00   1.0e+00  261.34
+1   6.3e+04  5.1e+02  9.9e-01  -9.99e-01  -8.182858555e-02  -7.076644213e-02  9.9e-01  335.14
+2   5.7e+04  4.6e+02  9.4e-01  -9.98e-01  -7.786520786e-01  -6.555190787e-01  8.9e-01  415.13
+3   4.9e+04  3.9e+02  8.7e-01  -9.92e-01  -1.610580099e+00  -1.314969974e+00  7.7e-01  490.86
+4   4.8e+04  3.8e+02  8.6e-01  -9.87e-01  -1.372714882e+00  -1.040526667e+00  7.5e-01  564.99
+5   1.7e+04  1.4e+02  5.1e-01  -9.86e-01  -7.231771555e+00  -4.718908839e+00  2.7e-01  647.64
+6   4.5e+03  3.6e+01  2.2e-01  -9.10e-01  -1.582599675e+01  -6.427252218e+00  7.0e-02  731.11
+7   1.2e+03  9.6e+00  5.9e-02  -4.37e-01  -4.815234131e+00  4.766415565e+00   1.9e-02  817.63
+8   7.5e+02  6.0e+00  2.9e-02  5.79e-01   -3.299684009e+00  2.396610378e+00   1.2e-02  894.56
+9   5.7e+02  4.6e+00  1.9e-02  8.32e-01   -2.688138700e+00  1.482827561e+00   9.0e-03  968.22
+10  4.9e+02  3.9e+00  1.5e-02  9.23e-01   -2.326417008e+00  1.160783531e+00   7.6e-03  1042.00
+11  3.5e+02  2.8e+00  8.5e-03  9.65e-01   -1.760487078e+00  6.077432157e-01   5.4e-03  1117.35
+12  3.1e+02  2.5e+00  7.4e-03  1.03e+00   -1.587275407e+00  5.544098016e-01   4.9e-03  1194.13
+13  1.0e+02  8.3e-01  1.3e-03  1.05e+00   -6.150992209e-01  -3.094377922e-02  1.6e-03  1282.72
+14  6.5e+01  5.2e-01  6.1e-04  1.16e+00   -4.084932441e-01  -6.441682580e-02  1.0e-03  1356.87
+15  2.7e+01  2.2e-01  1.6e-04  1.15e+00   -1.973015888e-01  -6.711063634e-02  4.2e-04  1442.13
+16  2.3e+01  1.8e-01  1.2e-04  1.13e+00   -1.706286375e-01  -6.183356903e-02  3.6e-04  1517.07
+17  6.7e+00  5.4e-02  1.9e-05  1.12e+00   -6.957710646e-02  -4.006017103e-02  1.1e-04  1608.43
+18  3.5e+00  2.8e-02  6.9e-06  1.08e+00   -4.534363324e-02  -3.058401003e-02  5.5e-05  1690.77
+19  1.5e+00  1.2e-02  1.9e-06  1.07e+00   -3.003197806e-02  -2.401344293e-02  2.4e-05  1766.31
+20  1.0e+00  8.3e-03  1.1e-06  1.05e+00   -2.637314194e-02  -2.232270637e-02  1.6e-05  1838.28
+21  4.6e-01  3.7e-03  3.1e-07  1.04e+00   -2.223874964e-02  -2.051654966e-02  7.2e-06  1914.20
+22  1.3e-01  1.0e-03  4.5e-08  1.04e+00   -2.220486860e-02  -2.174994179e-02  2.0e-06  1990.87
+23  6.9e-02  5.6e-04  1.7e-08  1.03e+00   -2.601886447e-02  -2.578034451e-02  1.1e-06  2060.19
+24  1.8e-02  1.4e-04  2.1e-09  1.04e+00   -3.418063646e-02  -3.412372745e-02  2.7e-07  2147.76
+25  1.0e-02  8.3e-05  9.3e-10  1.09e+00   -4.457255941e-02  -4.454152052e-02  1.6e-07  2232.15
+26  7.5e-03  6.1e-05  5.7e-10  1.13e+00   -4.808427828e-02  -4.806295858e-02  1.2e-07  2304.23
+27  5.6e-03  4.5e-05  3.5e-10  1.16e+00   -5.218741813e-02  -5.217266450e-02  9.1e-08  2378.59
+28  5.3e-03  4.3e-05  3.2e-10  1.20e+00   -5.359719726e-02  -5.358344680e-02  8.7e-08  2453.23
+29  4.0e-03  3.2e-05  2.0e-10  1.21e+00   -5.834839452e-02  -5.833911464e-02  6.6e-08  2527.57
+Optimizer terminated. Time: 2528.10
+
+
+Interior-point solution summary
+  Problem status  : PRIMAL_AND_DUAL_FEASIBLE
+  Solution status : OPTIMAL
+  Primal.  obj: -5.8348394517e-02   nrm: 1e+03    Viol.  con: 5e-01    var: 0e+00    acc: 6e-04
+  Dual.    obj: -5.8339114554e-02   nrm: 1e+08    Viol.  con: 4e-05    var: 3e-04    acc: 4e-08
+Traceback (most recent call last):
+  File "/home/vranjan/algorithm-certification/paper_experiments/NUM/NUM_experiment.py", line 58, in <module>
+    main()
+  File "/home/vranjan/algorithm-certification/paper_experiments/NUM/NUM_experiment.py", line 43, in main
+    out_df.to_csv(outf, index=False)
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/util/_decorators.py", line 211, in wrapper
+    return func(*args, **kwargs)
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/core/generic.py", line 3720, in to_csv
+    return DataFrameRenderer(formatter).to_csv(
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/util/_decorators.py", line 211, in wrapper
+    return func(*args, **kwargs)
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/io/formats/format.py", line 1189, in to_csv
+    csv_formatter.save()
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/io/formats/csvs.py", line 241, in save
+    with get_handle(
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/io/common.py", line 734, in get_handle
+    check_parent_directory(str(handle))
+  File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/pandas/io/common.py", line 597, in check_parent_directory
+    raise OSError(rf"Cannot save file into a non-existent directory: '{parent}'")
+OSError: Cannot save file into a non-existent directory: '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/paper_experiments/NUM/data'

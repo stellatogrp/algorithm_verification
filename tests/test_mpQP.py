@@ -8,6 +8,7 @@ import scipy.sparse as spa
 from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
 from algocert.certification_problem import CertificationProblem
 from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+
 # from algocert.init_set.affine_vec_set import AffineVecSet
 from algocert.init_set.box_set import BoxSet
 from algocert.init_set.const_set import ConstSet

@@ -1,0 +1,1 @@
+slurmstepd: error: *** JOB 51004261 ON della-h17n1 CANCELLED AT 2023-10-09T03:39:27 ***

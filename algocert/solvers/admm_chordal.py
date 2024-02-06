@@ -5,9 +5,11 @@ import cvxpy as cp
 import jax.lax as lax
 import jax.numpy as jnp
 import jax.scipy as jsp
+
 # import jax.scipy as jsp
 # import matplotlib.pyplot as plt
 import numpy as np
+
 # import scipy.sparse as spa
 # from jax import jit, vmap
 from jax import vmap

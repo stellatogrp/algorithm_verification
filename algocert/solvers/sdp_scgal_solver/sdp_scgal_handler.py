@@ -1,11 +1,13 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.solvers.sdp_scgal_solver import (OBJ_CANON_METHODS,
-                                               SET_PREPROCESS_METHODS,
-                                               SET_PRIMITIVE_2_METHODS,
-                                               STEP_PREPROCESS_METHODS,
-                                               STEP_PRIMITIVE_2_METHODS)
+from algocert.solvers.sdp_scgal_solver import (
+    OBJ_CANON_METHODS,
+    SET_PREPROCESS_METHODS,
+    SET_PRIMITIVE_2_METHODS,
+    STEP_PREPROCESS_METHODS,
+    STEP_PRIMITIVE_2_METHODS,
+)
 
 
 class SDPSCGALHandler(object):

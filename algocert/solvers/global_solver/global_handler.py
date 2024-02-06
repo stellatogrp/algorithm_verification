@@ -2,11 +2,13 @@ import gurobipy as gp
 import numpy as np
 
 from algocert.init_set.mult_trajectory import MultTrajectorySets
-from algocert.solvers.global_solver import (BOUND_SET_CANON_METHODS,
-                                            BOUND_STEP_CANON_METHODS,
-                                            OBJ_CANON_METHODS,
-                                            SET_CANON_METHODS,
-                                            STEP_CANON_METHODS)
+from algocert.solvers.global_solver import (
+    BOUND_SET_CANON_METHODS,
+    BOUND_STEP_CANON_METHODS,
+    OBJ_CANON_METHODS,
+    SET_CANON_METHODS,
+    STEP_CANON_METHODS,
+)
 
 
 class GlobalHandler(object):
@@ -118,9 +120,13 @@ class GlobalHandler(object):
                         lb = np.zeros((K + 1, n))
                         ub = np.zeros((K + 1, n))
                         canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
-                        l, u = canon_method(init_set)
-                        lb[0] = l
-                        ub[0] = u
+                        l, u = canon_method(init_set, self)
+                        # TODO do for all k in canon_iter
+                        for k in init_set.canon_iter:
+                            lb[k] = l
+                            ub[k] = u
+                        # lb[0] = l
+                        # ub[0] = u
                         self.iterate_to_lower_bound_map[(iterate, param_var, i)] = lb
                         self.iterate_to_upper_bound_map[(iterate, param_var, i)] = ub
             else:
@@ -129,9 +135,12 @@ class GlobalHandler(object):
                 lb = np.zeros((K + 1, n))
                 ub = np.zeros((K + 1, n))
                 canon_method = BOUND_SET_CANON_METHODS[type(init_set)]
-                l, u = canon_method(init_set)
-                lb[0] = l
-                ub[0] = u
+                l, u = canon_method(init_set, self)
+                for k in init_set.canon_iter:
+                    lb[k] = l
+                    ub[k] = u
+                # lb[0] = l
+                # ub[0] = u
                 self.iterate_to_lower_bound_map[iterate] = lb
                 self.iterate_to_upper_bound_map[iterate] = ub
 
@@ -155,10 +164,11 @@ class GlobalHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
             for step in steps:
-                canon_method = BOUND_STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
-                canon_method(step, k, self.iterate_to_id_map,
-                             self.iterate_to_lower_bound_map, self.iterate_to_upper_bound_map,
-                             self.param_to_lower_bound_map, self.param_to_upper_bound_map)
+                if k >= step.start_canon:
+                    canon_method = BOUND_STEP_CANON_METHODS[type(step)]  # change to the correct dictionary
+                    canon_method(step, k, self.iterate_to_id_map,
+                                self.iterate_to_lower_bound_map, self.iterate_to_upper_bound_map,
+                                self.param_to_lower_bound_map, self.param_to_upper_bound_map)
 
     def create_param_bound_map(self):
         parameters = self.CP.get_parameter_sets()
@@ -167,13 +177,13 @@ class GlobalHandler(object):
                 for i, single_param_set in enumerate(param_set):
                     param = single_param_set.get_iterate()
                     canon_method = BOUND_SET_CANON_METHODS[type(single_param_set)]
-                    l, u = canon_method(single_param_set)
+                    l, u = canon_method(single_param_set, self)
                     self.param_to_lower_bound_map[(param, i)] = l
                     self.param_to_upper_bound_map[(param, i)] = u
             else:
                 param = param_set.get_iterate()
                 canon_method = BOUND_SET_CANON_METHODS[type(param_set)]
-                l, u = canon_method(param_set)
+                l, u = canon_method(param_set, self)
                 self.param_to_lower_bound_map[param] = l
                 self.param_to_upper_bound_map[param] = u
 
@@ -229,8 +239,9 @@ class GlobalHandler(object):
 
     def canonicalize_initial_sets(self):
         for init_set in self.CP.get_init_sets():
-            canon_method = SET_CANON_METHODS[type(init_set)]
-            canon_method(init_set, self.model, self.iterate_to_gp_var_map)
+            for k in init_set.canon_iter:
+                canon_method = SET_CANON_METHODS[type(init_set)]
+                canon_method(init_set, self.model, self.iterate_to_gp_var_map, k)
 
     def canonicalize_parameter_sets(self):
         for param_set in self.CP.get_parameter_sets():
@@ -241,9 +252,10 @@ class GlobalHandler(object):
         steps = self.CP.get_algorithm_steps()
         for k in range(1, self.K + 1):
             for step in steps:
-                canon_method = STEP_CANON_METHODS[type(step)]
-                canon_method(step, self.model, k,
-                             self.iterate_to_gp_var_map, self.param_to_gp_var_map, self.iterate_to_id_map)
+                if k >= step.start_canon:
+                    canon_method = STEP_CANON_METHODS[type(step)]
+                    canon_method(step, self.model, k,
+                                self.iterate_to_gp_var_map, self.param_to_gp_var_map, self.iterate_to_id_map)
 
     def canonicalize_objective(self):
         # obj = self.CP.objective
@@ -298,7 +310,16 @@ class GlobalHandler(object):
         # w = (self.y + self.z).getValue()
         # t = self.t.getValue()
         # print(np.round(w - np.abs(t), 4))
-        return self.model.objVal, self.model.Runtime
+        out = dict(
+            glob_objval=self.model.objVal,
+            glob_runtime=self.model.Runtime,
+            glob_bestbound=self.model.objBound,
+        )
+        try:
+            out['gap'] = self.model.MIPGap
+        except AttributeError:
+            out['gap'] = 0
+        return out
 
     def get_iterate_var_map(self):
         return self.iterate_to_gp_var_map
