@@ -2,16 +2,16 @@ import cvxpy as cp
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.l2_ball_set import L2BallSet
-from algocert.init_set.stack_set import StackSet
-from algocert.init_set.zero_set import ZeroSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.l2_ball_set import L2BallSet
+from algoverify.init_set.stack_set import StackSet
+from algoverify.init_set.zero_set import ZeroSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 class NUM(object):
@@ -122,7 +122,7 @@ class NUM(object):
         param_sets = [q_set]
         obj = ConvergenceResidual(z)
 
-        return CertificationProblem(K, init_sets, param_sets, obj, steps)
+        return VerificationProblem(K, init_sets, param_sets, obj, steps)
 
     def generate_CP_ball(self, K, init_type='cs'):
         m, n = self.A.shape
@@ -201,7 +201,7 @@ class NUM(object):
         param_sets = [c_set, q_set]
         obj = ConvergenceResidual(z)
 
-        return CertificationProblem(K, init_sets, param_sets, obj, steps)
+        return VerificationProblem(K, init_sets, param_sets, obj, steps)
 
     def test_cp_prob(self):
         w = self.w

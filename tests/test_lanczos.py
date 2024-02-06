@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 import numpy as np
 
-from algocert.solvers.sdp_cgal_solver.lanczos import (
+from algoverify.solvers.sdp_cgal_solver.lanczos import (
     approx_min_eigvec,
     lanczos_matrix,
     scipy_mineigval,

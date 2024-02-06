@@ -5,12 +5,12 @@ import numpy as np
 import numpy.testing as npt
 import scipy.sparse as spa
 
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 class TestBasicGD(unittest.TestCase):
@@ -91,7 +91,7 @@ class TestBasicGD(unittest.TestCase):
         qset = BoxSet(q, q_l, q_u)
 
         obj = ConvergenceResidual(x)
-        CP = CertificationProblem(N, [xset], [qset], obj, [step1])
+        CP = VerificationProblem(N, [xset], [qset], obj, [step1])
 
         CP_res, _ = CP.solve(solver_type='SDP', solver=cp.SCS)
         npt.assert_allclose(brute_force_res, CP_res, rtol=1e-4, atol=1e-4)

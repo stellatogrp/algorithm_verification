@@ -3,18 +3,18 @@ import numpy as np
 import scipy.sparse as spa
 from MPC_class import ModelPredictiveControl
 
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.l2_ball_set import L2BallSet
-from algocert.init_set.stack_set import StackSet
-from algocert.init_set.zero_set import ZeroSet
-from algocert.objectives.block_convergence_residual import BlockConvergenceResidual
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.l2_ball_set import L2BallSet
+from algoverify.init_set.stack_set import StackSet
+from algoverify.init_set.zero_set import ZeroSet
+from algoverify.objectives.block_convergence_residual import BlockConvergenceResidual
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def qp_cert_prob(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1):
@@ -135,12 +135,12 @@ def qp_cert_prob(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1):
     # obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
     obj = [ConvergenceResidual(x), BlockConvergenceResidual([z, y], s6A)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps)
 
     out_g, out_time = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print(out_g, out_time)
 
-    CertificationProblem(K, initsets, paramsets, obj, steps)
+    VerificationProblem(K, initsets, paramsets, obj, steps)
     # out_s = CP2.solve(solver_type='SDP_CUSTOM')
 
 
@@ -231,7 +231,7 @@ def qp_cert_prob_max_only(orig_n, example, xinit_l, xinit_u, rho_const=True, K=1
 
     obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps)
 
     out_g, out_time = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600)
     print(out_g, out_time)

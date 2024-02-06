@@ -1,23 +1,23 @@
-#  import certification_problem.init_set as cpi
+#  import verification_problem.init_set as cpi
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
 from tqdm import trange
 
-# from algocert.basic_algorithm_steps.block_step import BlockStep
-# from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+# from algoverify.basic_algorithm_steps.block_step import BlockStep
+# from algoverify.basic_algorithm_steps.linear_step import LinearStep
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 
-# from algocert.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algoverify.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
 
-# from algocert.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.solvers.sdp_cgal_solver.lanczos import approx_min_eigvec
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 # The vec function as documented in api/cones
@@ -77,8 +77,8 @@ def NNLS_test_cgal(n, m, A, N=1, t=.05, xset=None, bset=None):
     bset = BoxSet(b, b_l, b_u)
     obj = ConvergenceResidual(x)
 
-    CP = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
-    CP2 = CertificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
+    CP = VerificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
+    CP2 = VerificationProblem(N, [xset], [bset], obj, steps, num_samples=1)
     res = CP2.solve(solver_type='SDP')
     # params = CP2.solver.handler.sdp_param_outerproduct_vars
     # print(params[b].value)

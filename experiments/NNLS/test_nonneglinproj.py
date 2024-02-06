@@ -1,16 +1,16 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
-from algocert.init_set.box_set import BoxSet
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.high_level_alg_steps.nonneg_lin_step import NonNegLinStep
+from algoverify.init_set.box_set import BoxSet
 
-# from algocert.init_set.const_set import ConstSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.init_set.const_set import ConstSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
@@ -39,7 +39,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     obj = [ConvergenceResidual(x)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps, num_samples=1)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps, num_samples=1)
     res = CP.solve(solver_type=solver_type, add_bounds=True,
                    add_RLT=False, TimeLimit=3600, minimize=False)
     # print('global', resg)
@@ -75,7 +75,7 @@ def NNLS_cert_prob_two_step(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     obj = [ConvergenceResidual(x)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps)
     resg = CP.solve(solver_type=solver_type, add_bounds=True, add_RLT=False,
                     TimeLimit=3600, minimize=False, verbose=True)
     # print('global', resg)

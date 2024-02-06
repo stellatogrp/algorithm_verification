@@ -2,23 +2,23 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as spa
 
-# from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
+# from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
 
-# from algocert.init_set.box_stack_set import BoxStackSet
-# from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-# from algocert.init_set.const_set import ConstSet
-# from algocert.init_set.control_example_set import ControlExampleSet
-# from algocert.init_set.init_set import InitSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
+# from algoverify.init_set.box_stack_set import BoxStackSet
+# from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+# from algoverify.init_set.const_set import ConstSet
+# from algoverify.init_set.control_example_set import ControlExampleSet
+# from algoverify.init_set.init_set import InitSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
 
-# from algocert.objectives.l1_conv_resid import L1ConvResid
-# from algocert.utils.plotter import plot_results
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.objectives.l1_conv_resid import L1ConvResid
+# from algoverify.utils.plotter import plot_results
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def NUM_single(m_orig, n, K=1, glob_include=True):
@@ -108,19 +108,19 @@ def NUM_single(m_orig, n, K=1, glob_include=True):
     obj = [ConvergenceResidual(z)]
     # obj = [ConvergenceResidual(u_tilde)]
 
-    CP = CertificationProblem(K, [zset], [qset], obj, steps)
-    CP2 = CertificationProblem(K, [zset], [qset], obj, steps)
+    CP = VerificationProblem(K, [zset], [qset], obj, steps)
+    CP2 = VerificationProblem(K, [zset], [qset], obj, steps)
 
     out = []
     # K = 2
     for K_curr in range(1, K+1):
         # K_curr = 2
-        CP = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-        CP2 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-        CP3 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
-        CP4 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP = VerificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP2 = VerificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP3 = VerificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP4 = VerificationProblem(K_curr, [zset], [qset], obj, steps)
 
-        CP5 = CertificationProblem(K_curr, [zset], [qset], obj, steps)
+        CP5 = VerificationProblem(K_curr, [zset], [qset], obj, steps)
         (sdp_c, sdp_ctime) = CP5.solve(solver_type='SDP_CUSTOM')
         # sdp_c, sdp_ctime = 0, 0
         # print(sdp_c, sdp_ctime)

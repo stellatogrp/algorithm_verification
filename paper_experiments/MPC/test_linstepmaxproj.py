@@ -1,19 +1,19 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.box_stack_set import BoxStackSet
-from algocert.init_set.const_set import ConstSet
-from algocert.init_set.control_example_set import ControlExampleSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.box_stack_set import BoxStackSet
+from algoverify.init_set.const_set import ConstSet
+from algoverify.init_set.control_example_set import ControlExampleSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
 
-# from algocert.init_set.init_set import InitSet
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.init_set.init_set import InitSet
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def OSQP_cert_prob(n, m, K=1, t=.05, xset=None, bset_func=None):
@@ -107,7 +107,7 @@ def OSQP_cert_prob(n, m, K=1, t=.05, xset=None, bset_func=None):
     obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
     # obj = OuterProdTrace(x)
 
-    CP = CertificationProblem(K, [xset, yset, zset], [test_set, bset], obj, steps)
+    CP = VerificationProblem(K, [xset, yset, zset], [test_set, bset], obj, steps)
 
     CP.print_cp()
 

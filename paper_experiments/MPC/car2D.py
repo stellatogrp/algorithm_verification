@@ -2,17 +2,17 @@ import cvxpy as cp
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.stack_set import StackSet
-from algocert.init_set.zero_set import ZeroSet
-from algocert.objectives.block_convergence_residual import BlockConvergenceResidual
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
+from algoverify.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.stack_set import StackSet
+from algoverify.init_set.zero_set import ZeroSet
+from algoverify.objectives.block_convergence_residual import BlockConvergenceResidual
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 class Car2D(object):
@@ -422,7 +422,7 @@ class Car2D(object):
         # obj = [BlockConvergenceResidual([z, y], obj_block)]
         obj = [ConvergenceResidual(x), BlockConvergenceResidual([z, y], obj_block)]
 
-        return CertificationProblem(K, initsets, paramsets, obj, steps)
+        return VerificationProblem(K, initsets, paramsets, obj, steps)
 
 
 def main():

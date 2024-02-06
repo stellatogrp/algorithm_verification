@@ -2,15 +2,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.sparse as spa
 
-from algocert import CertificationProblem
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify import VerificationProblem
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
 
 
 def test_NNLS_SDP(N=1):
@@ -78,7 +78,7 @@ def test_NNLS_SDP(N=1):
     obj = ConvergenceResidual(x)
     # obj = OuterProdTrace(x)
     qp_problem_data = {'A': .5 * ATA}
-    CP = CertificationProblem(N, [xset], [bset], obj, steps, qp_problem_data=qp_problem_data)
+    CP = VerificationProblem(N, [xset], [bset], obj, steps, qp_problem_data=qp_problem_data)
 
     # CP.problem_data = qp_problem_data
     # CP.print_cp()
@@ -136,7 +136,7 @@ def test_NNLS_GLOBAL(N=1):
     # obj = OuterProdTrace(x)
     # obj = LInfConvResid(x)
 
-    CP = CertificationProblem(N, [xset], [bset], obj, steps)
+    CP = VerificationProblem(N, [xset], [bset], obj, steps)
 
     # CP.print_cp()
     res = CP.solve(solver_type='GLOBAL')

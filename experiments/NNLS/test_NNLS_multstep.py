@@ -7,16 +7,16 @@ from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
 from PEPit.primitive_steps.proximal_step import proximal_step
 from tqdm import trange
 
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.const_set import ConstSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algoverify.init_set.const_set import ConstSet
+from algoverify.init_set.ellipsoidal_set import EllipsoidalSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def test_PEPit_val(L, mu, t, r, N=1):
@@ -156,7 +156,7 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, r=1, center=None):
     steps = [step1, step2]
 
     obj = ConvergenceResidual(x)
-    CP = CertificationProblem(N, [xset], [bset], obj, steps)
+    CP = VerificationProblem(N, [xset], [bset], obj, steps)
     res = CP.solve(solver_type='GLOBAL')
     print(res)
 

@@ -1,14 +1,14 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert import CertificationProblem
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.ellipsoidal_set import EllipsoidalSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify import VerificationProblem
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algoverify.init_set.ellipsoidal_set import EllipsoidalSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
 
 
 def centered_l2_xset(*args):
@@ -58,7 +58,7 @@ def NNLS_cert_prob(n, m, A, N=1, t=.05, xset=None, bset_func=None):
     steps = [step1, step2]
 
     obj = ConvergenceResidual(x)
-    CP = CertificationProblem(N, [xset], [bset], obj, steps)
+    CP = VerificationProblem(N, [xset], [bset], obj, steps)
     res = CP.solve(solver_type='GLOBAL')
     print(res)
 

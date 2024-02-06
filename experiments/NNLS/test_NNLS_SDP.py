@@ -1,20 +1,20 @@
-#  import certification_problem.init_set as cpi
+#  import verification_problem.init_set as cpi
 import cvxpy as cp
 import numpy as np
 import pandas as pd
 import scipy.sparse as spa
 
-# from algocert.basic_algorithm_steps.block_step import BlockStep
-# from algocert.basic_algorithm_steps.linear_step import LinearStep
-from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
+# from algoverify.basic_algorithm_steps.block_step import BlockStep
+# from algoverify.basic_algorithm_steps.linear_step import LinearStep
+from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import NonNegProjStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
 
-# from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 #  from joblib import Parallel, delayed
 
@@ -75,10 +75,10 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     bset = BoxSet(b, b_l, b_u)
 
     obj = ConvergenceResidual(x)
-    # CP = CertificationProblem(K, [xset], [bset], obj, steps)
-    # CP2 = CertificationProblem(K, [xset], [bset], obj, steps)
-    # CP3 = CertificationProblem(K, [xset], [bset], obj, steps)
-    # CP4 = CertificationProblem(K, [xset], [bset], obj, steps)
+    # CP = VerificationProblem(K, [xset], [bset], obj, steps)
+    # CP2 = VerificationProblem(K, [xset], [bset], obj, steps)
+    # CP3 = VerificationProblem(K, [xset], [bset], obj, steps)
+    # CP4 = VerificationProblem(K, [xset], [bset], obj, steps)
 
     # # CP.problem_data = qp_problem_data
     # # CP.print_cp()
@@ -98,11 +98,11 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, xset=None, bset=None, glob_include=True)
     # K = 2
     for K_curr in range(1, K+1):
         # K_curr = 2
-        CP = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP2 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP3 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP4 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
-        CP5 = CertificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP = VerificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP2 = VerificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP3 = VerificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP4 = VerificationProblem(K_curr, [xset], [bset], obj, steps)
+        CP5 = VerificationProblem(K_curr, [xset], [bset], obj, steps)
 
         (sdp, sdptime) = CP.solve(solver_type='SDP', add_RLT=False, add_planet=False)
         (sdp_r, sdp_rtime) = CP2.solve(solver_type='SDP', add_RLT=True, add_planet=False)

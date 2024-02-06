@@ -4,23 +4,23 @@ import pandas as pd
 import scipy.sparse as spa
 from scipy.stats import ortho_group
 
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.init_set.box_set import BoxSet
 
-# from algocert.basic_algorithm_steps.nonneg_orthant_proj_step import \
+# from algoverify.init_set.box_stack_set import BoxStackSet
+# from algoverify.init_set.centered_l2_ball_set import CenteredL2BallSet
+from algoverify.init_set.const_set import ConstSet
+
+# from algoverify.init_set.control_example_set import ControlExampleSet
+# from algoverify.init_set.init_set import InitSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+
+# from algoverify.basic_algorithm_steps.nonneg_orthant_proj_step import \
 #     NonNegProjStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.init_set.box_set import BoxSet
-
-# from algocert.init_set.box_stack_set import BoxStackSet
-# from algocert.init_set.centered_l2_ball_set import CenteredL2BallSet
-from algocert.init_set.const_set import ConstSet
-
-# from algocert.init_set.control_example_set import ControlExampleSet
-# from algocert.init_set.init_set import InitSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 # from tqdm import tqdm, trange
 
@@ -130,7 +130,7 @@ def OSQP_cert_prob(P, A, c, rho, q_l, q_u, K=1, solver="GLOBAL", minimize=False)
 
     obj = [ConvergenceResidual(x), ConvergenceResidual(s)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps)
 
     if solver == "GLOBAL":
         resg = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=3600, minimize=minimize)

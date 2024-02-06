@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from algocert.solvers.admm_chordal import chordal_solve, psd_completion, unvec_symm
+from algoverify.solvers.admm_chordal import chordal_solve, psd_completion, unvec_symm
 
 # @pytest.mark.skip(reason="temp")
 

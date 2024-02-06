@@ -203,7 +203,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdcae2af0>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdcae2b50>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdcae2af0>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdcae2b50>]
 Set parameter GURO_PAR_SPECIAL
 Set parameter TokenServer to value "license.rc.princeton.edu"
 Set parameter NonConvex to value 2
@@ -282,7 +282,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca724c0>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca72460>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca724c0>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca72460>]
 Set parameter NonConvex to value 2
 Set parameter MIPGap to value 0.01
 Set parameter TimeLimit to value 3600
@@ -356,7 +356,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca91460>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca91400>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca91460>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca91400>]
 Set parameter NonConvex to value 2
 Set parameter MIPGap to value 0.01
 Set parameter TimeLimit to value 3600
@@ -433,7 +433,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca72a30>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca72640>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca72a30>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14ecdca72640>]
 Set parameter NonConvex to value 2
 Set parameter MIPGap to value 0.01
 Set parameter TimeLimit to value 3600

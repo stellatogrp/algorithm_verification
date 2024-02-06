@@ -5,16 +5,16 @@ import numpy as np
 import numpy.testing as npt
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
 
-# from algocert.init_set.affine_vec_set import AffineVecSet
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.const_set import ConstSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.init_set.affine_vec_set import AffineVecSet
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.const_set import ConstSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 class TestBasicGD(unittest.TestCase):
@@ -65,7 +65,7 @@ class TestBasicGD(unittest.TestCase):
         obj = ConvergenceResidual(x)
         # obj = OuterProdTrace(x)
 
-        CP = CertificationProblem(N, [xset], [bset], obj, steps)
+        CP = VerificationProblem(N, [xset], [bset], obj, steps)
         # res_global = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)
         # print('global', res_global)
 
