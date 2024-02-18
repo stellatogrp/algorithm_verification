@@ -135,7 +135,7 @@ class SDPCGALHandler(object):
 
     def canonicalize_objective(self):
         self.C_matrix = spa.lil_matrix((self.problem_dim, self.problem_dim))
-        if type(self.CP.objective) != list:
+        if not isinstance(self.CP.objective, list):
             obj_list = [self.CP.objective]
         else:
             obj_list = self.CP.objective

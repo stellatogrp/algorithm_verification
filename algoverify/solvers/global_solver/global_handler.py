@@ -259,7 +259,7 @@ class GlobalHandler(object):
 
     def canonicalize_objective(self):
         # obj = self.CP.objective
-        if type(self.CP.objective) != list:
+        if not isinstance(self.CP.objective, list):
             obj_list = [self.CP.objective]
         else:
             obj_list = self.CP.objective

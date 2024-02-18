@@ -174,7 +174,7 @@ class SDPSCGALHandler(object):
             For primitive 1, since its just one matrix, we create and store
                 the entire matrix C
         """
-        if type(self.CP.objective) != list:
+        if not isinstance(self.CP.objective, list):
             obj_list = [self.CP.objective]
         else:
             obj_list = self.CP.objective

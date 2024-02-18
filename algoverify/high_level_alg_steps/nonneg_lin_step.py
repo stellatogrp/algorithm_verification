@@ -11,7 +11,7 @@ class NonNegLinStep(Step):
         """
         self.y = y
         self.C = C
-        if type(u) == list:
+        if isinstance(u, list):
             self.u = u
         else:
             self.u = [u]

@@ -17,7 +17,7 @@ def box_stack_set_canon(init_set, model, var_to_gp_var_map):
         x_constr = x_var[0]
     curr_dim = 0
     for var_set in var_stack:
-        if type(var_set) == list:
+        if isinstance(var_set, list):
             l = var_set[0]
             u = var_set[1]
             n = l.shape[0]
@@ -48,7 +48,7 @@ def box_stack_set_bound_canon(init_set):
     l_new = []
     u_new = []
     for var_set in var_stack:
-        if type(var_set) == list:
+        if isinstance(var_set, list):
             l = var_set[0]
             u = var_set[1]
             l_new.append(l)

@@ -122,7 +122,7 @@ class SDPHandler(object):
         # sdp_obj, constraints = obj_canon(obj, self.iteration_handlers, self.add_RLT)
         # self.sdp_obj += sdp_obj
         # self.sdp_constraints += constraints
-        if type(self.CP.objective) != list:
+        if not isinstance(self.CP.objective, list):
             obj_list = [self.CP.objective]
         else:
             obj_list = self.CP.objective
