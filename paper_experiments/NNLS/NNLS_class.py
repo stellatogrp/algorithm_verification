@@ -161,7 +161,7 @@ def main():
     t_vals.append(.05)
     for t in t_vals:
         CP = instance.generate_CP(t, K)
-        out = CP.solve(solver_type='GLOBAL', add_bounds=True)
+        out = CP.solve(solver_type='SDP_CUSTOM', sdp_solver='mosek', add_bounds=True)
         print(out)
         exit(0)
         sdp_g, sdp_gtime = CP.solve(solver_type='GLOBAL', add_bounds=True)

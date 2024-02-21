@@ -16,7 +16,7 @@ class SDPCustomSolver(Solver):
 
     def solve(self, **kwargs):
         # Create SDP relaxation and solve
-        res = self.handler.solve(**kwargs)
+        res = self.handler.solve()
         res['sdp_canontime'] = self.canon_time
         return res
 

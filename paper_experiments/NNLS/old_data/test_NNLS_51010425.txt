@@ -1,2 +1,0 @@
-/var/spool/slurmd/job51010425/slurm_script: line 19: 2856696 Killed                  python NNLS_experiment.py
-slurmstepd: error: Detected 1 oom_kill event in StepId=51010425.batch. Some of the step tasks have been OOM Killed.
