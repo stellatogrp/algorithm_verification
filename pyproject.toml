@@ -17,6 +17,7 @@ dependencies = [
     "Mosek",
     "jax",
     "tqdm",
+    "PEPit",
 ]
 
 [tool.setuptools]
