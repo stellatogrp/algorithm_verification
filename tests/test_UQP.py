@@ -80,7 +80,7 @@ def solve_sdp(UQP, c, r, k=1):
     ]
 
     prob = cp.Problem(obj, constraints)
-    res = prob.solve()
+    res = prob.solve(solver=cp.SCS)
     # print(res)
     # print(X.value)
     U, sigma, VT = np.linalg.svd(X.value, full_matrices=False)
