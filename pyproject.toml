@@ -15,7 +15,8 @@ dependencies = [
     "cvxpy >= 1.2.0",
     "gurobipy",
     "Mosek",
-    "jax"
+    "jax",
+    "tqdm",
 ]
 
 [tool.setuptools]

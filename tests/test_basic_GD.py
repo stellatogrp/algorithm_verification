@@ -5,7 +5,7 @@ import numpy as np
 import numpy.testing as npt
 import scipy.sparse as spa
 
-from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
 from algoverify.init_set.box_set import BoxSet
 from algoverify.objectives.convergence_residual import ConvergenceResidual
 from algoverify.variables.iterate import Iterate
@@ -80,7 +80,7 @@ class TestBasicGD(unittest.TestCase):
         x = Iterate(n, name='x')
         q = Parameter(n, name='q')
 
-        step1 = HighLevelLinearStep(x, [x, q], D=In, A=C, b=b_const, Dinv=In)
+        step1 = LinearStep(x, [x, q], D=In, A=C, b=b_const, Dinv=In)
 
         x_l = -1 * np.ones((n, 1))
         x_u = np.ones((n, 1))
@@ -93,5 +93,5 @@ class TestBasicGD(unittest.TestCase):
         obj = ConvergenceResidual(x)
         CP = VerificationProblem(N, [xset], [qset], obj, [step1])
 
-        CP_res, _ = CP.solve(solver_type='SDP', solver=cp.SCS)
+        CP_res, _ = CP.solve(solver_type='SDP_CUSTOM', solver=cp.SCS)
         npt.assert_allclose(brute_force_res, CP_res, rtol=1e-4, atol=1e-4)
