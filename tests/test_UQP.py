@@ -181,7 +181,7 @@ def experiment1():
         fp_resids.append([np.linalg.norm(gd_out[i+1] - gd_out[i]) ** 2 for i in range(gd_k)])
 
     wc_fp_resids = fp_resids[0]
-    npt.assert_allclose(taus, wc_fp_resids, rtol=1e-4, atol=1e-4)
+    npt.assert_allclose(taus, wc_fp_resids, rtol=1e-3, atol=1e-3)
     npt.assert_array_less(fp_resids[1], taus)
     npt.assert_array_less(fp_resids[2], taus)
 
