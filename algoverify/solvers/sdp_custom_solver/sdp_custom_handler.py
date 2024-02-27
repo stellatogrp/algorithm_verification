@@ -15,7 +15,7 @@ from algoverify.solvers.sdp_custom_solver.cross_constraints import (
 )
 from algoverify.solvers.sdp_custom_solver.RLT_constraints import RLT_all_vars, RLT_diagonal_vars
 from algoverify.solvers.sdp_custom_solver.solve_dd import solve_dd_cvxpy
-from algoverify.solvers.sdp_custom_solver.solve_via_custom_admm import solve_via_custom_admm
+from algoverify.solvers.sdp_custom_solver.solve_via_clarabel import solve_via_clarabel
 from algoverify.solvers.sdp_custom_solver.solve_via_mosek import solve_via_mosek
 from algoverify.solvers.sdp_custom_solver.solve_via_scs import solve_via_scs
 
@@ -71,8 +71,8 @@ class SDPCustomHandler(object):
         if 'add_planet' in kwargs:
             self.add_planet = kwargs['add_planet']
         else:
-            # self.add_planet = True
-            self.add_planet = False
+            self.add_planet = True
+            # self.add_planet = False
 
         if 'lookback_t' in kwargs:
             self.lookback_t = kwargs['lookback_t']
@@ -439,9 +439,9 @@ class SDPCustomHandler(object):
         # print(res)
         return -res, prob.solver_stats.solve_time
 
-    def solve_with_admm(self):
-        out = solve_via_custom_admm(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
-                                    self.psd_cone_handlers, self.problem_dim)
+    def solve_with_clarabel_directly(self):
+        out = solve_via_clarabel(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
+                                 self.psd_cone_handlers, self.problem_dim, self)
         return out
 
     def solve_with_scs_directly(self):
@@ -465,6 +465,9 @@ class SDPCustomHandler(object):
         # return self.solve_with_scs_directly()
         if self.solve_dd:
             return self.solve_dd_relaxation()
+        if self.sdp_solver == 'clarabel':
+            print('solving via clarabel')
+            return self.solve_with_clarabel_directly()
         if self.sdp_solver == 'mosek':
             print('solving via mosek')
             return self.solve_with_mosek_directly()
