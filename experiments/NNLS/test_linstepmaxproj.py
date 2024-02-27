@@ -1,18 +1,18 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
-from algocert.high_level_alg_steps.linear_step import LinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.l2_ball_set import L2BallSet
-from algocert.init_set.zero_set import ZeroSet
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
+from algoverify.high_level_alg_steps.linear_step import LinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.l2_ball_set import L2BallSet
+from algoverify.init_set.zero_set import ZeroSet
 
-# from algocert.init_set.const_set import ConstSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+# from algoverify.init_set.const_set import ConstSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
@@ -50,7 +50,7 @@ def NNLS_cert_prob(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     obj = [ConvergenceResidual(x)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps)
     # res = CP.solve(solver_type=solver_type, add_bounds=True,
                 #    add_RLT=False, TimeLimit=3600, minimize=False)
     # if solver_type == 'GLOBAL':
@@ -99,7 +99,7 @@ def NNLS_twostep(n, m, A, K=1, t=.05, solver_type='SDP'):
 
     obj = [ConvergenceResidual(x)]
 
-    CP = CertificationProblem(K, initsets, paramsets, obj, steps)
+    CP = VerificationProblem(K, initsets, paramsets, obj, steps)
     # res = CP.solve(solver_type=solver_type, add_bounds=True,
                 #    add_RLT=False, TimeLimit=3600, minimize=False)
     # # print('global', resg)

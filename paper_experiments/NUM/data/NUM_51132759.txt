@@ -139,15 +139,15 @@ Traceback (most recent call last):
     main()
   File "/home/vranjan/algorithm-certification/paper_experiments/NUM/NUM_experiment.py", line 35, in main
     out = CP.solve(solver_type='SDP_CUSTOM')
-  File "/home/vranjan/algorithm-certification/algocert/certification_problem.py", line 40, in solve
+  File "/home/vranjan/algorithm-certification/algoverify/verification_problem.py", line 40, in solve
     res = solver.solve(**kwargs)
-  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/sdp_custom_solver.py", line 19, in solve
+  File "/home/vranjan/algorithm-certification/algoverify/solvers/sdp_custom_solver/sdp_custom_solver.py", line 19, in solve
     res = self.handler.solve(**kwargs)
-  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/sdp_custom_handler.py", line 421, in solve
+  File "/home/vranjan/algorithm-certification/algoverify/solvers/sdp_custom_solver/sdp_custom_handler.py", line 421, in solve
     return self.solve_with_mosek_directly()
-  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/sdp_custom_handler.py", line 412, in solve_with_mosek_directly
+  File "/home/vranjan/algorithm-certification/algoverify/solvers/sdp_custom_solver/sdp_custom_handler.py", line 412, in solve_with_mosek_directly
     out = solve_via_mosek(self.C_matrix, self.A_matrices, self.b_lowerbounds, self.b_upperbounds,
-  File "/home/vranjan/algorithm-certification/algocert/solvers/sdp_custom_solver/solve_via_mosek.py", line 113, in solve_via_mosek
+  File "/home/vranjan/algorithm-certification/algoverify/solvers/sdp_custom_solver/solve_via_mosek.py", line 113, in solve_via_mosek
     objval = -M.primalObjValue()
   File "/home/vranjan/.conda/envs/alg-cert/lib/python3.9/site-packages/mosek/fusion/impl/_implementation.py", line 4942, in primalObjValue
     return self._primalObjValue_(*args)

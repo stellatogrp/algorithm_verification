@@ -4,8 +4,8 @@ import pandas as pd
 import scipy.sparse as spa
 from UQP_class import UnconstrainedQuadraticProgram
 
-from algocert.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
-from algocert.solvers.sdp_custom_solver.solve_via_mosek import solve_via_mosek
+from algoverify.solvers.sdp_custom_solver.psd_cone_handler import PSDConeHandler
+from algoverify.solvers.sdp_custom_solver.solve_via_mosek import solve_via_mosek
 
 
 def sample_point(n, r):

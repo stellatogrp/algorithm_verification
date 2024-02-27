@@ -3,13 +3,13 @@ import numpy as np
 import scipy.sparse as spa
 from scipy.stats import ortho_group
 
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
-from algocert.init_set.l2_ball_set import L2BallSet
-from algocert.init_set.zero_set import ZeroSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
+from algoverify.init_set.l2_ball_set import L2BallSet
+from algoverify.init_set.zero_set import ZeroSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 class NNLS(object):
@@ -120,7 +120,7 @@ class NNLS(object):
         param_sets = [bset]
         obj = ConvergenceResidual(x)
 
-        return CertificationProblem(K, var_sets, param_sets, obj, steps)
+        return VerificationProblem(K, var_sets, param_sets, obj, steps)
 
     def test_center_cvxpy(self):
         A = self.A
@@ -161,6 +161,10 @@ def main():
     t_vals.append(.05)
     for t in t_vals:
         CP = instance.generate_CP(t, K)
+        # out = CP.solve(solver_type='SDP_CUSTOM', sdp_solver='mosek', add_bounds=True)
+        out = CP.solve(solver_type='SDP_CUSTOM', sdp_solver='clarabel', add_bounds=True)
+        print(out)
+        exit(0)
         sdp_g, sdp_gtime = CP.solve(solver_type='GLOBAL', add_bounds=True)
         out_g.append(sdp_g)
         CP2 = instance.generate_CP(t, K)

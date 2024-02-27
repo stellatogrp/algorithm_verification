@@ -1,11 +1,43 @@
-# Algorithm Certification
-To develop:
+# Algorithm Verification
+This repository is by [Vinit Ranjan](https://vinitranjan1.github.io/) and [Bartolomeo Stellato](https://stellato.io/) and contains the Python source code to reproduce experiments in our paper "Verification of First-Order Methods for Parametric Quadratic Optimization."
 
-1. Create a new python or conda environment
-2. Install this package in development mode with `pip install -e ".[dev]"`
-3. Try stuff!
+If you find this repository helpful in your work, please consider citing our papers (FILL ARXIV LINK)
 
-To run pre-commit checks on files, you need to install pre-commit with `pre-commit install`.
-Now, it will run reformatting and linting checks at every commit. If they fail, you can retry the commit and they should work. If `flake8` fails, you have to fix the linting errors and run it again.
+# Abstract
+Fill in once finalized...
 
-To run unittests, you can run `pytest tests/`.
+## Installation
+To install the package, run
+```
+$ pip install git+https://github.com/stellatogrp/algorithm_verification
+```
+
+## Packages
+The main required packages are
+```
+cvxpy >= 1.2.0
+gurobipy
+Mosek
+tqdm
+PEPit
+```
+Both Mosek and Gurobi require licenses, but free academic licenses for individual use can be obtained from their respective websites.
+
+### Running experiments
+Experiments for the paper should be run from the `paper_experiments/` folder with the command:
+```
+python <example>_experiment.py
+```
+where ```<example>``` is one of the following:
+```
+ISTA
+MPC
+NNLS
+NUM
+silver
+```
+
+### Results
+For each experiment, the results are saved in the `data/` subfolder.
+The results include the SDP objective value, solve/setup times, and some other auxiliary information about the size of the experiment and other algorithm parameters.
+Depending on the SDP size, setting up and solving the problems can take some time but the `tqdm` package is included to allow easy progress tracking for the purely Python parts.

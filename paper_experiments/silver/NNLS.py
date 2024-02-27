@@ -3,13 +3,13 @@ import numpy as np
 import scipy.sparse as spa
 from scipy.stats import ortho_group
 
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
-from algocert.init_set.l2_ball_set import L2BallSet
-from algocert.init_set.zero_set import ZeroSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.high_level_alg_steps.linear_max_proj_step import LinearMaxProjStep
+from algoverify.init_set.l2_ball_set import L2BallSet
+from algoverify.init_set.zero_set import ZeroSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 class NNLS(object):
@@ -108,7 +108,7 @@ class NNLS(object):
         param_sets = [bset]
         obj = ConvergenceResidual(x)
 
-        return CertificationProblem(K, var_sets, param_sets, obj, steps)
+        return VerificationProblem(K, var_sets, param_sets, obj, steps)
 
     def test_center_cvxpy(self):
         A = self.A

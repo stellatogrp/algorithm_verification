@@ -3,8 +3,8 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "algocert"
-description="A package for algorithm performance certification."
+name = "algoverify"
+description="A package for algorithm performance verification."
 license = {text = "Apache 2.0"}
 version = "0.0.1"
 authors = [
@@ -15,11 +15,13 @@ dependencies = [
     "cvxpy >= 1.2.0",
     "gurobipy",
     "Mosek",
-    "jax"
+    "jax",
+    "tqdm",
+    "PEPit",
 ]
 
 [tool.setuptools]
-packages = ["algocert"]
+packages = ["algoverify"]
 
 [project.optional-dependencies]
 dev = ["pytest", "pre-commit",

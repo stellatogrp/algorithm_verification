@@ -57,7 +57,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2a00>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2610>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2a00>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2610>]
 Warning for adding constraints: zero or small (< 1e-13) coefficients, ignored
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
@@ -100,7 +100,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2b50>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c27c0>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2b50>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c27c0>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0136  0.022   0.0289 -0.0259 -0.0259  0.0139 -0.     -0.     -0.
@@ -142,7 +142,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2d00>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2220>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2d00>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2220>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0153  0.0224  0.0254 -0.0258 -0.0223  0.0142 -0.     -0.     -0.
@@ -184,7 +184,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c28b0>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2d00>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c28b0>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4147c2d00>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0159  0.0205  0.0231 -0.0256 -0.0196  0.0125 -0.     -0.     -0.
@@ -226,7 +226,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4131a5eb0>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4131a5f40>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4131a5eb0>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4131a5f40>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0159  0.0181  0.0206 -0.0246 -0.0164  0.0138 -0.     -0.     -0.
@@ -268,7 +268,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e412b90670>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e412c5dd90>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e412b90670>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e412c5dd90>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0173  0.0189  0.0184 -0.0244 -0.0137  0.0132 -0.      0.     -0.
@@ -310,7 +310,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e413143e80>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e412c092e0>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e413143e80>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e412c092e0>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.017   0.0181  0.0152 -0.0249 -0.0128  0.0129 -0.     -0.     -0.
@@ -352,7 +352,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e412dc1f10>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4131cb640>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e412dc1f10>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4131cb640>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0143  0.0182  0.0124 -0.0223 -0.0103  0.0121 -0.     -0.     -0.
@@ -394,7 +394,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4120b0340>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e412c47af0>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4120b0340>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e412c47af0>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 (107,) (51,)
 [ 0.0141  0.0158  0.0116 -0.0212 -0.0062  0.0114 -0.     -0.     -0.
@@ -436,7 +436,7 @@ z_tilde = MAX_WITH_VEC(w)
 z = MIN_WITH_VEC(z_tilde)
 s = LINSTEP(z, y, )
 ----Objective----
-[<algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e41206cd00>, <algocert.objectives.convergence_residual.ConvergenceResidual object at 0x14e4126d5730>]
+[<algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e41206cd00>, <algoverify.objectives.convergence_residual.ConvergenceResidual object at 0x14e4126d5730>]
 <class 'gurobipy.MVar'> <class 'gurobipy.MQuadExpr'> <class 'gurobipy.MVar'> <class 'gurobipy.MVar'>
 Gurobi Optimizer version 9.5.2 build v9.5.2rc0 (linux64)
 Thread count: 32 physical cores, 32 logical processors, using up to 32 threads

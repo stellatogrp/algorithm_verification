@@ -1,15 +1,15 @@
 import numpy as np
 import scipy.sparse as spa
 
-from algocert.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
-from algocert.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
-from algocert.certification_problem import CertificationProblem
-from algocert.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
-from algocert.init_set.box_set import BoxSet
-from algocert.init_set.const_set import ConstSet
-from algocert.objectives.convergence_residual import ConvergenceResidual
-from algocert.variables.iterate import Iterate
-from algocert.variables.parameter import Parameter
+from algoverify.basic_algorithm_steps.max_with_vec_step import MaxWithVecStep
+from algoverify.basic_algorithm_steps.min_with_vec_step import MinWithVecStep
+from algoverify.high_level_alg_steps.hl_linear_step import HighLevelLinearStep
+from algoverify.init_set.box_set import BoxSet
+from algoverify.init_set.const_set import ConstSet
+from algoverify.objectives.convergence_residual import ConvergenceResidual
+from algoverify.variables.iterate import Iterate
+from algoverify.variables.parameter import Parameter
+from algoverify.verification_problem import VerificationProblem
 
 
 def test_OSQP_GLOBAL(N=1):
@@ -89,7 +89,7 @@ def test_OSQP_GLOBAL(N=1):
     obj = ConvergenceResidual(x)
     # obj = OuterProdTrace(x)
 
-    CP = CertificationProblem(N, [xset, yset, zset], [bset], obj, steps)
+    CP = VerificationProblem(N, [xset, yset, zset], [bset], obj, steps)
 
     # CP.print_cp()
     # res = CP.solve(solver_type='GLOBAL', add_bounds=True, TimeLimit=100)

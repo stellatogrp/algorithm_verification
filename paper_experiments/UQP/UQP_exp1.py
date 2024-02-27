@@ -81,6 +81,7 @@ def sample_c(n, R):
 
 def off_centered_sdp(n, R, r, k, UQP):
     c = sample_c(n, R)
+    print(np.round(c, 3))
     res, x = solve_sdp(UQP, c, r, k=k)
     # print(res)
     # print(c, x)
@@ -146,7 +147,8 @@ def experiment1():
 
     ax.scatter(*zip(x_star), marker='*', s=600, color='k')
 
-    labels = [r'$\mathrm{Worst~case}$', r'$c_1$', r'$c_2$']
+    # labels = [r'$\mathrm{Worst~case}$', r'$c_1$', r'$c_2$']
+    labels = [r'$Z_1$', r'$Z_2$', r'$Z_3$']
     markers = ['x', '<', '>']
     colors=['r', 'tab:blue', 'tab:orange']
     fp_resids = []
@@ -178,10 +180,15 @@ def experiment1():
         tau = UQP_pep(mu, L, R + r, UQP.get_t_opt(), k=k)
         taus.append(tau)
 
-    fp_resids.append(taus)
-    labels.append(r'$\mathrm{PEP}$')
-    markers.append('o')
-    colors.append('g')
+    # fp_resids.append(taus)
+    # labels.append(r'$\mathrm{PEP}$')
+    # markers.append('o')
+    # colors.append('g')
+
+    fp_resids.insert(0, taus)
+    labels.insert(0, r'$\mathrm{PEP}$')
+    markers.insert(0, 'o')
+    colors.insert(0, 'g')
 
     # labels.insert(0, r'$\mathrm{PEP}$')
     # markers.insert(0, 'o')

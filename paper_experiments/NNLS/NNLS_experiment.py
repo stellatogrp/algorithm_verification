@@ -64,7 +64,7 @@ def main():
         for t in t_vals:
         # t = t_vals[1]
             CP = instance.generate_CP(t, K)
-            out = CP.solve(solver_type='SDP_CUSTOM')
+            out = CP.solve(solver_type='SDP_CUSTOM', sdp_solver='scs')
             # out = CP.solve(solver_type='GLOBAL', add_bounds=True)
             out['orig_m'] = m
             out['orig_n'] = n
