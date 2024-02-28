@@ -34,7 +34,8 @@ ISTA
 MPC
 NNLS
 NUM
-silver
+silver_nonstrong_NNLS
+silver_strongcvx_NNLS
 ```
 
 ### Results
