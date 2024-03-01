@@ -40,7 +40,7 @@ def plot_resids(sdp_df, pep_df, sample_df, fixed_sdp, fixed_pep, fixed_samp, K_m
     ax0.plot(K_vals, silver_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
     ax0.plot(K_vals, silver_samp[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
     ax0.set_xticks(K_vals)
-    ax0.set_title('Silver Sched.')
+    ax0.set_title('Silver Schedule')
 
     ax1.plot(K_vals, fixed_sdp[:K_max], marker=sdp_m, color=sdp_color)
     ax1.plot(K_vals, fixed_pep[:K_max], marker=pep_m, color=pep_color)

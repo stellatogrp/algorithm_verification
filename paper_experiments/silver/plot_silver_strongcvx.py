@@ -87,7 +87,7 @@ def plot_only_strongcvx(sdp_df, pep_df, samples_df, tsdp_df, tpep_df, tsamp_df, 
     ax0.plot(K_vals, mu_silver_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
     ax0.plot(K_vals, mu_silver_samp[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
     ax0.set_xticks(K_vals)
-    ax0.set_title('Silver Sched.')
+    ax0.set_title('Silver Schedule')
 
     ax1.set_yscale('log')
     ax1.set_xticks(K_vals)
