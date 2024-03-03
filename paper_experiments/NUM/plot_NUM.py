@@ -67,7 +67,7 @@ def plot_resids(sdp_df, samples_df, pep_df):
 
     ax1.plot(K_vals, sdp_ws, marker=sdp_m, color=sdp_color, label='VPSDP')
     ax1.plot(K_vals, pep_ws_tau, marker=pep_m, color=pep_color, label='PEP')
-    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='Sample Max')
+    ax1.plot(K_vals, samp_ws_resids, marker=samp_m, color=samp_color, label='SM')
     ax1.set_xticks(K_vals)
     ax1.set_title('Warm Start')
 

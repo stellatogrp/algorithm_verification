@@ -83,7 +83,7 @@ def plot_resids(sdp_df, pep_df, samples_df, K_max=7, single_plot=False):
 
         ax0.plot(K_vals, ista_resids[:K_max], marker=sdp_m, color=sdp_color, label='VPSDP')
         ax0.plot(K_vals, ista_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
-        ax0.plot(K_vals, ista_samples[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
+        ax0.plot(K_vals, ista_samples[:K_max], marker=samp_m, color=samp_color, label='SM')
         ax0.set_xticks(K_vals)
         ax0.set_title('ISTA')
 
@@ -143,9 +143,9 @@ def plot_global_ista(samples_df):
     ax0.set_ylabel('Worst case fixed-point residual')
     ax0.set_yscale('log')
 
-    ax0.plot(K_vals, ista_objs[:K_max], marker=obj_m, color=obj_color, label='Best Obj.')
-    ax0.plot(K_vals, ista_bounds[:K_max], marker=bound_m, color=bound_color, label='Best Bound')
-    ax0.plot(K_vals, ista_samples[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
+    ax0.plot(K_vals, ista_objs[:K_max], marker=obj_m, color=obj_color, label='Best lower bound')
+    ax0.plot(K_vals, ista_bounds[:K_max], marker=bound_m, color=bound_color, label='Best upper bound')
+    ax0.plot(K_vals, ista_samples[:K_max], marker=samp_m, color=samp_color, label='SM')
     ax0.set_xticks(K_vals)
     ax0.set_title('ISTA')
 
@@ -172,11 +172,11 @@ def plot_global_ista(samples_df):
 
 
 def main():
-    pd.read_csv('data/ISTA_sublinconv.csv')
+    sdp_df = pd.read_csv('data/ISTA_sublinconv.csv')
     samples_df = pd.read_csv('data/samples.csv')
-    pd.read_csv('data/pep.csv')
+    pep_df = pd.read_csv('data/pep.csv')
 
-    # plot_resids(sdp_df, pep_df, samples_df)
+    plot_resids(sdp_df, pep_df, samples_df)
     plot_global_ista(samples_df)
 
 

@@ -118,7 +118,7 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4):
     # markers = ['o','v','^','<','>']
     ax.plot(np.array(t_vals)[t_keep], np.array(sdp_dfK['sdp_objval'])[t_keep], label='VPSDP', color='b', marker='<')
     ax.plot(np.array(t_vals)[t_keep], np.array(pep_dfK['tau'])[t_keep], label='PEP', color='g', marker='o')
-    ax.plot(np.array(t_vals)[t_keep], np.array(samples_dfK['resid'])[t_keep], label='Sample Max', color='r', marker='x')
+    ax.plot(np.array(t_vals)[t_keep], np.array(samples_dfK['resid'])[t_keep], label='SM', color='r', marker='x')
     # ax.plot(t_vals, )
     # ax.tick_params(axis='x', color='r', labelcolor='r')
     # ax.get_xaxis().set_visible(False)

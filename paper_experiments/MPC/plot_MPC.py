@@ -55,7 +55,7 @@ def plot_resids(sdp_df, samp_pep_df, K_max=6, single_plot=False):
 
         ax0.plot(K_vals, rhoconst_resids[:K_max], marker=sdp_m, color=sdp_color, label='VPSDP')
         ax0.plot(K_vals, const_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
-        ax0.plot(K_vals, samp_const_resids[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
+        ax0.plot(K_vals, samp_const_resids[:K_max], marker=samp_m, color=samp_color, label='SM')
         ax0.set_xticks(K_vals)
         ax0.set_title(r'Scalar $\rho$')
 

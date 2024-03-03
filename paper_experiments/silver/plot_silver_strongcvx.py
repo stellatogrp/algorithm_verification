@@ -38,7 +38,7 @@ def plot_resids(sdp_df, pep_df, samples_df, K_max=7):
 
     ax0.plot(K_vals, silver_resids[:K_max], marker=sdp_m, color=sdp_color, label='VPSDP')
     ax0.plot(K_vals, silver_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
-    ax0.plot(K_vals, silver_samp[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
+    ax0.plot(K_vals, silver_samp[:K_max], marker=samp_m, color=samp_color, label='SM')
     ax0.set_xticks(K_vals)
     ax0.set_title('Non-strong')
 
@@ -85,7 +85,7 @@ def plot_only_strongcvx(sdp_df, pep_df, samples_df, tsdp_df, tpep_df, tsamp_df, 
 
     ax0.plot(K_vals, mu_silver_resids[:K_max], marker=sdp_m, color=sdp_color, label='VPSDP')
     ax0.plot(K_vals, mu_silver_pep[:K_max], marker=pep_m, color=pep_color, label='PEP')
-    ax0.plot(K_vals, mu_silver_samp[:K_max], marker=samp_m, color=samp_color, label='Sample Max')
+    ax0.plot(K_vals, mu_silver_samp[:K_max], marker=samp_m, color=samp_color, label='SM')
     ax0.set_xticks(K_vals)
     ax0.set_title('Silver Schedule')
 
