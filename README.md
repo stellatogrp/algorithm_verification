@@ -1,10 +1,8 @@
 # Algorithm Verification
-This repository is by [Vinit Ranjan](https://vinitranjan1.github.io/) and [Bartolomeo Stellato](https://stellato.io/) and contains the Python source code to reproduce experiments in our paper "Verification of First-Order Methods for Parametric Quadratic Optimization."
-
-If you find this repository helpful in your work, please consider citing our papers (FILL ARXIV LINK)
+This repository is by [Vinit Ranjan](https://vinitranjan1.github.io/) and [Bartolomeo Stellato](https://stellato.io/) and contains the Python source code to reproduce experiments in our paper [Verification of First-Order Methods for Parametric Quadratic Optimization](https://arxiv.org/pdf/2403.03331.pdf).
 
 # Abstract
-Fill in once finalized...
+We introduce a numerical framework to verify the finite step convergence of first-order methods for parametric convex quadratic optimization. We formulate the verification problem as a mathematical optimization problem where we maximize a performance metric (e.g., fixed-point residual at the last iteration) subject to constraints representing proximal algorithm steps (e.g., linear system solutions, projections, or gradient steps). Our framework is highly modular because we encode a wide range of proximal algorithms as variations of two primitive steps: affine steps and element-wise maximum steps. Compared to standard convergence analysis and performance estimation techniques, we can explicitly quantify the effects of warm-starting by directly representing the sets where the initial iterates and parameters live. We show that the verification problem is NP-hard, and we construct strong semidefinite programming relaxations using various constraint tightening techniques. Numerical examples in nonnegative least squares, network utility maximization, Lasso, and optimal control show a significant reduction in pessimism of our framework compared to standard worst-case convergence analysis techniques.
 
 ## Installation
 To install the package, run
