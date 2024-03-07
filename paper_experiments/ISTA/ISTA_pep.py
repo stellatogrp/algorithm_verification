@@ -108,8 +108,8 @@ def b_to_ISTA(instance, b_vals, ztest, K=7, t=.01):
                 'fista': FISTA_res[j],
             }
             out_series.append(pd.Series(out))
-    out_df = pd.DataFrame(out_series)
-    out_df.to_csv('data/samples.csv', index=False)
+    pd.DataFrame(out_series)
+    # out_df.to_csv('data/samples.csv', index=False)
 
 
 def ista_pep(instance, r, K=7, t=.01):
@@ -144,6 +144,8 @@ def fista_pep(instance, r, K=7, t=.01):
     A = instance.A
     L = np.max(np.abs(np.linalg.eigvals(A.T @ A)))
     mu = np.min(np.abs(np.linalg.eigvals(A.T @ A)))
+    print(t, 1/L)
+    exit(0)
     # print(L, mu)
     lambd = instance.lambd
 
@@ -190,7 +192,7 @@ def r_to_pep(instance, r_max, K=7, t=.01):
     out_df = pd.DataFrame(out_series)
     print(out_df)
 
-    out_df.to_csv('data/pep.csv', index=False)
+    # out_df.to_csv('data/pep.csv', index=False)
 
 
 def sample_and_run(instance, b_c, b_r, N, ztest, t=.01, K=7):

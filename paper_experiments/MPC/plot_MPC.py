@@ -66,7 +66,8 @@ def plot_resids(sdp_df, samp_pep_df, K_max=6, single_plot=False):
         ax1.set_xticks(K_vals)
 
         fig.legend(ncol=3, loc='upper center', bbox_to_anchor=(0.5, 0.11))
-        plt.suptitle(r'Model predictive control')
+        # plt.suptitle(r'Model predictive control')
+        plt.suptitle(r'Optimal control')
         plt.tight_layout()
 
         axes = [ax0, ax1]
