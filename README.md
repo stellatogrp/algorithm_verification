@@ -1,4 +1,4 @@
-# Algorithm Verification
+# Verification of First-Order Methods for Parametric Quadratic Optimization
 This repository is by [Vinit Ranjan](https://vinitranjan1.github.io/) and [Bartolomeo Stellato](https://stellato.io/) and contains the Python source code to reproduce experiments in our paper [Verification of First-Order Methods for Parametric Quadratic Optimization](https://arxiv.org/pdf/2403.03331.pdf).
 
 # Abstract
