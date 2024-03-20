@@ -9,8 +9,9 @@ from NNLS_class import NNLS
 from PEPit import PEP
 from PEPit.functions import (
     ConvexFunction,
-    SmoothStronglyConvexFunction,
+    SmoothStronglyConvexQuadraticFunction,
 )
+from PEPit.primitive_steps import proximal_step
 from tqdm import tqdm
 
 
@@ -78,7 +79,7 @@ def all_conv_resids(K_max, t_vals, A, b_samples):
     out_df = pd.DataFrame(out_res)
     print(out_df)
     # print('NOT OVERWRITING SAMPLES DATA')
-    out_df.to_csv('data/nonstrong_grid_sample_data.csv', index=False)
+    out_df.to_csv('data/nonstrong_grid_sample_data_quad.csv', index=False)
 
 
 def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
@@ -93,14 +94,14 @@ def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
 
     # Declare a convex and a smooth convex function.
     func1 = problem.declare_function(ConvexFunction)
-    func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
-    # func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
+    # func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     # Define the function to optimize as the sum of func1 and func2
-    func1 + func2
+    func = func1 + func2
 
     # Start by defining its unique optimal point xs = x_* and its function value fs = F(x_*)
-    # xs = func.stationary_point()
-    xs = func2.stationary_point()
+    xs = func.stationary_point()
+    # xs = func2.stationary_point()
     # fs = func(xs)
 
     # Then define the starting point x0 of the algorithm and its function value f0
@@ -111,10 +112,10 @@ def single_pep_sample(t, mu, L, r, K, test_opt_dist = False):
     # w = [x0 for _ in range(N + 1)]
     # x = x0
     for i in range(K):
-        # y = x[i] - t * func2.gradient(x[i])
-        # x[i+1], _, _ = proximal_step(y, func1, t)
+        y = x[i] - t * func2.gradient(x[i])
+        x[i+1], _, _ = proximal_step(y, func1, t)
 
-        x[i + 1] = x[i] - t * func2.gradient(x[i])
+        # x[i + 1] = x[i] - t * func2.gradient(x[i])
 
     # Set the initial constraint that is the distance between x0 and xs = x_*
     problem.set_initial_condition((x0 - xs) ** 2 <= r ** 2)
@@ -147,15 +148,15 @@ def all_pep_runs(t_vals, mu, L, r, K_max):
             out_res.append(pd.Series(out_dict))
             out_df = pd.DataFrame(out_res)
             print(out_df)
-            out_df.to_csv('data/nonstrong_grid_pep_data.csv', index=False)
+            out_df.to_csv('data/nonstrong_grid_pep_data_quad.csv', index=False)
 
 
 def main():
     d = datetime.now()
     # print(d)
     curr_time = d.strftime('%m%d%y_%H%M%S')
-    outf_prefix = '/home/vranjan/algorithm-certification/'
-    # outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
+    # outf_prefix = '/home/vranjan/algorithm-certification/'
+    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
     outf = outf_prefix + f'paper_experiments/NNLS/data/{curr_time}.csv'
     print(outf)
 
@@ -167,7 +168,8 @@ def main():
     # K = 5
     # K_vals = [1, 2, 3, 4, 6]
     # K_vals = [1]
-    N = 10000
+    # N = 10000
+    N = 500
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=0, seed=1)
     print(instance.mu, instance.L, instance.kappa)
@@ -189,6 +191,7 @@ def main():
 
     # all_t = all_t[:-1]
     print(all_t)
+    # exit(0)
 
     b_samples = generate_samples(N, b_c, b_r, seed=2)
     # print(b_samples)

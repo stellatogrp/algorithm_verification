@@ -2,7 +2,7 @@ import cvxpy as cp
 import matplotlib.pyplot as plt
 import numpy as np
 from PEPit import PEP
-from PEPit.functions import SmoothStronglyConvexFunction
+from PEPit.functions import SmoothStronglyConvexQuadraticFunction
 from UQP_class import UnconstrainedQuadraticProgram
 
 plt.rcParams.update({
@@ -54,7 +54,8 @@ def solve_centered_sdp(UQP, r, k=1):
 def UQP_pep(mu, L, r, t, k=1):
     verbose=0
     problem = PEP()
-    func = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    # func = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    func = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     xs = func.stationary_point()
     x0 = problem.set_initial_point()
 
