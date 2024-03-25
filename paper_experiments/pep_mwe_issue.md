@@ -95,4 +95,4 @@ iter    pcost        dcost       gap       pres      dres      k/t        μ    
 Terminated with status = NumericalError
 ```
 
-It seems to me there is some issue in the problem formulation that gets fed into cvxpy.
+It seems there is some numeric issue in the problem formulation that gets fed into cvxpy. When using a more general class such as `SmoothStronglyConvexFunction` for example, all of these issues disappear and the three methods agree.
