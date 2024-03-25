@@ -1,6 +1,7 @@
-Hello,
+Hello @AdrienTaylor and @NizarBousselmi,
 
 First, thank you for creating this library!
+I am working with @bstellato on verification methods specific to parametric QPs here[https://github.com/stellatogrp/algorithm_verification/tree/main] and used PEPit for comparison purposes in our paper[https://arxiv.org/abs/2403.03331].
 While working with the `StrongSmoothlyConvexQuadraticFunction` object, I ran into numerical issues with the following example:
 
 ```
