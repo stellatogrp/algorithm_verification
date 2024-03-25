@@ -1,7 +1,7 @@
+import cvxpy as cp
 from PEPit import PEP
 from PEPit.functions import (
     ConvexFunction,
-    # SmoothStronglyConvexFunction,
     SmoothStronglyConvexQuadraticFunction,
 )
 from PEPit.primitive_steps import proximal_step
@@ -11,9 +11,9 @@ def test_quad(mu, L, K, t, r):
     pepit_verbose = 2
     problem = PEP()
 
+    # proximal gradient descent for sum of quadratic and convex function
     func1 = problem.declare_function(ConvexFunction)
     func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
-    # func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
     func = func1 + func2
 
     xs = func.stationary_point()
@@ -28,34 +28,17 @@ def test_quad(mu, L, K, t, r):
     # Fixed point residual
     problem.set_performance_metric((x[-1] - x[-2]) ** 2)
 
-    # Solve the PEP
-    # mosek_params = {
-    #     'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-5,
-    #     'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-5,
-    #     'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-8,
-    # }
-    # pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.MOSEK, mosek_params=mosek_params)
-    try:
-        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
-    except AssertionError:
-        # print(problem.objective.eval())
-        # exit(0)
-        pepit_tau = problem.objective.eval()
+    # pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.MOSEK)
+    # pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.CLARABEL)
 
     print('pepit_tau:', pepit_tau)
     return pepit_tau
 
+mu = 1
+L = 10
+K = 6
+t = 0.0125
+r = 10
 
-def main():
-    mu = 20
-    L = 100
-    K = 10
-    t = 0.0125
-    r = 12.11
-    # r = 1
-
-    test_quad(mu, L, K, t, r)
-
-
-if __name__ == '__main__':
-    main()
+test_quad(mu, L, K, t, r)
