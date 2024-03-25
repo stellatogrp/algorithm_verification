@@ -1,13 +1,14 @@
 from datetime import datetime
 
+import cvxpy as cp
 import numpy as np
 import pandas as pd
 from car2D import Car2D
-from MPC_car_experiment import simulate_steps
+from MPC_experiment import simulate_steps
 from PEPit import PEP
 from PEPit.functions import (
     ConvexFunction,
-    SmoothStronglyConvexFunction,
+    SmoothStronglyConvexQuadraticFunction,
 )
 from PEPit.primitive_steps import proximal_step
 from tqdm import tqdm
@@ -106,8 +107,10 @@ def MPC_pep(car, r, K):
     alpha = 1
     theta = 1
 
+
     func1 = problem.declare_function(ConvexFunction)
-    func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    # func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     # func2 = problem.declare_function(ConvexFunction)
     # Define the function to optimize as the sum of func1 and func2
     func = func1 + func2
@@ -137,7 +140,13 @@ def MPC_pep(car, r, K):
     else:
         problem.set_performance_metric((x[-1] - x[-2]) ** 2 + (w[-1] - w[-2]) ** 2)
 
-    pepit_tau = problem.solve(verbose=1)
+    mosek_params = {
+        'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-8,
+        'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-8,
+        'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-7,
+    }
+    pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+    # pepit_tau = problem.solve(verbose=2, wrapper='mosek')
     print(pepit_tau)
     # exit(0)
     return pepit_tau
@@ -145,7 +154,8 @@ def MPC_pep(car, r, K):
 
 def MPC_samp_pep(outf, K_max=7, eps=1e-3):
     T = 5
-    N = 10000
+    # N = 10000
+    N = 100
     # N = 5
 
     np.random.seed(2)
@@ -208,8 +218,8 @@ def main():
     # print(d)
     d.strftime('%m%d%y_%H%M%S')
     # outf_prefix = '/home/vranjan/algorithm-certification/'
-    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-certification/'
-    outf = outf_prefix + 'paper_experiments/MPC/data/ws_samp_pep.csv'
+    outf_prefix = '/Users/vranjan/Dropbox (Princeton)/ORFE/2022/algorithm-verification/'
+    outf = outf_prefix + 'paper_experiments/MPC/data/ws_samp_pep_quad.csv'
     print(outf)
 
     # simulate_steps()

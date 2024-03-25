@@ -5,7 +5,10 @@ from NUM_class import NUM
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, ConvexLipschitzFunction
+from PEPit.functions import (
+    ConvexFunction,
+    ConvexLipschitzFunction,
+)
 from PEPit.primitive_steps import proximal_step
 from tqdm import tqdm
 
@@ -100,11 +103,13 @@ def c_to_DR(instance, c_vals, z_ws, z_heur, K=5):
             out_dict_heur = dict(type='heur', sample_num=(i + 1), K=(K_val + 1), res=heur_res)
             out_series += [pd.Series(out_dict_cs), pd.Series(out_dict_ws), pd.Series(out_dict_heur)]
     out_df = pd.DataFrame(out_series)
-    out_df.to_csv('data/new_num_sample.csv', index=False)
+    out_df.to_csv('data/new_num_sample_quad.csv', index=False)
+    # out_df.to_csv('data/new_num_sample.csv', index=False)
 
     out_max = out_df.groupby(['type', 'K']).max()
     # print(df.groupby(['t', 'K']).max())
-    out_max.reset_index().to_csv('data/new_num_sampmax.csv', index=False)
+    out_max.reset_index().to_csv('data/new_num_sampmax_quad.csv', index=False)
+    # out_max.reset_index().to_csv('data/new_num_sampmax.csv', index=False)
 
 
 
@@ -113,6 +118,7 @@ def DR_pep(K, r, L=1, alpha=1, theta=1):
 
     func1 = problem.declare_function(ConvexFunction)
     func2 = problem.declare_function(ConvexLipschitzFunction, M=L)
+    # func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, mu=0, L=L)
     # func2 = problem.declare_function(ConvexFunction)
     # Define the function to optimize as the sum of func1 and func2
     func = func1 + func2
@@ -180,7 +186,8 @@ def r_to_pep(instance, r_cs, r_ws, r_heur, K=5):
         out_series += [pd.Series(cs_outdict), pd.Series(ws_outdict), pd.Series(heur_outdict)]
     out_df = pd.DataFrame(out_series)
     print(out_df)
-    out_df.to_csv('data/new_num_pep.csv', index=False)
+    out_df.to_csv('data/new_num_pep_quad.csv', index=False)
+    # out_df.to_csv('data/new_num_pep.csv', index=False)
 
 
 def sample_and_run(instance, c_c, c_r, N, K=5):
@@ -212,6 +219,7 @@ def main():
     # print(instance.test_cp_prob())
 
     N = 10000
+    N = 500
     np.random.seed(0)
     sample_and_run(instance, c_c, c_r, N)
 
