@@ -5,9 +5,9 @@ from NNLS import NNLS
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, SmoothStronglyConvexFunction
+from PEPit.functions import ConvexFunction, SmoothStronglyConvexQuadraticFunction
 from PEPit.primitive_steps import proximal_step
-from silver_strongcvx_NNLS import compute_silver_steps
+from silver_strongcvx_NNLS_experiment import compute_silver_steps
 
 
 def generate_samples(N, b_c, b_r, seed=2):
@@ -85,7 +85,7 @@ def all_conv_resids(K_max, t_vals, t_opt, silvers, mu_silvers, A, b_samples):
 
     out_df = pd.DataFrame(out_res)
     # out_df.to_csv('data/strongcvx/sample_silver_m15n8.csv', index=False)
-    out_df.to_csv('data/sample_data.csv', index=False)
+    out_df.to_csv('data/sample_data_quad.csv', index=False)
 
 
 def single_pep_sample(t_list, mu, L, r, K):
@@ -100,7 +100,7 @@ def single_pep_sample(t_list, mu, L, r, K):
 
     # Declare a convex and a smooth convex function.
     func1 = problem.declare_function(ConvexFunction)
-    func2 = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     # Define the function to optimize as the sum of func1 and func2
     func = func1 + func2
 
@@ -131,7 +131,11 @@ def single_pep_sample(t_list, mu, L, r, K):
 
     # Solve the PEP
     pepit_verbose = max(verbose, 0)
-    pepit_tau = problem.solve(verbose=pepit_verbose)
+    # pepit_tau = problem.solve(verbose=pepit_verbose)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
 
     return pepit_tau
 
@@ -169,7 +173,7 @@ def all_pep_runs_topt_silver(t_opt, silvers, mu_silvers, mu, L, r, K_max):
     out_df = pd.DataFrame(out_res)
     print(out_df)
     # out_df.to_csv('data/strongcvx/pep_silver_m15n8.csv', index=False)
-    out_df.to_csv('data/pep_data.csv', index=False)
+    out_df.to_csv('data/pep_data_quad.csv', index=False)
 
 
 def main():

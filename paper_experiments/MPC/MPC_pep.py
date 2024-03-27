@@ -1,6 +1,5 @@
 from datetime import datetime
 
-import cvxpy as cp
 import numpy as np
 import pandas as pd
 from car2D import Car2D
@@ -96,6 +95,7 @@ def compute_max_r(car, xinit_samples, uinit_samples, shifted_sols):
 
 def MPC_pep(car, r, K):
     print(K)
+    verbose = 2
 
     problem = PEP()
     # L = 1
@@ -140,22 +140,26 @@ def MPC_pep(car, r, K):
     else:
         problem.set_performance_metric((x[-1] - x[-2]) ** 2 + (w[-1] - w[-2]) ** 2)
 
-    mosek_params = {
-        'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-8,
-        'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-8,
-        'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-7,
-    }
-    pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
-    # pepit_tau = problem.solve(verbose=2, wrapper='mosek')
+    pepit_verbose = max(0, verbose)
+    # mosek_params = {
+    #     'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-8,
+    #     'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-8,
+    #     'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-7,
+    # }
+    # pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
+
     print(pepit_tau)
-    # exit(0)
     return pepit_tau
 
 
 def MPC_samp_pep(outf, K_max=7, eps=1e-3):
     T = 5
-    # N = 10000
-    N = 100
+    N = 10000
+    # N = 100
     # N = 5
 
     np.random.seed(2)

@@ -1,4 +1,3 @@
-import cvxpy as cp
 from PEPit import PEP
 from PEPit.functions import (
     ConvexFunction,
@@ -28,8 +27,8 @@ def test_quad(mu, L, K, t, r):
     # Fixed point residual
     problem.set_performance_metric((x[-1] - x[-2]) ** 2)
 
-    # pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
-    pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.MOSEK)
+    pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    # pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.MOSEK)
     # pepit_tau = problem.solve(verbose=pepit_verbose, solver=cp.CLARABEL)
 
     print('pepit_tau:', pepit_tau)

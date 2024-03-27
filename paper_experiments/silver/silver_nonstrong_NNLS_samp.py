@@ -6,7 +6,10 @@ from NNLS import NNLS
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexFunction, SmoothConvexFunction
+from PEPit.functions import (
+    ConvexFunction,
+    SmoothStronglyConvexQuadraticFunction,
+)
 from PEPit.primitive_steps import proximal_step
 from silver_strongcvx_NNLS_sample import generate_samples, single_NNLS_conv_resids, x_opt_vals
 
@@ -24,11 +27,11 @@ def all_conv_resids(K_max, t, silvers, A, b_samples):
 
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    out_df.to_csv('data/sample_data.csv', index=False)
+    out_df.to_csv('data/nonstrong_sample_data_quad.csv', index=False)
 
     out_max = out_df.groupby(['sched', 'K']).max()
     # print(df.groupby(['t', 'K']).max())
-    out_max.reset_index().to_csv('data/sample_max.csv', index=False)
+    out_max.reset_index().to_csv('data/nonstrong_sample_max_quad.csv', index=False)
 
 
 def single_pep(t_list, L, r, K):
@@ -36,8 +39,8 @@ def single_pep(t_list, L, r, K):
     problem = PEP()
     print(L)
     func1 = problem.declare_function(ConvexFunction)
-    func2 = problem.declare_function(SmoothConvexFunction, L=L)
-    # func2 = problem.declare_function(SmoothStronglyConvexFunction, mu=1, L=L)
+    # func2 = problem.declare_function(SmoothConvexFunction, L=L)
+    func2 = problem.declare_function(SmoothStronglyConvexQuadraticFunction, mu=0, L=L)
 
     func = func1 + func2
 
@@ -55,7 +58,11 @@ def single_pep(t_list, L, r, K):
 
     # Solve the PEP
     pepit_verbose = max(verbose, 0)
-    pepit_tau = problem.solve(verbose=pepit_verbose)
+    # pepit_tau = problem.solve(verbose=pepit_verbose)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
 
     return pepit_tau
 
@@ -72,7 +79,7 @@ def all_pep_runs(t, silvers, L, r, K_max):
         out_res.append(pd.Series(out_dict))
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    out_df.to_csv('data/pep_data.csv', index=False)
+    out_df.to_csv('data/nonstrong_pep_data_quad.csv', index=False)
 
 
 def main():

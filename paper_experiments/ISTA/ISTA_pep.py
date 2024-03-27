@@ -117,6 +117,7 @@ def b_to_ISTA(instance, b_vals, ztest, K=7, t=.01):
 
 
 def ista_pep(instance, r, K=7, t=.01):
+    verbose = 2
     A = instance.A
     L = np.max(np.abs(np.linalg.eigvals(A.T @ A)))
     mu = np.min(np.abs(np.linalg.eigvals(A.T @ A)))
@@ -141,18 +142,25 @@ def ista_pep(instance, r, K=7, t=.01):
 
     problem.set_performance_metric((z[-1] - z[-2]) ** 2)
 
-    mosek_params = {
-        'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-7,
-        'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-7,
-        'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-5,
-    }
-    pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+    # mosek_params = {
+    #     'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-5,
+    # }
+    # pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+
+    pepit_verbose = max(verbose, 0)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
 
     print(pepit_tau)
     return pepit_tau
 
 
 def fista_pep(instance, r, K=7, t=.01):
+    verbose = 2
     A = instance.A
     L = np.max(np.abs(np.linalg.eigvals(A.T @ A)))
     mu = np.min(np.abs(np.linalg.eigvals(A.T @ A)))
@@ -182,13 +190,19 @@ def fista_pep(instance, r, K=7, t=.01):
         beta = beta_new
 
     problem.set_performance_metric((z[-1] - z[-2]) ** 2)
-    mosek_params = {
-        'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-7,
-        'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-7,
-        'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-5,
-    }
-    pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
-    print(pepit_tau)
+    # mosek_params = {
+    #     'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-5,
+    # }
+    # pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+    # print(pepit_tau)
+
+    pepit_verbose = max(verbose, 0)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
 
     return pepit_tau
 
