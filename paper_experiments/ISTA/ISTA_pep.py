@@ -252,8 +252,8 @@ def main():
     t = .04
     seed = 3
     K = 7
-    # N = 10000
-    N = 500
+    N = 10000
+    # N = 500
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
     # ztest = instance.test_cp_prob()

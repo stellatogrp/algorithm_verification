@@ -67,11 +67,11 @@ def plot_resids(sdp_df, pep_df, sample_df, fixed_sdp, fixed_pep, fixed_samp, K_m
 def main():
     sdp_df = pd.read_csv('data/NNLS_nonstrong_silver.csv')
     samples_df = pd.read_csv('data/sample_max.csv')
-    pep_df = pd.read_csv('data/pep_data.csv')
+    pep_df = pd.read_csv('data/nonstrong_pep_data_quad.csv')
 
     fixedt_sdp_df = pd.read_csv('../NNLS/data/nonstrong_grid_sdp.csv')
     fixedt_samples_df = pd.read_csv('../NNLS/data/nonstrong_grid_sample_max.csv')
-    fixedt_pep_df = pd.read_csv('../NNLS/data/nonstrong_grid_pep.csv')
+    fixedt_pep_df = pd.read_csv('../NNLS/data/nonstrong_grid_pep_data_quad.csv')
 
     fixedt_sdp_df = fixedt_sdp_df[fixedt_sdp_df['t'] == 0.015]
     fixedt_samples_df = fixedt_samples_df[fixedt_samples_df['t'] == 0.015]

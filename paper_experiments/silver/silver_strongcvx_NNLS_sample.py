@@ -85,7 +85,7 @@ def all_conv_resids(K_max, t_vals, t_opt, silvers, mu_silvers, A, b_samples):
 
     out_df = pd.DataFrame(out_res)
     # out_df.to_csv('data/strongcvx/sample_silver_m15n8.csv', index=False)
-    out_df.to_csv('data/sample_data_quad.csv', index=False)
+    out_df.to_csv('data/sample_data.csv', index=False)
 
 
 def single_pep_sample(t_list, mu, L, r, K):

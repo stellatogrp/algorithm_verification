@@ -27,11 +27,11 @@ def all_conv_resids(K_max, t, silvers, A, b_samples):
 
     out_df = pd.DataFrame(out_res)
     print(out_df)
-    out_df.to_csv('data/nonstrong_sample_data_quad.csv', index=False)
+    out_df.to_csv('data/nonstrong_sample_data.csv', index=False)
 
     out_max = out_df.groupby(['sched', 'K']).max()
     # print(df.groupby(['t', 'K']).max())
-    out_max.reset_index().to_csv('data/nonstrong_sample_max_quad.csv', index=False)
+    out_max.reset_index().to_csv('data/nonstrong_sample_max.csv', index=False)
 
 
 def single_pep(t_list, L, r, K):

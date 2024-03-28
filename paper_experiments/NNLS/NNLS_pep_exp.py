@@ -170,8 +170,8 @@ def main():
     # K = 5
     # K_vals = [1, 2, 3, 4, 6]
     # K_vals = [1]
-    # N = 10000
-    N = 500
+    N = 10000
+    # N = 500
 
     instance = NNLS(m, n, b_c, b_r, ATA_mu=0, seed=1)
     # instance = NNLS(m, n, b_c, b_r, ATA_mu=20, seed=1)

@@ -118,7 +118,8 @@ def plot_only_strongcvx(sdp_df, pep_df, samples_df, tsdp_df, tpep_df, tsamp_df, 
 def main():
     sdp_df = pd.read_csv('data/old_strong_nonstrong/sdp_data.csv')
     samples_df = pd.read_csv('data/old_strong_nonstrong/sample_max.csv')
-    pep_df = pd.read_csv('data/old_strong_nonstrong/pep_data.csv')
+    # pep_df = pd.read_csv('data/old_strong_nonstrong/pep_data.csv')
+    pep_df = pd.read_csv('data/pep_data_quad.csv')
 
     fixedt_sdp_df = pd.read_csv('../NNLS/data/NNLS_spreadt_halfc.csv')
     fixedt_samples_df = pd.read_csv('../NNLS/data/sample_max.csv')
