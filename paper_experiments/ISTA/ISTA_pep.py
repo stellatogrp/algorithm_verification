@@ -5,7 +5,10 @@ from ISTA_class import ISTA
 
 # from PEPit.examples.composite_convex_minimization.proximal_gradient import wc_proximal_gradient
 from PEPit import PEP
-from PEPit.functions import ConvexLipschitzFunction, SmoothStronglyConvexFunction
+from PEPit.functions import (
+    ConvexLipschitzFunction,
+    SmoothStronglyConvexQuadraticFunction,
+)
 from PEPit.primitive_steps import proximal_step
 from tqdm import tqdm
 
@@ -108,11 +111,13 @@ def b_to_ISTA(instance, b_vals, ztest, K=7, t=.01):
                 'fista': FISTA_res[j],
             }
             out_series.append(pd.Series(out))
-    pd.DataFrame(out_series)
+    out_df = pd.DataFrame(out_series)
     # out_df.to_csv('data/samples.csv', index=False)
+    out_df.to_csv('data/samples_quad.csv', index=False)
 
 
 def ista_pep(instance, r, K=7, t=.01):
+    verbose = 2
     A = instance.A
     L = np.max(np.abs(np.linalg.eigvals(A.T @ A)))
     mu = np.min(np.abs(np.linalg.eigvals(A.T @ A)))
@@ -120,7 +125,8 @@ def ista_pep(instance, r, K=7, t=.01):
     lambd = instance.lambd
 
     problem = PEP()
-    f = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    # f = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    f = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     h = problem.declare_function(ConvexLipschitzFunction, M=lambd)
     F = f + h
 
@@ -135,22 +141,36 @@ def ista_pep(instance, r, K=7, t=.01):
         z[i + 1], _, _ = proximal_step(z[i] - t * f.gradient(z[i]), h, t * lambd)
 
     problem.set_performance_metric((z[-1] - z[-2]) ** 2)
-    pepit_tau = problem.solve(verbose=1)
+
+    # mosek_params = {
+    #     'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-5,
+    # }
+    # pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+
+    pepit_verbose = max(verbose, 0)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
+
     print(pepit_tau)
     return pepit_tau
 
 
 def fista_pep(instance, r, K=7, t=.01):
+    verbose = 2
     A = instance.A
     L = np.max(np.abs(np.linalg.eigvals(A.T @ A)))
     mu = np.min(np.abs(np.linalg.eigvals(A.T @ A)))
     print(t, 1/L)
-    exit(0)
     # print(L, mu)
     lambd = instance.lambd
 
     problem = PEP()
-    f = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    # f = problem.declare_function(SmoothStronglyConvexFunction, L=L, mu=mu)
+    f = problem.declare_function(SmoothStronglyConvexQuadraticFunction, L=L, mu=mu)
     h = problem.declare_function(ConvexLipschitzFunction, M=lambd)
     F = f + h
 
@@ -170,8 +190,19 @@ def fista_pep(instance, r, K=7, t=.01):
         beta = beta_new
 
     problem.set_performance_metric((z[-1] - z[-2]) ** 2)
-    pepit_tau = problem.solve(verbose=1)
-    print(pepit_tau)
+    # mosek_params = {
+    #     'MSK_DPAR_INTPNT_CO_TOL_PFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_DFEAS': 1e-7,
+    #     'MSK_DPAR_INTPNT_CO_TOL_REL_GAP': 1e-5,
+    # }
+    # pepit_tau = problem.solve(verbose=2, solver=cp.MOSEK, mosek_params=mosek_params)
+    # print(pepit_tau)
+
+    pepit_verbose = max(verbose, 0)
+    try:
+        pepit_tau = problem.solve(verbose=pepit_verbose, wrapper='mosek')
+    except AssertionError:
+        pepit_tau = problem.objective.eval()
 
     return pepit_tau
 
@@ -193,6 +224,7 @@ def r_to_pep(instance, r_max, K=7, t=.01):
     print(out_df)
 
     # out_df.to_csv('data/pep.csv', index=False)
+    out_df.to_csv('data/pep_quad.csv', index=False)
 
 
 def sample_and_run(instance, b_c, b_r, N, ztest, t=.01, K=7):
@@ -221,6 +253,7 @@ def main():
     seed = 3
     K = 7
     N = 10000
+    # N = 500
 
     instance = ISTA(m, n, b_c, b_r, lambd=lambd, seed=seed)
     # ztest = instance.test_cp_prob()

@@ -144,12 +144,9 @@ def plot_sdp_single_t_pep(sdp_df, samples_df, pep_df, t_keep, K_des=4):
 
 
 def main():
-    # sdp_df = pd.read_csv('data/sdp_data.csv')
-    # sdp_df = pd.read_csv('data/NNLS_spread_t.csv')
     sdp_df = pd.read_csv('data/NNLS_spreadt_halfc.csv')
-    # sample_df = pd.read_csv('data/sample_data.csv')
     samples_max_df = pd.read_csv('data/sample_max.csv')
-    pep_df = pd.read_csv('data/pep_data.csv')
+    pep_df = pd.read_csv('data/strong_grid_pep_data_quad.csv')
 
     t_keep = np.array([0, 1, 2, 3, 4, 5])
     # plot_sdp(sdp_df, t_keep)

@@ -174,7 +174,7 @@ def plot_global_ista(samples_df):
 def main():
     sdp_df = pd.read_csv('data/ISTA_sublinconv.csv')
     samples_df = pd.read_csv('data/samples.csv')
-    pep_df = pd.read_csv('data/pep.csv')
+    pep_df = pd.read_csv('data/pep_quad.csv')
 
     plot_resids(sdp_df, pep_df, samples_df)
     plot_global_ista(samples_df)

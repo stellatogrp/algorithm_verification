@@ -85,7 +85,7 @@ def main():
     sdp_df = pd.read_csv('data/MPC_ws_1e-3.csv')
     # samples_df = pd.read_csv('data/samples.csv')
     # pep_df = pd.read_csv('data/pep.csv')
-    samp_pep_df = pd.read_csv('data/ws_samp_pep.csv')
+    samp_pep_df = pd.read_csv('data/ws_samp_pep_quad.csv')
 
     plot_resids(sdp_df, samp_pep_df)
 
